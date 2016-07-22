@@ -2,7 +2,7 @@
 
 package Mapbender <<Frame>> {
 
-  package QueryBuild <<Frame>>{
+  package Search <<Frame>>{
    package Entity <<Frame>> {
       class Query <extends Entity>{
         # id:int
@@ -99,7 +99,7 @@ package Mapbender <<Frame>> {
     }
 
     package Element <<Frame>>{
-      class QueryBuilder <extends Element>{
+      class Searcher <extends Element>{
          # getCurrentUser():User
          __ Configuration Management __
          # getConfig() :  Configuration
@@ -141,13 +141,13 @@ package Mapbender <<Frame>> {
         Feature state style definitions
     end note
 
-    Configuration "1" <--- "1" QueryBuilder
+    Configuration "1" <--- "1" Searcher
     Configuration "1" <--- "1" QueryManager
-    QueryBuilder "1" ---> "1" QueryManager
+    Searcher "1" ---> "1" QueryManager
     QueryManager "1" ---> "1" StyleManager
     QueryCondition "*" <--- "1" Query
     StyleManager ---> StyleMap
-    QueryBuilder "1" ---> "*" Query
+    Searcher "1" ---> "*" Query
     StyleMap "1" <--- "1" Query
     StyleMap "1" ---> "2" Style
   }
