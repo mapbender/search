@@ -1,0 +1,50 @@
+@startuml
+legend top
+{{
+salt
+{
+    <b>Action Buttons:
+
+    {[New query]}
+
+    ---
+    {* Accordion Query #1 }
+    {
+        <b>Action Buttons:
+
+        { [CSV Export] |  [Edit-Query] }
+
+        ---
+        <b>Results:
+        {#
+            Name | Description | Action-Buttons
+            Name #2 | Beschreibung #1  | { [Favorite] | [Locate] }
+            Name #2 | Beschreibung #2  | { [Favorite] | [Locate] }
+        }
+    }
+    ---
+    {* Accordion Query #2 }
+    ---
+    {* Accordion Query #3 }
+
+    {
+        <b>Action Buttons:
+
+        { [CSV Export] |  [Edit-Query] }
+
+        <b>Results:
+
+        {#
+            Name | Description | Action-Buttons
+            Name #3 | Beschreibung #1  | { [Favorite] | [Locate] }
+            Name #2 | Beschreibung #2  | { [Favorite] | [Locate] }
+            Name #3 | Beschreibung #3  | { [Favorite] | [Locate] }
+        }
+
+        {# Detail beschreibung}
+    }
+
+}
+}}
+end legend
+@enduml
