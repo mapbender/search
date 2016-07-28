@@ -2,176 +2,92 @@
 
 title Creating or editing query
 
-partition Frontend {
-    (*) --> "
-    {{
-    salt
-    {
-        <b>Edit query general settings
-        {+
-          {/ <b>General |  Source | Fields | Conditions | }
-          --
-          {
-            Query-Name | "new query #1"
-            [X] Current extent only
+!include ../styles.puml
+!include ../utils.puml
+!include EditQueryGeneral.puml
+!include EditQuerySource.puml
+!include EditQueryFields.puml
+!include EditQueryConditions.puml
 
-          }
-          --
-          {   [Cancel] | [ Save ]}
-        }
-    }
-    }}
-    " as QueryGeneral
+(*) --> [open query edit dialog] display(EditQueryGeneralView)
+-> display(EditQuerySourceView)
+-> display(EditQueryFieldsView)
+-> display(EditQueryConditionsView)
 
-    QueryGeneral -> "
-    {{
-    salt
-    {+
-      {/ General |  <b>Source | Fields | Conditions }
-      ---
-      {
-        FeatureType | . | ^IPE^
-      }
-      {   [Cancel] | [ Save ]}
-    }
-    }}
-    " as QuerySource
+partition Actions {
+   partition Save  {
+       EditQueryGeneralViewContainer    ..>   ===StartQueryValidation===
+       EditQueryFieldsViewContainer     ..>  ===StartQueryValidation===
+       EditQuerySourceViewContainer     ..>  ===StartQueryValidation===
+       EditQueryGeneralViewContainer    ..>  ===StartQueryValidation===
 
-    QuerySource --> "
-    {{
-    salt
-    {+
-      {/ General |  Source | <b>Fields | Conditions }
-       --
-      {
-          {
-            <b>Add display field :
-            {
-                Field name      | ^name^
-                Title (alias)   | "Name"
+       ===StartQueryValidation===  --> [ajax] "Check if given
+       query name is unique" as QueryNameValidation
+       ===StartQueryValidation===  --> [ajax] "Validate selected
+       source by ID" as SourceValidation
+       ===StartQueryValidation===  --> [ajax] "Validate fields selected" as FieldsValidation
+       ===StartQueryValidation===  --> [ajax] "Validate condition fields" as ConditionsValidation
+       QueryNameValidation --> ===StopQueryValidation===
+       SourceValidation --> ===StopQueryValidation===
+       FieldsValidation --> ===StopQueryValidation===
+       ConditionsValidation --> ===StopQueryValidation===
 
-            }
-            {[<&plus> Add field]}
+       if "Input correct?" as QueryValid then
+        --> [yes] "Remove prepared conditions for remove" as RemovePreparedCondition
+        --> "Remove prepared fields for remove" as RemovePreparedField
+        --> "Save prepared conditions" as SavingPreparedConditions
+        --> "Save prepared fields" as SavingPreparedFields
+        --> "Save prepared source ID"
+        --> "Save query name "
+        --> "Save user ID"
+        --> "Notify this query saving is complete"
+       else
+        --> [no] Highlight wrong fields
+        --> Notify error messages
+        --> Let display dialog on the same state
+       endif
+   }
 
-          } | . |
-          {#
-            <b>Field Name | <b>Title | <b>Action
-            name        | "Name"          |[<&trash>]
-            description | "Beschreibung"  |[<&trash>]
-            km          | "Entfernung"    |[<&trash>]
+   partition "Remove field" {
+       EditQueryFieldsViewContainer ..> "<&trash>  Remove field" as RemoveQueryField
+       RemoveQueryField --> "Prepare remove query field" as PrepareRemoveQueryField
+       --> "Remove query field table row"
+       PrepareRemoveQueryField ..> RemovePreparedField
 
-          }
-      }
-      ---
-      {   [Cancel] | [ Save ]}
+   }
+   partition "Add field" {
+       EditQueryFieldsViewContainer ..> "Add field" as AddQueryField
+       AddQueryField --> "Add field as new table row"
+       --> "Prepare field to be saved"
+       ..> SavingPreparedFields
+   }
 
-    }
-    }}
-    " as QueryFields
+   partition "Remove condition" {
+       EditQueryConditionsViewContainer ..> "<&trash> Remove condition" as RemoveQueryCondition
+       RemoveQueryCondition --> "Prepare condition to be removed after save" as PrepareRemoveQueryCondition
+       PrepareRemoveQueryCondition --> "Hide removed condition table row"
+       PrepareRemoveQueryCondition ..> RemovePreparedCondition
+   }
 
-    QueryFields -> "
-    {{
-    salt
-    {+
-           {/ General |  Source | Fields | <b>Conditions }
-            ---
-            {
-               {
-                 <b>Add condition:
-                 {
-                     Field       | ^name^
-                     Operator    | ^LIKE^
-                     Value       | "mustermann"
+   partition "Add condition" {
+       EditQueryConditionsViewContainer ..> "Check input alias name" as AddQueryCondition
+       AddQueryCondition --> "Add new condition row" as NewConditionRow
+       NewConditionRow --> "Prepare condition to be saved" as AddPreparedCondition
+       AddPreparedCondition ..> SavingPreparedConditions
+   }
 
-                 }
-                 {[<&plus> Add condition]}
-
-               } | . | {#
-                 <b>Field Name | <b>Operator | <b>Value      | <b>Action
-                 name        | LIKE          | "mustermann"  |[<&trash>]
-                 description | NOT LIKE      | "about"       |[<&trash>]
-                 km          | >=            | "20"          |[<&trash>]
-
-               }
-           }
-           ---
-           { [Cancel] | [ Save ]}
-
-         }
-    }}
-    " as QueryConditions
-
-    partition Events {
-        QueryConditions --> "Add condition" as AddQueryCondition
-        QueryFields --> "Add field" as AddQueryField
-        QueryConditions --> "Save" as SaveCondition
-        QueryConditions --> "Cancel" as CancelSaveQuery
-        QueryConditions --> "<&trash> Remove condition" as RemoveQueryCondition
-        QueryFields --> "<&trash>  Remove field" as RemoveQueryField
-    }
-
+   partition "Canceling / Quit" {
+       EditQueryGeneralViewContainer   ..> "Cancel" as CancelSaveQuery
+       EditQueryFieldsViewContainer    ..> CancelSaveQuery
+       EditQuerySourceViewContainer    ..> CancelSaveQuery
+       EditQuerySourceViewContainer    ..> CancelSaveQuery
+       CancelSaveQuery -->  "Cancel any changes"
+        --> [Close dialog] (*)
+   }
 }
 
-RemoveQueryField --> "Prepare remove query field" as PrepareRemoveQueryField
-RemoveQueryField --> "Remove query field table row"
-
-AddQueryField --> "Add field as new table row"
-AddQueryField --> "Prepare field to be saved" as PrepareNewQueryField
-
-
-QueryFields     --> SaveCondition
-QuerySource     --> SaveCondition
-QueryGeneral    --> SaveCondition
-
-RemoveQueryCondition --> "Prepare condition to be removed after save" as PrepareRemoveQueryCondition
-PrepareRemoveQueryCondition --> "Hide removed condition table row"
-
-
-QueryFields --> CancelSaveQuery
-QuerySource --> CancelSaveQuery
-QuerySource --> CancelSaveQuery
-CancelSaveQuery -->  "Cancel any changes" as CancelQueryChanges
-CancelQueryChanges --> [Close dialog] (*)
-
-
-SaveCondition --> ===B1===
-
-===B1===  --> [ajax] "Check if given query name is unique" as QueryNameValidation
-===B1===  --> [ajax] "Validate selected source by ID" as SourceValidation
-===B1===  --> [ajax] "Validate fields selected" as FieldsValidation
-===B1===  --> [ajax] "Validate condition fields" as ConditionsValidation
-
-QueryNameValidation --> ===B2===
-SourceValidation --> ===B2===
-FieldsValidation --> ===B2===
-ConditionsValidation --> ===B2===
-
-
-if "Valid?" as QueryValid then
- --> [yes] "Remove prepared conditions for remove" as RemovePreparedCondition
- --> "Remove prepared fields for remove" as RemovePreparedField
- --> "Save prepared conditions" as SavingPreparedConditions
- --> "Save prepared fields" as SavingPreparedFields
- --> "Save prepared source ID"
- --> "Save query name "
- --> "Save user ID"
- --> "Notify this query saving is complete"
-else
- --> [no] Highlight wrong fields
- --> Notify error messages
- --> Let display dialog on the same state
-endif
-
-
-AddQueryCondition --> "Add new condition row" as NewConditionRow
-NewConditionRow --> "Prepare condition to be saved" as AddPreparedCondition
-PrepareNewQueryField ..> SavingPreparedFields
-AddPreparedCondition ..> SavingPreparedConditions
-PrepareRemoveQueryCondition ..> RemovePreparedCondition
-PrepareRemoveQueryField ..> RemovePreparedField
 legend
     <&trash> - Remove button
 end legend
-
 
 @enduml

@@ -1,0 +1,24 @@
+@startuml
+!definelong EditQuerySourceView
+{
+    {+
+          {/ General |  <b>Source | Fields | Conditions }
+          ---
+          {
+            FeatureType | . | ^IPE^
+          }
+          { [Cancel] | [ Save ]}
+    }
+}
+!enddefinelong
+
+!ifdef display
+!else
+    legend
+    {{
+    salt
+       EditQuerySourceView
+    }}
+    end legend
+!endif
+@enduml

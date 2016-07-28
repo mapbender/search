@@ -1,0 +1,28 @@
+@startuml
+!definelong EditQueryGeneralView
+{
+    {+
+      {/ <b>General |  Source | Fields | Conditions | }
+      --
+      {
+        Query-Name | "new query #1"
+        Extent only | [X] yes
+        Style | { ^Theme^ | [Edit] }
+
+      }
+      --
+      {   [Cancel] | [ Save ]}
+    }
+}
+!enddefinelong
+
+!ifdef display
+!else
+    legend
+    {{
+    salt
+       EditQueryGeneralView
+    }}
+    end legend
+!endif
+@enduml

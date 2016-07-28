@@ -1,50 +1,57 @@
 @startuml
-legend top
-{{
-salt
+!definelong SearchAccordionView
 {
     <b>Action Buttons:
 
-    {[New query]}
+   {[New query]}
 
-    ---
-    {* Accordion Query #1 }
-    {
-        <b>Action Buttons:
+   ---
+   {* Accordion Query #1 }
+   {
+       [X] Current extent
+       { ^CSV^ | [ Export] |   [Edit] | [Style] |  }
 
-        { [CSV Export] |  [Edit-Query] }
+       ---
+       <b>Results:
+       {#
+           Name | Description | Action-Buttons
+           Name #2 | Beschreibung #1  | { [Favorite] | [Locate] }
+           Name #2 | Beschreibung #2  | { [Favorite] | [Locate] }
+       }
+   }
+   ---
+   {* Accordion Query #2 }
+   ---
+   {* Accordion Query #3 }
 
-        ---
-        <b>Results:
-        {#
-            Name | Description | Action-Buttons
-            Name #2 | Beschreibung #1  | { [Favorite] | [Locate] }
-            Name #2 | Beschreibung #2  | { [Favorite] | [Locate] }
-        }
-    }
-    ---
-    {* Accordion Query #2 }
-    ---
-    {* Accordion Query #3 }
+   {
+       [ ] Current extent
+       { ^XLS^ | [ Export] |   [Edit] | [Style] |  }
 
-    {
-        <b>Action Buttons:
 
-        { [CSV Export] |  [Edit-Query] }
+       <b>Results:
 
-        <b>Results:
-
-        {#
-            Name | Description | Action-Buttons
-            Name #3 | Beschreibung #1  | { [Favorite] | [Locate] }
-            Name #2 | Beschreibung #2  | { [Favorite] | [Locate] }
-            Name #3 | Beschreibung #3  | { [Favorite] | [Locate] }
-        }
-
-        {# Detail beschreibung}
-    }
-
+       {#
+           Name | Description          | Action-Buttons
+           Name #3 | Beschreibung #1   | { [Favorite] | [Locate] }
+           Name #2 | Beschreibung #2   | { [Favorite] | [Locate] }
+           Name #3 | Beschreibung #3   | { [Favorite] | [Locate] }
+       }
+       {*
+          **Name**: Name #3 |
+          **Beschreibung**: Details
+       }
+   }
 }
-}}
-end legend
+!enddefinelong
+
+!ifdef SALT
+!else
+    legend
+    {{
+    salt
+       SearchAccordionView
+    }}
+    end legend
+!endif
 @enduml

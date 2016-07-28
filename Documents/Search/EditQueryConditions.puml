@@ -1,0 +1,42 @@
+@startuml
+
+!definelong EditQueryConditionsView
+{
+    {+
+      {/ General |  Source | <b>Fields | Conditions }
+       --
+      {
+          {
+            <b>Add display field :
+            {
+                Field name      | ^name^
+                Title (alias)   | "Name"
+
+            }
+            {[<&plus> Add field]}
+
+          } | . |
+          {#
+            <b>Field Name | <b>Title | <b>Action
+            name        | "Name"          |[<&trash>]
+            description | "Beschreibung"  |[<&trash>]
+            km          | "Entfernung"    |[<&trash>]
+
+          }
+      }
+      ---
+      {   [Cancel] | [ Save ]}
+    }
+}
+!enddefinelong
+
+!ifdef display
+!else
+    legend
+    {{
+    salt
+       EditQueryConditionsView
+    }}
+    end legend
+!endif
+@enduml
