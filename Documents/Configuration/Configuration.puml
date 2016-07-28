@@ -1,0 +1,53 @@
+@startuml
+!include ../styles.puml
+
+package Mapbender <<Frame>> {
+  package ConfigurationBundle <<Frame>> {
+
+    package Entity <<Frame>> {
+        class ConfigurationBase {
+            + id
+            + parentId
+
+            -- Key/Value --
+            + type
+            + key
+            + value
+
+            -- History --
+            + creationDate
+            + userId
+
+            -- Scope --
+            + scope
+        }
+    }
+
+    legend
+        **Configuration ERM**
+        {{
+        salt
+        {#
+            ** ID **    | ** PID ** | ** Type **                    | ** KeyName ** | ** Key Value **   | ** UserId **      |** CreationDate **  |** Scope**
+            1           | 0         | Mapbender/Application[]       |  --           | --                | --                |--                  | global
+            2           | 2         | Mapbender/Application         |  ID           | 1                 | 1                 |--                  | global
+            2           | 2         | string                        |  name         | app #1            | 1                 |--                  | global
+            2           | 2         | string                        |  path         | app_1             | 1                 |--                  | global
+        }
+        }}
+    endlegend
+
+
+    package Component <<Frame>> {
+        class ConfigurationComponent {
+            + getById( id, scope = 'global' ) : Array|Object
+            + getByKey( key, parentId ) : Array:Object
+            + saveForParent ( parentId, values )
+            + saveByKey( key, value, parentId, type)
+            + save(key, value, id, parentId, type)
+        }
+    }
+  }
+}
+
+@enduml
