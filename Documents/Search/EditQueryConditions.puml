@@ -3,29 +3,29 @@
 !definelong EditQueryConditionsView
 {
     {+
-      {/ General |  Source | <b>Fields | Conditions }
-       --
-      {
-          {
-            <b>Add display field :
-            {
-                Field name      | ^name^
-                Title (alias)   | "Name"
+        {/ General |  Source | Fields | <b>Conditions }
+        ---
+        {
+           {
+             <b>Add condition:
+             {
+                 Field       | ^name^
+                 Operator    | ^LIKE^
+                 Value       | "mustermann"
 
-            }
-            {[<&plus> Add field]}
+             }
+             {[<&plus> Add condition]}
 
-          } | . |
-          {#
-            <b>Field Name | <b>Title | <b>Action
-            name        | "Name"          |[<&trash>]
-            description | "Beschreibung"  |[<&trash>]
-            km          | "Entfernung"    |[<&trash>]
+           } | . | {#
+             <b>Field Name | <b>Operator | <b>Value      | <b>Action
+             name        | LIKE          | "mustermann"  |[<&trash>]
+             description | NOT LIKE      | "about"       |[<&trash>]
+             km          | >=            | "20"          |[<&trash>]
 
-          }
-      }
-      ---
-      {   [Cancel] | [ Save ]}
+           }
+        }
+        ---
+        { [Cancel] | [ Save ]}
     }
 }
 !enddefinelong
