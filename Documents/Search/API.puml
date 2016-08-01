@@ -1,0 +1,35 @@
+@startuml
+
+
+package Mapbender <<Frame>> {
+  package SearchBundle <<Frame>> {
+   package SearchBundleEntity <<Frame>> {
+
+      class SearchConfiguration <extends Entity> {
+        # id: Int
+        # title: String
+        # target: String = "map"
+        # featureTypes: FeatureType[]
+        # formTemplate: <<YAML>> String
+      }
+    }
+
+    package SearchBundleElement <<Frame>> {
+      class SearchElement <extends HTMLElement>{
+         # getCurrentUser():User
+         __ Configuration Management __
+         # getConfig() :  SearchConfiguration
+         # setConfig(SearchConfiguration config)
+         __ API __
+         + getQueries(int userId):Query[]
+         + saveQuery(Query query):Query
+         + removeQuery(int queryId):bool
+         + executeQuery(int queryId, Geometry extent = null): <<GeoJSON>> String
+         + export(int queryId, Geometry extent = null, formatType:string = 'json'): mixed
+      }
+    }
+  }
+  SearchElement .. SearchConfiguration
+}
+
+@enduml

@@ -1,0 +1,82 @@
+@startuml
+
+package Mapbender <<Frame>> {
+  package FeatureStyleBundle <<Frame>> {
+    package FeatureStyleEntity <<Frame>>{
+
+      ' For more info:
+      ' http://docs.openlayers.org/library/feature_styling.html
+
+      class Style <extends Entity>{
+        # id:int
+
+        --Border--
+        + borderSize:int
+        + borderColor:string
+        + borderAlpha:int
+        --Background--
+        + backgroundSize:int
+        + backgroundColor:string
+        + backgroundAlpha:int
+        + backgroundImage:string
+        --Graphic--
+        + externalGraphic:string = '${thumbnail}'
+        + graphicWidth: string
+        + graphicHeight: string
+        + graphicOpacity: string
+        + graphicXOffset: string
+        + graphicYOffset: string
+        + graphicName: string
+        -- Vector --
+        + fillOpacity: string
+        + fillColor: string
+        + strokeColor: string
+        + strokeOpacity: string
+        + strokeWidth: string
+        + strokeLinecap: string
+        + strokeDashstyle: string
+        + pointRadius: int
+        -- Misc --
+        + pointerEvents: string
+        + cursor: string
+        + rotation: string
+        + display: string
+        ---
+        + toJson(): <<json>> String
+      }
+
+      class StyleMap <extends Entity>{
+        # id:int
+        --
+        - styles: Style[]
+        --
+        + list(): Style[]
+        + getStyle(name = 'default'): Style
+        + setStyle(Style style, String name = 'default'): Style
+        + removeStyle(Style style): Style
+        + removeStyleByName(String styleName): Style
+        --
+        + toJson(): <<json>> String
+
+      }
+    }
+
+    package FeatureStyleComponent <<Frame>> {
+      class StyleManager <extends DataSource> {
+        -- Symfony2 service name --
+        **mapbender.feature.style**
+        --
+        + getById(id: int):StyleMap
+        + save(StyleMap styleMap):StyleMap
+        + remove(int id):bool
+        --
+        + fromJson(String json): StyleMap
+      }
+    }
+  }
+  StyleManager . StyleMap
+  StyleMap "1" -> "*" Style
+}
+
+
+@enduml

@@ -2,12 +2,12 @@
 
 title Creating or editing query
 
-!include ../styles.puml
-!include ../utils.puml
-!include EditQueryGeneral.puml
-!include EditQuerySource.puml
-!include EditQueryFields.puml
-!include EditQueryConditions.puml
+!include styles.puml
+!include utils.puml
+!include Queries/EditQueryGeneral.puml
+!include Queries/EditQuerySource.puml
+!include Queries/EditQueryFields.puml
+!include Queries/EditQueryConditions.puml
 
 (*) --> [open query edit dialog] display(EditQueryGeneralView)
 -> display(EditQuerySourceView)
@@ -45,6 +45,7 @@ partition Actions {
         --> [no] Highlight wrong fields
         --> Notify error messages
         --> Let display dialog on the same state
+
        endif
    }
 

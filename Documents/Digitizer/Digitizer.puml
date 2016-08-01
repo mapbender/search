@@ -1,0 +1,18 @@
+@startuml
+
+package Mapbender <<Frame>> {
+  package DigitizerBundle <<Frame>> {
+    package Entity <<Frame>> {
+        class Configuration <extend Entity> {
+           + hasFeatures
+        }
+    }
+    package Component <<Frame>> {
+    }
+    package Element <<Frame>> {
+    }
+  }
+
+}
+
+@enduml

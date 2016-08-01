@@ -1,0 +1,73 @@
+@startuml
+
+
+package Mapbender <<Frame>> {
+  package SearchBundle <<Frame>> {
+   package SearchBundleEntity <<Frame>> {
+      class Query <extends Entity>{
+        # id: int
+        # user: User
+        # createDate: timestamp
+        -- Settings --
+        # name: String
+        # featureType: FeatureType
+        # conditions: QueryCondition[]
+        # fields: Fields[]
+        # styleMap: StyleMap
+        --
+        # sql: <<SQL>> String
+        # whereSql: <<SQL>> String
+        -- User --
+        + getUser() User
+        + setUser(User user)
+        __ Export __
+        + toSQL(): <<SQL>> String
+      }
+
+      class Field {
+        # id: int
+        # name: String
+        # label: String
+        # type: String
+        + getName() String
+        + setName(String text)
+        + getLabel() String
+        + setLabel(String text)
+        + getType() String
+        + setType(String text)
+      }
+
+      class QueryCondition <extends Entity>{
+        # id: int
+        # field: Field
+        # operator: String
+        # value: String
+        -- Own SQL --
+        # sql: String
+        --
+        + toSQL()
+      }
+    }
+    package SearchBundleComponent <<Frame>>{
+      class QueryManager <extends Container>{
+          -- Symfony2 service name --
+          **mapbender.query**
+          --
+          + list(User user = null ):Query[]
+          + getById(int id): Query
+          + save(Query query) : Query
+          + remove(int queryId): bool
+          + execute(Query query): Statement
+          + getQueryStyleMap(Query query):StyleMap
+      }
+    }
+  }
+  QueryCondition "*" --> "1" Query
+  QueryManager .  Query
+  QueryCondition "1" <--  "*" Field
+  Query "1" <-  "*" Field
+
+}
+
+
+@enduml

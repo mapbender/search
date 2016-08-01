@@ -1,47 +1,49 @@
 @startuml
 package Mapbender <<Frame>> {
   package ConfigurationBundle <<frame>> {
-    package entity <<frame>> {
+    package ConfigurationEntity <<frame>> {
         class Configuration <extends Entity> {
             + id: int
             + parentId: int
+            # children: Configuration[] = null
             -- key/value --
             + type: String
             + key: String
             + value: String
 
             -- history --
-            + creationDate
+            + creationDate: DateTime
             + user: User
 
             -- scope --
-            + scope: String
-
+            + scope: String = 'global'
             --
-            + toArray() : array
-            + getChildren() : array
-            + getParent() : array
+            + toArray() : Array
         }
     }
 
-    package component <<frame>> {
+    package ConfigurationComponent <<frame>> {
         class ConfigurationComponent <extends ContainerAware> {
-            + name: mapbender.configuration <<Symfony2 service>>
+            -- Symfony2 service name --
+            **mapbender.configuration**
             --
-            + getByid( id, scope = 'global' ) : Configuration
-            + getBykey( key, parentId ) : Configuration
-            + getByPath( path = "/", parentId = 0) : Configuration
-            + getChildren( parentId = 0)
+            + getById( id, scope = 'global' ) : Configuration
+            + getByKey( key, parentId = 0 ) : Configuration[]
+            + getByPath( path = "/", parentId = 0) : Configuration[]
+            + getChildren( id = 0) Configuration[]
+            + getParent( id = 0) Configuration
             -- Save --
             + save(value: Configuration) : Configuration
-            + saveByParent ( parentId, values ) : Configuration
+            + saveByParent ( Configuration[] values, parentId = 0) : Configuration
             + saveByKey( key, value, parentId = 0, type = null) : Configuration
             -- Remove --
-            + remove(config: Configuration) : Configuration
-            + removeById(id) : Configuration
+            + remove(Configuration config) : bool
+            + removeById(int id) : bool
         }
     }
   }
+
+  Configuration .. ConfigurationComponent
 }
 
 @enduml

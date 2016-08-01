@@ -1,0 +1,15 @@
+@startuml
+
+package Mapbender <<Frame>> {
+
+  package FeatureInfoBundle <<Frame>> {
+    package Entity <<Frame>> {
+    }
+    package Component <<Frame>> {
+    }
+    package Element <<Frame>> {
+    }
+  }
+}
+
+@enduml
