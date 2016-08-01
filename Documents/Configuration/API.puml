@@ -1,28 +1,21 @@
 @startuml
-!include ../styles.puml
-!include ../utils.puml
-!include ConfigurationDialog.puml
-!include ConfigurationTable.puml
-!include ConfigurationTree.puml
-
-
 package Mapbender <<Frame>> {
   package ConfigurationBundle <<frame>> {
     package entity <<frame>> {
-        class Configuration {
-            + id
-            + parentid
+        class Configuration <extends Entity> {
+            + id: int
+            + parentId: int
             -- key/value --
-            + type
-            + key
-            + value
+            + type: String
+            + key: String
+            + value: String
 
             -- history --
-            + creationdate
-            + userid
+            + creationDate
+            + user: User
 
             -- scope --
-            + scope
+            + scope: String
 
             --
             + toArray() : array
@@ -31,21 +24,10 @@ package Mapbender <<Frame>> {
         }
     }
 
-    legend
-        ** API array structure**
-        ----
-        print(ConfigurationTreeView)
-        ----
-        <b>ERM (Sqlite)
-        print(ConfigurationTableView)
-        ----
-        <b>Edit-Dialog
-        print(ConfigurationDialogView)
-    endlegend
-
-
     package component <<frame>> {
-        class ConfigurationComponent {
+        class ConfigurationComponent <extends ContainerAware> {
+            + name: mapbender.configuration <<Symfony2 service>>
+            --
             + getByid( id, scope = 'global' ) : Configuration
             + getBykey( key, parentId ) : Configuration
             + getByPath( path = "/", parentId = 0) : Configuration
@@ -57,7 +39,6 @@ package Mapbender <<Frame>> {
             -- Remove --
             + remove(config: Configuration) : Configuration
             + removeById(id) : Configuration
-            ---
         }
     }
   }
