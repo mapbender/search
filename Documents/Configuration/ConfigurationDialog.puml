@@ -1,0 +1,42 @@
+@startuml
+!definelong ConfigurationDialogView
+{
+    {
+        {T+
+          + Configuration Options
+          ++ * <b>Text-Option
+          ++ Check-Box-Option
+          ++ JavaScript-Option
+
+        } | .  | {
+            {
+
+               <b>Option-Name: | Text-Option
+               <b>Last-Change: | 2016-07-29 09:01
+               <b>User:        | Administrator
+               -- | --
+
+            }
+             {+
+             Example editor text for the selected
+             option.
+             .
+             .
+            }
+        }
+        ---
+        { [Cancel] | [ Save ]}
+    }
+}
+!enddefinelong
+
+!ifdef display
+!else
+    legend
+    {{
+    salt
+       ConfigurationDialogView
+    }}
+    end legend
+!endif
+@enduml

@@ -1,50 +1,63 @@
 @startuml
 !include ../styles.puml
+!include ../utils.puml
+!include ConfigurationDialog.puml
+!include ConfigurationTable.puml
+!include ConfigurationTree.puml
+
 
 package Mapbender <<Frame>> {
-  package ConfigurationBundle <<Frame>> {
-
-    package Entity <<Frame>> {
-        class ConfigurationBase {
+  package ConfigurationBundle <<frame>> {
+    package entity <<frame>> {
+        class Configuration {
             + id
-            + parentId
-
-            -- Key/Value --
+            + parentid
+            -- key/value --
             + type
             + key
             + value
 
-            -- History --
-            + creationDate
-            + userId
+            -- history --
+            + creationdate
+            + userid
 
-            -- Scope --
+            -- scope --
             + scope
+
+            --
+            + toArray() : array
+            + getChildren() : array
+            + getParent() : array
         }
     }
 
     legend
-        **Configuration ERM**
-        {{
-        salt
-        {#
-            ** ID **    | ** PID ** | ** Type **                    | ** KeyName ** | ** Key Value **   | ** UserId **      |** CreationDate **  |** Scope**
-            1           | 0         | Mapbender/Application[]       |  --           | --                | --                |--                  | global
-            2           | 2         | Mapbender/Application         |  ID           | 1                 | 1                 |--                  | global
-            2           | 2         | string                        |  name         | app #1            | 1                 |--                  | global
-            2           | 2         | string                        |  path         | app_1             | 1                 |--                  | global
-        }
-        }}
+        ** API array structure**
+        ----
+        print(ConfigurationTreeView)
+        ----
+        <b>ERM (Sqlite)
+        print(ConfigurationTableView)
+        ----
+        <b>Edit-Dialog
+        print(ConfigurationDialogView)
     endlegend
 
 
-    package Component <<Frame>> {
+    package component <<frame>> {
         class ConfigurationComponent {
-            + getById( id, scope = 'global' ) : Array|Object
-            + getByKey( key, parentId ) : Array:Object
-            + saveForParent ( parentId, values )
-            + saveByKey( key, value, parentId, type)
-            + save(key, value, id, parentId, type)
+            + getByid( id, scope = 'global' ) : Configuration
+            + getBykey( key, parentId ) : Configuration
+            + getByPath( path = "/", parentId = 0) : Configuration
+            + getChildren( parentId = 0)
+            -- Save --
+            + save(value: Configuration) : Configuration
+            + saveByParent ( parentId, values ) : Configuration
+            + saveByKey( key, value, parentId = 0, type = null) : Configuration
+            -- Remove --
+            + remove(config: Configuration) : Configuration
+            + removeById(id) : Configuration
+            ---
         }
     }
   }

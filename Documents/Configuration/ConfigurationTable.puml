@@ -1,0 +1,23 @@
+@startuml
+!definelong ConfigurationTableView
+{
+    {#
+        ** id **    | ** pid ** | ** type **                    | ** keyname ** | ** key value **   | ** userid **      |** creationdate **  |** scope**
+        1           | 0         | mapbender/application[]       |  applcations  | --                | --                |--                  | global
+        2           | 2         | mapbender/application         |  id           | 1                 | 1                 |--                  | global
+        2           | 2         | string                        |  name         | app #1            | 1                 |--                  | global
+        2           | 2         | string                        |  path         | app_1             | 1                 |--                  | global
+    }
+}
+!enddefinelong
+
+!ifdef display
+!else
+    legend
+    {{
+    salt
+       ConfigurationTableView
+    }}
+    end legend
+!endif
+@enduml

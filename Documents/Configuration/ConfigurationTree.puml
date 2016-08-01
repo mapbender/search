@@ -1,0 +1,27 @@
+@startuml
+!definelong ConfigurationTreeView
+{
+    {T+
+         + applications:
+         ++ - application:
+         +++ id: <i>1
+         +++ name: <i>app #1
+         +++ path: <i>app_1
+         ++ - application:
+         +++ id: <i>2
+         +++ name: <i>app #2
+         +++ path: <i>app_2
+    }
+}
+!enddefinelong
+
+!ifdef display
+!else
+    legend
+    {{
+    salt
+       ConfigurationTreeView
+    }}
+    end legend
+!endif
+@enduml
