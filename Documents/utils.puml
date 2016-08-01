@@ -19,4 +19,11 @@ salt
 "
 !enddefinelong
 
+!definelong print(viewName)
+{{
+salt
+    ##viewName
+}}
+!enddefinelong
+
 @enduml
