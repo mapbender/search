@@ -1,4 +1,5 @@
 @startuml
+
 !include styles.puml
 !include utils.puml
 !include Configuration/Dialog.puml
@@ -16,7 +17,7 @@ legend
     ----
     <b>Edit-Dialog
     print(ConfigurationDialogView)
-endlegend
+end legend
 
 
 @enduml
