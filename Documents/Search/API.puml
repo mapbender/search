@@ -1,6 +1,4 @@
 @startuml
-
-
 package Mapbender <<Frame>> {
   package SearchBundle <<Frame>> {
    package SearchBundleEntity <<Frame>> {

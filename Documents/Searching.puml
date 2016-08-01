@@ -1,0 +1,19 @@
+@startuml
+!include styles.puml
+!include utils.puml
+
+!include Configuration/Dialog.puml
+!include Configuration/Table.puml
+!include Configuration/Tree.puml
+
+!include FeatureStyle/API.puml
+!include Configuration/API.puml
+!include Search/API.puml
+!include Queries/API.puml
+
+SearchElement <.. QueryManager
+SearchElement <.. ConfigurationComponent
+SearchElement .. StyleMap
+Query "1" <-- "1" StyleMap
+
+@enduml
