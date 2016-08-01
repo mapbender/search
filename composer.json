@@ -1,21 +1,32 @@
 {
-    "name": "mapbender/search",
-    "description": "Mapbender search element",
-    "keywords": ["mapbender", "search", "searching", "gis"],
-    "type": "library",
-    "license": "MIT",
-    "authors": [
-        {"name": "Andriy Oblivantsev",  "email": "andriy.oblivantsev@wheregroup.com"}
-    ],
-    "require": {
-        "php": ">=5.3.3",
-        "mapbender/data-source": "0.x"
-    },
-    "config": {
-        "bin-dir": "bin"
-    },
-    "autoload": {
-        "psr-0": {"Mapbender\\SearchBundle": "."}
-    },
-    "target-dir": "Mapbender/SearchBundle"
+  "name": "mapbender/search",
+  "description": "Mapbender search element",
+  "keywords": [
+    "mapbender",
+    "search",
+    "searching",
+    "gis"
+  ],
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Andriy Oblivantsev",
+      "email": "andriy.oblivantsev@wheregroup.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.3.3",
+    "mapbender/data-source": "0.x",
+    "eslider/plantuml-proxy": "0.0.*"
+  },
+  "config": {
+    "bin-dir": "bin"
+  },
+  "autoload": {
+    "psr-0": {
+      "Mapbender\\SearchBundle": "."
+    }
+  },
+  "target-dir": "Mapbender/SearchBundle"
 }
