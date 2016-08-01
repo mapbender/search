@@ -1,2 +1,4 @@
 # IDEA Project Files
 .idea/
+vendor/
+bin/
