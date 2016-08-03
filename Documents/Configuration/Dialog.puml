@@ -3,29 +3,57 @@
 {
     {
         {T+
-          + Configuration Options
-          ++ * <b>Text-Option
-          ++ Check-Box-Option
-          ++ JavaScript-Option
+          + <u>Configuration options root
+          ++ <u>Applications
+          +++ <u>Application #1
+          ++++ <u>Elements
+          +++++ <u>Element #1
+          ++++++ option #1
+          ++++++ <u>option group #1
+          +++++++ sub option group #1
+          ++++++++ sub/sub option #1
+          ++++++++ <b>sub/sub option #2
+          ++++++ option #2
+          ++ Print
+          +++ Formats
+          ++++ A4
+          ++++ A3
+          ++ Proxy
+          +++ Host
+          +++ Port
+          ++ Events
+          +++ onBeforeStart
+          +++ **onAfterLogout**
+
+
 
         } | .  | {
             {
 
-               <b>Option-Name: | Text-Option
+               <b>Option-Name: | Applications > Application #1 > ...  >sub/sub option #2
                <b>Last-Change: | 2016-07-29 09:01
                <b>User:        | Administrator
                -- | --
 
             }
              {+
-             Example editor text for the selected
-             option.
+             Example editor text for the selected option.
+             .
+             .
+             .
+             .
+             .
+             .
+             .
+             .
+             .
+             .
              .
              .
             }
         }
         ---
-        { [Cancel] | [ Save ]}
+      {   [<&circle-x> Cancel] | [<&circle-check> Save ]}
     }
 }
 !enddefinelong
