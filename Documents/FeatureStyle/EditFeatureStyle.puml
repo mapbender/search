@@ -1,0 +1,69 @@
+@startuml
+
+!definelong EditQueryConditionsView
+{
+  {+
+    {
+       {
+         Theme      | {^IPE^ |[<&menu>]}
+         --|--
+         **Border**
+         --|--
+         Size   | { "1" | <&elevator>}
+         Alpha  | { "1" | <&elevator>}
+         Color  | {^green^|[<&eyedropper>]}
+         --|--
+         **Background**
+         --|--
+         Size   | "default" 
+         Color  | {^green^|[<&eyedropper>]}
+         Alpha  | 1 <&elevator>
+         Image  | "URL"
+         --|--
+         **Graphic**
+         --|--
+         Name             | "   "
+         Width            | "   "
+         Height           | "   "
+         Opacity          | { "1" | <&elevator>}
+         X Offset         | { "0" | <&elevator>}
+         Y Offset         | { "0" | <&elevator>}
+         External graphic | "URL"
+         --|--
+         **Stroke**
+         --|--
+          Color     | {^green^|[<&eyedropper>]}
+          Opacity   | { "1" | <&elevator>}
+          Width     | "  "
+          Linecap   | ^Round^
+          Dashstyle | ^Solid^
+         --|--
+         **Fill**
+         --|--
+         Opacity |  { "1" | <&elevator>}
+         Color | {^green^|[<&eyedropper>]}
+         --|--
+         **Misc.**
+         --|--
+         Point Radius | { "1" | <&elevator>}
+         cursor       | ^pointer^
+         rotation     | "0° "
+         display      | [X] Show
+       }
+    }
+    ---
+    { [Reset] | [Cancel] | [ Save ]}
+  }
+}
+!enddefinelong
+
+!ifdef display
+!else
+    legend
+    {{
+    salt
+       EditQueryConditionsView
+    }}
+    end legend
+!endif
+@enduml

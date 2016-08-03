@@ -1,0 +1,28 @@
+@startuml
+
+!definelong CreateFeatureStyleView
+{
+  {+
+    {
+       {
+         Name         |.  |  "IPE"
+         --           |-- |--
+         [X] Publish
+       }
+    }
+    ---
+    { [Delete] | [Cancel]  | [ Save ] }
+  }
+}
+!enddefinelong
+
+!ifdef display
+!else
+    legend
+    {{
+    salt
+       CreateFeatureStyleView
+    }}
+    end legend
+!endif
+@enduml
