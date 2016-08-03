@@ -66,16 +66,27 @@ package Mapbender <<Frame>> {
         -- Symfony2 service name --
         **mapbender.feature.style**
         --
-        + getById(id: int):StyleMap
-        + save(StyleMap styleMap):StyleMap
-        + remove(int id):bool
+          + get(id: int):StyleMap
+          + save(StyleMap styleMap):StyleMap
+          + remove(int id):bool
         --
         + fromJson(String json): StyleMap
       }
     }
+    package FeatureStyleController <<Frame>> {
+        class StyleController <extends DataSource> {
+          -- Symfony2 route --
+          **/styles/**
+          --
+          + get(int id) <<JSON>>
+          + update(array args) <<JSON>>
+          + remove(int id)  <<JSON>>
+        }
+      }
   }
-  StyleManager . StyleMap
-  StyleMap "1" -> "*" Style
+  StyleManager .. StyleMap
+  StyleManager .. StyleController
+  StyleMap "1" --> "*" Style
 }
 
 

@@ -52,7 +52,7 @@
        }
     }
     ---
-    { [Reset] | [Cancel] | [ Save ]}
+    { [ Reset] | [Cancel] | [ Save ]}
   }
 }
 !enddefinelong

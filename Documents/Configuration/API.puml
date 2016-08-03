@@ -2,48 +2,74 @@
 package Mapbender <<Frame>> {
   package ConfigurationBundle <<frame>> {
     package ConfigurationEntity <<frame>> {
-        class Configuration <extends Entity> {
-            + id: int
-            + parentId: int
-            # children: Configuration[] = null
-            -- key/value --
-            + type: String
-            + key: String
-            + value: String
+      class Configuration <extends Entity> {
+        + id: int
+        + parentId: int
+        # children: Configuration[] = null
+        -- key/value --
+        + type: String
+        + key: String
+        + value: String
 
-            -- history --
-            + creationDate: DateTime
-            + user: User
+        -- history --
+        + creationDate: DateTime
+        + user: User
 
-            -- scope --
-            + scope: String = 'global'
-            --
-            + toArray() : Array
-        }
+        -- scope --
+        + scope: String = 'global'
+        --
+        + toArray() : Array
+      }
     }
 
     package ConfigurationComponent <<frame>> {
-        class ConfigurationComponent <extends ContainerAware> {
-            -- Symfony2 service name --
-            **mapbender.configuration**
-            --
-            + getById( id, scope = 'global' ) : Configuration
-            + getByKey( key, parentId = 0 ) : Configuration[]
-            + getByPath( path = "/", parentId = 0) : Configuration[]
-            + getChildren( id = 0) Configuration[]
-            + getParent( id = 0) Configuration
-            -- Save --
-            + save(value: Configuration) : Configuration
-            + saveByParent ( Configuration[] values, parentId = 0) : Configuration
-            + saveByKey( key, value, parentId = 0, type = null) : Configuration
-            -- Remove --
-            + remove(Configuration config) : bool
-            + removeById(int id) : bool
-        }
+      class ConfigurationComponent <extends ContainerAware> {
+        -- Symfony2 service name --
+        **mapbender.configuration**
+        --
+        + getById( id, scope = 'global' ) : Configuration
+        + getByKey( key, parentId = 0 ) : Configuration[]
+        + getByPath( path = "/", parentId = 0) : Configuration[]
+        + getChildren( id = 0) Configuration[]
+        + getParent( id = 0) Configuration
+        -- Save --
+        + save(value: Configuration) : Configuration
+        + saveByParent ( Configuration[] values, parentId = 0) : Configuration
+        + saveByKey( key, value, parentId = 0, type = null) : Configuration
+        -- Remove --
+        + remove(Configuration config) : bool
+        + removeById(int id) : bool
+      }
+    }
+    package ConfigurationController <<frame>> {
+      class ConfigurationController <extends ContainerController> {
+        -- Symfony2 route name --
+        /configuration/
+        --
+        GET /configuration/{id}:
+        + getById( id, scope = 'global' ) : Configuration
+        GET /configuration/{key}[/{parentId}]:
+        + getByKey( key, parentId = 0 ) : Configuration[]
+        GET /configuration/path/{path}[/{pid}]:
+        + getByPath( path = "/", parentId = 0) : Configuration[]
+        GET /configuration/children/{id}:
+        + getChildren( id = 0) Configuration[]
+        GET /configuration/parent/{id}:
+        + getParent( id = 0) Configuration
+        -- Save --
+        POST values /configuration/{pid}
+        + saveByParent ( Configuration[] values, parentId = 0) : Configuration
+        POST value /configuration/{pid}[/{type}]
+        + saveByKey( key, value, parentId = 0, type = null) : Configuration
+        -- Remove --
+        DELETE /configuration/{id}
+        + removeById(int id) : bool
+      }
     }
   }
 
   Configuration .. ConfigurationComponent
+  ConfigurationController .. ConfigurationComponent
 }
 
 @enduml

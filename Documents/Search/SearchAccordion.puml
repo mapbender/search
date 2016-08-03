@@ -9,14 +9,14 @@
    {* Accordion Query #1 }
    {
        [X] Current extent
-       { ^CSV^ | [ <&data-transfer-download>] |   [<&pincel> Edit] | [Style] |  }
+       { ^CSV^ | [ <&data-transfer-download> Export] |   [Edit] | [Style] |  }
 
        ---
        <b>Results:
        {#
-           Action-Buttons | Name | Description
-           { [<&star>] | [Locate] } | Name #2 | Beschreibung #1
-           { [<&star>] | [Locate] } | Name #2 | Beschreibung #1
+           Buttons | Name | Description
+           { [<&star>] | [<&map-marker>] } | Name #2 | Beschreibung #1
+           { [<&star>] | [<&map-marker>] } | Name #2 | Beschreibung #1
        }
    }
    ---
@@ -26,17 +26,21 @@
 
    {
        [ ] Current extent
-       { ^XLS^ | [ Export] |   [Edit] | [Style] |  }
+       { ^XLS^ | [ <&data-transfer-download> Export] |   [Edit] | [Style] |  }
 
 
        <b>Results:
        {#
-           Action-Buttons | Name | Description
-           { [Favorite] | [Locate] } | Name #2 | Beschreibung #1
-           { [Favorite] | [Locate] } | Name #2 | Beschreibung #1
-           { [Favorite] | [Locate] } | Name #2 | Beschreibung #1
-           { [Favorite] | [Locate] } | Name #2 | Beschreibung #1
-           { [Favorite] | [Locate] } | Name #2 | Beschreibung #1
+            Buttons | Name | Description
+           { [<&star>] | [<&map-marker>] } | Name #2 | Beschreibung #1
+           { [<&star>] | [<&map-marker>] } | Name #2 | Beschreibung #1
+           { [<&star>] | [<&map-marker>] } | Name #2 | Beschreibung #1
+           { [<&star>] | [<&map-marker>] } | Name #2 | Beschreibung #1
+           { [<&star>] | [<&map-marker>] } | Name #2 | Beschreibung #1
+       }
+       {+
+         Result details view example   by click
+         on the result row.
        }
        {*
           **Name**: Name #3 |
