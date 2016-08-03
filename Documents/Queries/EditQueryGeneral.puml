@@ -7,11 +7,11 @@
       {
         Query-Name | "new query #1"
         Extent only | [X] yes
-        Style | { ^Theme^ | [Edit] }
+        Style | { ^Theme^ | [<&menu>] }
 
       }
       --
-      {   [Cancel] | [ Save ]}
+      {   [<&circle-x> Cancel] | [<&circle-check> Save ]}
     }
 }
 !enddefinelong

@@ -9,6 +9,7 @@ package Mapbender <<Frame>> {
         # target: String = "map"
         # featureTypes: FeatureType[]
         # formTemplate: <<YAML>> String
+        # actionButtonsAlignment: String = "right"
       }
     }
 

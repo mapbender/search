@@ -3,20 +3,20 @@
 {
     <b>Action Buttons:
 
-   {[New query]}
+   {[<&pus> New query]}
 
    ---
    {* Accordion Query #1 }
    {
        [X] Current extent
-       { ^CSV^ | [ Export] |   [Edit] | [Style] |  }
+       { ^CSV^ | [ <&data-transfer-download>] |   [<&pincel> Edit] | [Style] |  }
 
        ---
        <b>Results:
        {#
-           Name | Description | Action-Buttons
-           Name #2 | Beschreibung #1  | { [Favorite] | [Locate] }
-           Name #2 | Beschreibung #2  | { [Favorite] | [Locate] }
+           Action-Buttons | Name | Description
+           { [<&star>] | [Locate] } | Name #2 | Beschreibung #1
+           { [<&star>] | [Locate] } | Name #2 | Beschreibung #1
        }
    }
    ---
@@ -30,12 +30,13 @@
 
 
        <b>Results:
-
        {#
-           Name | Description          | Action-Buttons
-           Name #3 | Beschreibung #1   | { [Favorite] | [Locate] }
-           Name #2 | Beschreibung #2   | { [Favorite] | [Locate] }
-           Name #3 | Beschreibung #3   | { [Favorite] | [Locate] }
+           Action-Buttons | Name | Description
+           { [Favorite] | [Locate] } | Name #2 | Beschreibung #1
+           { [Favorite] | [Locate] } | Name #2 | Beschreibung #1
+           { [Favorite] | [Locate] } | Name #2 | Beschreibung #1
+           { [Favorite] | [Locate] } | Name #2 | Beschreibung #1
+           { [Favorite] | [Locate] } | Name #2 | Beschreibung #1
        }
        {*
           **Name**: Name #3 |

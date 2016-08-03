@@ -5,7 +5,7 @@
           {/ General |  <b>Source | Fields | Conditions }
           ---
           {
-            FeatureType | . | ^IPE^
+            FeatureType | . | ^IPE^ | [<&menu>]
           }
           { [Cancel] | [ Save ]}
     }
