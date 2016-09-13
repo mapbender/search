@@ -1,12 +1,13 @@
 <?php
 namespace Mapbender\SearchBundle\Entity;
 
+use Mapbender\DataSourceBundle\Entity\BaseConfiguration;
+
 /**
  * @author  Andriy Oblivantsev <eslider@gmail.com>
  */
 class SearchConfig extends BaseConfiguration
 {
-
     /** @var string Data source id or name */
     public $source = "default";
 
