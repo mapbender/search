@@ -1,5 +1,5 @@
 <?php
-namespace Mapbender\QuerySearchBundle;
+namespace Mapbender\SearchBundle;
 
 use Mapbender\CoreBundle\Component\MapbenderBundle;
 
