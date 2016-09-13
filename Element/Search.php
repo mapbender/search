@@ -6,6 +6,7 @@ use Doctrine\DBAL\Connection;
 use FOM\CoreBundle\Component\ExportResponse;
 use Mapbender\CoreBundle\Component\Application;
 use Mapbender\CoreBundle\Entity\Element;
+use Mapbender\DataSourceBundle\Element\BaseElement;
 use Mapbender\DataSourceBundle\Entity\DataItem;
 use Mapbender\SearchBundle\Entity\SearchConfig;
 use Mapbender\SearchBundle\Util\HtmlExportResponse;
@@ -110,10 +111,10 @@ class Search extends BaseElement
     {
         return array(
             'css'   => array(
-                '@MapbenderSearchBundle/Resources/styles/Search.element.scss'
+                '@MapbenderSearchBundle/Resources/styles/search.element.scss'
             ),
             'js'    => array(
-                '@MapbenderSearchBundle/Resources/public/Search.element.js'
+                '@MapbenderSearchBundle/Resources/public/search.element.js'
             ),
             'trans' => array(
                 'MapbenderSearchBundle:Element:Search.json.twig'
