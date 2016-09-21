@@ -62,6 +62,6 @@ class SearchAdminType extends AbstractType
             ->add('connectionFieldName', 'text', array('required' => true))
 
             ->add('allowPrint', 'checkbox', array('required' => false))
-            ->add('allowExport', 'checkbox', array('required' => false))
+            ->add('allowExport', 'checkbox', array('required' => false));
     }
 }
