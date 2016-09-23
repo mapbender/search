@@ -21,22 +21,4 @@ class MapbenderSearchBundle extends MapbenderBundle
             'Mapbender\SearchBundle\Element\Search'
         );
     }
-
-    /**
-     * @inheritdoc
-     */
-    public function getManagerControllers()
-    {
-        $trans = $this->container->get('translator');
-        return array(
-            array(
-                'weight' => 20,
-                'title'  => "FeatureType",
-                'route'  => 'mapbender_search_datastore_index',
-                'routes' => array(
-                    'mapbender_search_datastore',
-                ),
-            )
-        );
-    }
 }
