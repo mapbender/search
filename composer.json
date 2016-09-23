@@ -24,7 +24,7 @@
     "bin-dir": "bin"
   },
   "autoload": {
-    "psr-0": {
+    "psr-4": {
       "Mapbender\\SearchBundle": "."
     }
   }
