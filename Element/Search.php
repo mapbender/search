@@ -8,8 +8,8 @@ use Mapbender\CoreBundle\Component\Application;
 use Mapbender\CoreBundle\Entity\Element;
 use Mapbender\DataSourceBundle\Element\BaseElement;
 use Mapbender\DataSourceBundle\Entity\DataItem;
+use Mapbender\DataSourceBundle\Util\HtmlExportResponse;
 use Mapbender\SearchBundle\Entity\SearchConfig;
-use Mapbender\SearchBundle\Util\HtmlExportResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -100,7 +100,7 @@ class Search extends BaseElement
         return /** @lang XHTML */
             '<div
                 id="' . $this->getId() . '"
-                class="mb-element mb-element-Search modal-body"
+                class="mb-element mb-element-search modal-body"
                 title="' . _($this->getTitle()) . '"></div>';
     }
 
@@ -117,7 +117,7 @@ class Search extends BaseElement
                 '@MapbenderSearchBundle/Resources/public/search.element.js'
             ),
             'trans' => array(
-                'MapbenderSearchBundle:Element:Search.json.twig'
+                'MapbenderSearchBundle:Element:search.json.twig'
             )
         );
     }
@@ -251,9 +251,10 @@ class Search extends BaseElement
      * @param $configuration
      * @return \Mapbender\DataSourceBundle\Component\DataStore
      */
-    protected function getDataStore($configuration)
+    protected function getDataStore(SearchConfig $configuration)
     {
-        return $this->container->get("data.source")->get($configuration->source);
+        $dataStoreService = $this->container->get("features");
+        return $dataStoreService->get($configuration->source);
     }
 
     /**
