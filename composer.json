@@ -27,6 +27,5 @@
     "psr-0": {
       "Mapbender\\SearchBundle": "."
     }
-  },
-  "target-dir": "Mapbender/SearchBundle"
+  }
 }
