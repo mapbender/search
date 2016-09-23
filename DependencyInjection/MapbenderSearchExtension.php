@@ -15,10 +15,11 @@ class MapbenderSearchExtension extends Extension
 {
     public function load(array $configs, ContainerBuilder $container)
     {
-        //$loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
-        //$loader->load('services.xml');
-        $yamlFileLoader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
-        $yamlFileLoader->load('applications.yml');
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader->load('services.xml');
+
+        //$yamlFileLoader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        //$yamlFileLoader->load('config.yml');
     }
 
     public function getAlias()
