@@ -3,12 +3,10 @@ namespace Mapbender\SearchBundle\Element;
 
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\DBAL\Connection;
-use FOM\CoreBundle\Component\ExportResponse;
 use Mapbender\CoreBundle\Component\Application;
 use Mapbender\CoreBundle\Entity\Element;
 use Mapbender\DataSourceBundle\Element\BaseElement;
 use Mapbender\DataSourceBundle\Entity\DataItem;
-use Mapbender\DataSourceBundle\Util\HtmlExportResponse;
 use Mapbender\SearchBundle\Entity\SearchConfig;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -89,7 +87,7 @@ class Search extends BaseElement
      */
     public static function getFormTemplate()
     {
-        return 'SearchBundle:ElementAdmin:Search.html.twig';
+        return 'SearchBundle:ElementAdmin:search.html.twig';
     }
 
     /**
@@ -123,19 +121,19 @@ class Search extends BaseElement
     }
 
     /**
-     * @inheritdoc
-     */
-    public function getConfiguration()
-    {
-        return $this->getConfig()->toArray();
-    }
-
-    /**
      * @return SearchConfig
      */
     public function getConfig()
     {
         return new SearchConfig(parent::getConfiguration());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getConfiguration()
+    {
+        return $this->getConfig()->toArray();
     }
 
     /**
@@ -152,79 +150,16 @@ class Search extends BaseElement
         $defaultCriteria = array();
         $payload         = json_decode($requestService->getContent(), true);
         $request         = $requestService->getContent() ? array_merge($defaultCriteria, $payload ? $payload : $_REQUEST) : array();
+        $results         = array();
+        $queryManager    = $this->container->get("mapbender.query.manager");
 
         switch ($action) {
-            case 'select':
-                $results   = array();
-                $dataStore = $this->getDataStore($configuration);
-                foreach ($dataStore->search($request) as $dataItem) {
-                    $results[] = $dataItem->toArray();
-                }
-                break;
 
-            case 'export':
-                if (!$configuration->allowExport) {
-                    throw new \Error("Permission denied!");
-                }
-
-                $results = $this->executeQuery(intval($request["id"]));
-                return new ExportResponse($results, 'export-list', ExportResponse::TYPE_XLS);
-
-                break;
-
-            case 'exportHtml':
-                if (!$configuration->allowExport) {
-                    throw new \Error("Permission denied!");
-                }
-                $id      = intval($_REQUEST["id"]);
-                $results = $this->executeQuery($id);
-                $query   = $this->getQuery($id);
-                $title   = $query->getAttribute($configuration->titleFieldName);
-                $htmlExportResponse = new HtmlExportResponse($results, $title);
-                die($htmlExportResponse->getContent());
-                break;
-
-            case 'execute':
-
-                if (!$configuration->allowExecute) {
-                    throw new \Error("Permission denied!");
-                }
-                $results = $this->executeQuery(intval($request["id"]));
-                break;
-
+            // TODO:  check and validate
+            case 'validate':
+            case 'check...':
             case 'save':
-                if (!$configuration->allowCreate && !$configuration->allowSave) {
-                    throw new \Error("Permission denied!");
-                }
-                $dataStore = $this->getDataStore($configuration);
-                $dataItem = $dataStore->save($request["item"]);
-                if (!$dataItem) {
-                    throw new \Error("Can't get object by new ID. Wrong sequence setup?");
-                }
-                $results[] = $dataItem;
                 break;
-
-            case 'remove':
-                if (!$configuration->allowRemove) {
-                    throw new \Error("Permission denied!");
-                }
-                $dataStore = $this->getDataStore($configuration);
-                $results[] = $dataStore->remove($request["id"]);
-                break;
-
-            case 'connections':
-                $doctrine        = $this->container->get("doctrine");
-                $connectionNames = $doctrine->getConnectionNames();
-                $names           = array_keys($connectionNames);
-                $results         = array_combine($names, $names);
-                break;
-
-            default:
-                $results = array(
-                    array('errors' => array(
-                        array('message' => $action . " not defined!")
-                    ))
-                );
         }
 
         return new JsonResponse($results);
