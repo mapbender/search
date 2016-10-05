@@ -9,6 +9,14 @@
 
   .mapbender-element-result-table {
 
+    table.dataTable {
+      tbody > tr {
+        td {
+          word-break: break-all;
+        }
+      }
+    }
+
     > .dataTables_wrapper {
       > .dataTables_filter > label {
         line-height: 14px;
