@@ -23,6 +23,7 @@ class QueryManager extends BaseComponent
      */
     public function __construct(ContainerInterface $container = null)
     {
+        $this->container = $container;
         $kernel    = $this->container->get('kernel');
         $path      = $kernel->getRootDir() . "/config/queries.sqlite";
         $tableName = "queries";
