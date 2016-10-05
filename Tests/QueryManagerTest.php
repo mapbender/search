@@ -3,7 +3,7 @@
 namespace Mapbender\DataSourceBundle\Tests;
 
 use Mapbender\SearchBundle\Entity\Query;
-use Mapbender\DataSourceBundle\Entity\StyleMap;
+use Mapbender\SearchBundle\Entity\StyleMap;
 use Mapbender\SearchBundle\Component\QueryManager;
 use Mapbender\SearchBundle\Entity\QueryCondition;
 
