@@ -1,68 +1,38 @@
 <?php
+
 namespace Mapbender\SearchBundle\Element;
 
-use Doctrine\Bundle\DoctrineBundle\Registry;
-use Doctrine\DBAL\Connection;
-use Mapbender\CoreBundle\Component\Application;
-use Mapbender\CoreBundle\Entity\Element;
+use Doctrine\DBAL\DBALException;
+use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Element\BaseElement;
-use Mapbender\DataSourceBundle\Entity\DataItem;
-use Mapbender\SearchBundle\Entity\SearchConfig;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Mapbender\DataSourceBundle\Entity\Feature;
+use Mapbender\DigitizerBundle\Component\Uploader;
+use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Class Search
  *
- *
- * @package Mapbender\DataSourceBundle\Element
- * @author  Andriy Oblivantsev <eslider@gmail.com>
  */
 class Search extends BaseElement
 {
-    /**
-     * The constructor.
-     *
-     * @param Application        $application The application object
-     * @param ContainerInterface $container   The container object
-     * @param Element            $entity
-     */
-    public function __construct(Application $application, ContainerInterface $container, Element $entity)
-    {
-        parent::__construct($application, $container, $entity);
-    }
+    protected static $title                = "Search";
+    protected static $description          = "Object search element";
 
     /**
      * @inheritdoc
      */
-    static public function getClassTitle()
+    static public function listAssets()
     {
-        return "Search";
-    }
-
-    /**
-     * @inheritdoc
-     */
-    static public function getClassDescription()
-    {
-        return "Search element";
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getWidgetName()
-    {
-        return 'mapbender.mbSearch';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    static public function getTags()
-    {
-        return array();
+        return array('js'    =>
+                         array(
+                             '../../vendor/blueimp/jquery-file-upload/js/jquery.fileupload.js',
+                             '../../vendor/blueimp/jquery-file-upload/js/jquery.iframe-transport.js',
+                             "/components/jquery-context-menu/jquery-context-menu-built.js",
+                             'mapbender.element.search.js'
+                         ),
+                     'css'   => array('sass/element/search.scss'),
+                     'trans' => array('MapbenderSearchBundle:Element:search.json.twig'));
     }
 
     /**
@@ -70,16 +40,42 @@ class Search extends BaseElement
      */
     public static function getDefaultConfiguration()
     {
-        $SearchConfig = new SearchConfig();
-        return $SearchConfig->toArray();
+        return array(
+            "target" => null
+        );
     }
 
+    /**
+     * Prepare form items for each scheme definition
+     * Optional: get featureType by name from global context.
+     *
+     * @inheritdoc
+     */
+    public function getConfiguration()
+    {
+        $configuration            = parent::getConfiguration();
+        $configuration['debug']   = isset($configuration['debug']) ? $configuration['debug'] : false;
+        $configuration['fileUri'] = $this->container->getParameter("mapbender.uploads_dir") . "/" . FeatureType::UPLOAD_DIR_NAME;
+
+        if ($configuration["schemes"] && is_array($configuration["schemes"])) {
+            foreach ($configuration["schemes"] as $key => &$scheme) {
+                if (is_string($scheme['featureType'])) {
+                    $featureTypes          = $this->container->getParameter('featureTypes');
+                    $scheme['featureType'] = $featureTypes[$scheme['featureType']];
+                }
+                if (isset($scheme['formItems'])) {
+                    $scheme['formItems'] = $this->prepareItems($scheme['formItems']);
+                }
+            }
+        }
+        return $configuration;
+    }
     /**
      * @inheritdoc
      */
     public static function getType()
     {
-        return 'Mapbender\SearchBundle\Element\Type\SearchAdminType';
+        return 'Mapbender\DigitizerBundle\Element\Type\DigitizerAdminType';
     }
 
     /**
@@ -87,53 +83,35 @@ class Search extends BaseElement
      */
     public static function getFormTemplate()
     {
-        return 'SearchBundle:ElementAdmin:search.html.twig';
+        return 'MapbenderSearchBundle:ElementAdmin:digitizeradmin.html.twig';
     }
 
     /**
-     * @inheritdoc
+     * Prepare request feautre data by the form definition
+     *
+     * @param $feature
+     * @param $formItems
+     * @return array
      */
-    public function render()
+    protected function prepareQueriedFeatureData($feature, $formItems)
     {
-        return /** @lang XHTML */
-            '<div
-                id="' . $this->getId() . '"
-                class="mb-element mb-element-search modal-body"
-                title="' . _($this->getTitle()) . '"></div>';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    static public function listAssets()
-    {
-        return array(
-            'css'   => array(
-                '@MapbenderSearchBundle/Resources/styles/search.element.scss'
-            ),
-            'js'    => array(
-                '@MapbenderSearchBundle/Resources/public/search.element.js'
-            ),
-            'trans' => array(
-                'MapbenderSearchBundle:Element:search.json.twig'
-            )
-        );
-    }
-
-    /**
-     * @return SearchConfig
-     */
-    public function getConfig()
-    {
-        return new SearchConfig(parent::getConfiguration());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getConfiguration()
-    {
-        return $this->getConfig()->toArray();
+        foreach ($formItems as $key => $formItem) {
+            if (isset($formItem['children'])) {
+                $feature = array_merge($feature, $this->prepareQueriedFeatureData($feature, $formItem['children']));
+            } elseif (isset($formItem['type']) && isset($formItem['name'])) {
+                switch ($formItem['type']) {
+                    case 'select':
+                        if (isset($formItem['multiple'])) {
+                            $separator                  = isset($formItem['separator']) ? $formItem['separator'] : ',';
+                            if(is_array($feature["properties"][$formItem['name']])){
+                                $feature["properties"][$formItem['name']] = implode($separator, $feature["properties"][$formItem['name']]);
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+        return $feature;
     }
 
     /**
@@ -141,66 +119,180 @@ class Search extends BaseElement
      */
     public function httpAction($action)
     {
-        /** @var DataItem $dataItem */
         /** @var $requestService Request */
-        /** @var Registry $doctrine */
-        /** @var Connection $connection */
-        $configuration   = $this->getConfig();
+        $configuration   = $this->getConfiguration();
         $requestService  = $this->container->get('request');
-        $defaultCriteria = array();
-        $payload         = json_decode($requestService->getContent(), true);
-        $request         = $requestService->getContent() ? array_merge($defaultCriteria, $payload ? $payload : $_REQUEST) : array();
-        $results         = array();
-        $queryManager    = $this->container->get("mapbender.query.manager");
+        $request         = json_decode($requestService->getContent(), true);
+        $schemas         = $configuration["schemes"];
+        $debugMode       = $configuration['debug'] || $this->container->get('kernel')->getEnvironment() == "dev";
+        $schemaName      = isset($request["schema"]) ? $request["schema"] : $requestService->get("schema");
+        $defaultCriteria = array('returnType' => 'FeatureCollection',
+                                 'maxResults' => 2500);
+        if (empty($schemaName)) {
+            throw new Exception('For initialization there is no name of the declared scheme');
+        }
+
+        $schema     = $schemas[$schemaName];
+
+        if (is_array($schema['featureType'])) {
+            $featureType = new FeatureType($this->container, $schema['featureType']);
+        } else {
+            throw new Exception("FeatureType settings not correct");
+        }
+
+        $results = array();
 
         switch ($action) {
+            case 'select':
 
-            // TODO:  check and validate
-            case 'validate':
-            case 'check...':
-            case 'save':
+                $results         = $featureType->search(array_merge($defaultCriteria, $request));
                 break;
+
+            case 'save':
+                // save once
+                if (isset($request['feature'])) {
+                    $request['features'] = array($request['feature']);
+                }
+
+                try {
+                    // save collection
+                    if (isset($request['features']) && is_array($request['features'])) {
+                        foreach ($request['features'] as $feature) {
+                            /**
+                             * @var $feature Feature
+                             */
+                            $featureData = $this->prepareQueriedFeatureData($feature, $schema['formItems']);
+
+                            foreach ($featureType->getFileInfo() as $fileConfig) {
+                                if (!isset($fileConfig['field']) || !isset($featureData["properties"][$fileConfig['field']])) {
+                                    continue;
+                                }
+                                $url                                             = $featureType->getFileUrl($fileConfig['field']);
+                                $requestUrl                                      = $featureData["properties"][$fileConfig['field']];
+                                $newUrl                                          = str_replace($url . "/", "", $requestUrl);
+                                $featureData["properties"][$fileConfig['field']] = $newUrl;
+                            }
+
+                            $feature = $featureType->save($featureData);
+                            $results = array_merge($featureType->search(array(
+                                'srid'  => $feature->getSrid(),
+                                'where' => $featureType->getUniqueId() . '=' . $feature->getId())));
+                        }
+                    }
+                    $results = $featureType->toFeatureCollection($results);
+                } catch (DBALException $e) {
+                    $message = $debugMode ? $e->getMessage() : "Feature can't be saved. Maybe something is wrong configured or your database isn't available?\n" .
+                        "For more information have a look at the webserver log file. \n Error code: " .$e->getCode();
+                    $results = array('errors' => array(
+                        array('message' => $message, 'code' => $e->getCode())
+                    ));
+                }
+
+                break;
+
+            case 'delete':
+                $results = $featureType->remove($request['feature']);
+                break;
+
+            case 'file-upload':
+                $fieldName     = $requestService->get('field');
+                $urlParameters = array('schema' => $schemaName,
+                                       'fid'    => $requestService->get('fid'),
+                                       'field'  => $fieldName);
+                $serverUrl     = preg_replace('/\\?.+$/', "", $_SERVER["REQUEST_URI"]) . "?" . http_build_query($urlParameters);
+                $uploadDir     = $featureType->getFilePath($fieldName);
+                $uploadUrl = $featureType->getFileUrl($fieldName) . "/";
+                $urlParameters['uploadUrl'] = $uploadUrl;
+                $uploadHandler = new Uploader(array(
+                    'upload_dir'                   => $uploadDir . "/",
+                    'script_url'                   => $serverUrl,
+                    'upload_url'                   => $uploadUrl,
+                    'accept_file_types'            => '/\.(gif|jpe?g|png)$/i',
+                    'print_response'               => false,
+                    'access_control_allow_methods' => array(
+                        'OPTIONS',
+                        'HEAD',
+                        'GET',
+                        'POST',
+                        'PUT',
+                        'PATCH',
+                        //                        'DELETE'
+                    ),
+                ));
+                $results       = array_merge($uploadHandler->get_response(), $urlParameters);
+
+                break;
+
+            case 'datastore/get':
+                // TODO: get request ID and check
+                if (!isset($request['id']) || !isset($request['dataItemId'])) {
+                    $results = array(
+                        array('errors' => array(
+                            array('message' => $action . ": id or dataItemId not defined!")
+                        ))
+                    );
+                }
+
+                $id           = $request['id'];
+                $dataItemId   = $request['dataItemId'];
+                $dataStore    = $this->container->get("data.source")->get($id);
+                $dataItem     = $dataStore->get($dataItemId);
+                $dataItemData = null;
+                if ($dataItem) {
+                    $dataItemData = $dataItem->toArray();
+                }
+
+                $results = $dataItemData;
+                break;
+
+            case 'datastore/save':
+
+                $id          = $request['id'];
+                $dataItem    = $request['dataItem'];
+                $dataStore   = $this->container->get("data.source")->get($id);
+                $uniqueIdKey = $dataStore->getDriver()->getUniqueId();
+                if (empty($request['dataItem'][ $uniqueIdKey ])) {
+                    unset($request['dataItem'][ $uniqueIdKey ]);
+                }
+                $results = $dataStore->save($dataItem);
+
+                break;
+            case 'datastore/remove':
+                $id          = $request['id'];
+                $dataStore   = $this->container->get("data.source")->get($id);
+                $uniqueIdKey = $dataStore->getDriver()->getUniqueId();
+                $dataItemId  = $request['dataItem'][ $uniqueIdKey ];
+                $dataStore->remove($dataItemId);
+                break;
+            default:
+                $results = array(
+                    array('errors' => array(
+                        array('message' => $action . " not defined!")
+                    ))
+                );
         }
+
 
         return new JsonResponse($results);
     }
 
     /**
-     * Execute query by ID
+     * Get assets. This method is overloaded,
+     * course of needing to aggregate CSS from configuration.
      *
-     * @param $id
-     * @return array
+     * @inheritdoc
      */
-    protected function executeQuery($id)
+    public function getAssets()
     {
-        $configuration = $this->getConfig();
-        $query         = $this->getQuery($id);
-        $sql           = $query->getAttribute($configuration->sqlFieldName);
-        $doctrine      = $this->container->get("doctrine");
-        $connection    = $doctrine->getConnection($query->getAttribute($configuration->connectionFieldName));
-        $results       = $connection->fetchAll($sql);
-        return $results;
+        $configuration = $this->getConfiguration();
+        $assets        = parent::getAssets();
+        if (isset($configuration['css'])) {
+            if (is_array($configuration['css'])) {
+                $assets['css'] = array_merge($assets['css'], $configuration['css']);
+            } else {
+                $assets['css'][] = $configuration['css'];
+            }
+        }
+        return $assets;
     }
-
-    /**
-     * @param $configuration
-     * @return \Mapbender\DataSourceBundle\Component\DataStore
-     */
-    protected function getDataStore(SearchConfig $configuration)
-    {
-        $dataStoreService = $this->container->get("features");
-        return $dataStoreService->get($configuration->source);
-    }
-
-    /**
-     * Get SQL query by id
-     *
-     * @param int $id
-     * @return DataItem
-     */
-    protected function getQuery($id)
-    {
-        return $this->getDataStore($this->getConfig())->getById($id);
-    }
-
 }

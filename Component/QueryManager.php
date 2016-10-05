@@ -34,14 +34,11 @@ class QueryManager extends BaseComponent
     public function __construct(ContainerInterface $container = null)
     {
         $this->container = $container;
-        $kernel          = $this->container->get('kernel');
-        $path            = $kernel->getRootDir() . "/config/queries.sqlite";
-        $tableName       = "queries";
-        $this->db        = new HKVStorage($path, $tableName);
-        $dbSingleton     = $this->db->db();
-        if (!$dbSingleton->hasTable($tableName)) {
-            $dbSingleton->createTable($tableName);
-        }
+
+        $kernel    = $this->container->get('kernel');
+        $path      = $kernel->getRootDir() . "/config/queries.sqlite";
+        $tableName = "queries";
+        $this->db  = new HKVStorage($path, $tableName);
 
         parent::__construct($container);
     }

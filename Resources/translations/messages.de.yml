@@ -1,0 +1,25 @@
+mb:
+  search:
+
+    # Buttons
+    Edit: Bearbeiten
+    Create: Erstellen
+    Cancel: Abbrechen
+    Save: Speichern
+    Remove: Löschen
+    Execute: Ausführen
+    OK: OK
+    Results: Ergebnisse
+    Export: Export
+    HTML-Export: HTML Export
+
+    # Status
+    saved: Gespeichert
+    removed: Gelöscht
+
+    # SQL Dialog
+    sql:
+      title: SQL title
+      connection:
+        name: Verbindungsname
+      publish: Veröffentlichen
