@@ -69,8 +69,8 @@ class QueryManagerTest extends SymfonyTest2
 
     public function testRemove()
     {
-        $query                 = $this->getMockupQuery();
-        $hkv                   = $this->queryManager->save($query);
+        $query = $this->getMockupQuery();
+        $this->queryManager->save($query);
         $removingFailedMessage = "The Querymanager could not resolve the query : " . json_encode($query->toArray());
 
         $this->queryManager->remove($query->getId());

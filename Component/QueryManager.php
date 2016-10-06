@@ -15,58 +15,53 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Class QueryManager
  *
  * @package Mapbender\SearchBundle\Component
+ * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
-class QueryManager extends BaseComponent
+class QueryManager extends BaseManager
 {
-    /** @var HKVStorage */
+    /** @var HKVStorage DB */
     protected $db;
 
 
     /* @var Configuration configuration */
     protected $configuration;
 
-    /* @var int userid */
-    protected $userid;
+    /* @var int UserId */
+    protected $userId;
 
 
     /**
-     * configurator constructor.
+     * QueryManager constructor.
      *
      * @param ContainerInterface
      * $container
      */
     public function __construct(ContainerInterface $container = null)
     {
-        $this->container = $container;
-        $kernel          = $this->container->get('kernel');
-        $path            = $kernel->getRootDir() . "/config/queries.sqlite";
-        $tableName       = "queries";
-        $this->db        = new HKVStorage($path, $tableName);
-
-        parent::__construct($container);
+        parent::__construct($container, "queries");
     }
 
 
     /**
      * save query
      *
-     * @param query $query
-     * @return hkv
+     * @param Query $query
+     * @return HKV
      */
-    public function save(query $query)
+    public function save(Query $query, $scope = null, $parentId = null)
     {
         $list   = $this->listQueries();
         $list[] = $query;
-        $userid = $query->getUserId();
-        return $this->db->saveData("queries", $list, null, null, $userid);
+        $userId = $query->getUserId();
+        return $this->db->saveData($this->tableName, $list, $scope, $parentId, $userId);
     }
 
 
     /**
-     * get query by id
+     * Get query by id
      *
      * @param int $id
-     * @return hkv|null
+     * @return HKV|null
      */
     public function getById($id, $userId = null)
     {
@@ -86,11 +81,11 @@ class QueryManager extends BaseComponent
      * List all queries
      *
      * @param int $id
-     * @return hkv[]
+     * @return HKV[]
      */
     public function listQueries()
     {
-        return $this->db->getData("queries", null, null, $this->getUserId());
+        return $this->db->getData($this->tableName, null, null, $this->getUserId());
     }
 
     /**
@@ -110,23 +105,25 @@ class QueryManager extends BaseComponent
                 $found = true;
             }
         }
-        $this->db->saveData("queries", $queries);
+        $this->db->saveData($this->tableName, $queries);
         return $found;
     }
 
-
     /**
-     * drop database
-     *
-     * @return bool
+     * @param $args
+     * @return Query
      */
-    public function dropDatabase()
+    public function create($args)
     {
-        return $this->db->destroy();
+        $query = new Query($args);
+        $query->setId($this->generateUUID());
+        $query->setUserId($this->getUserId());
+        $query->setConnectionName(isset($this->configuration) ? $this->configuration->getConnection() : Configuration::DEFAULT_CONNECTION);
+        return $query;
     }
 
     /**
-     * @return configuration
+     * @return Configuration
      */
     public function getConfiguration()
     {
@@ -134,8 +131,8 @@ class QueryManager extends BaseComponent
     }
 
     /**
-     * @param configuration $configuration
-     * @return querymanager
+     * @param Configuration $configuration
+     * @return QueryManager
      */
     public function setConfiguration($configuration)
     {
@@ -144,12 +141,12 @@ class QueryManager extends BaseComponent
     }
 
     /**
-     * @param int $userid
-     * @return querymanager
+     * @param int $userId
+     * @return QueryManager
      */
-    public function setUserId($userid)
+    public function setUserId($userId)
     {
-        $this->userid = $userid;
+        $this->userId = $userId;
         return $this;
     }
 
@@ -158,29 +155,8 @@ class QueryManager extends BaseComponent
      */
     public function getUserId()
     {
-        return $this->userid;
+        return $this->userId;
     }
 
-    /**
-     * @param query $query
-     */
-    private function generateUUID($query)
-    {
-        $query->setId(uniqid("", true));
-    }
-
-
-    /**
-     * @param $args
-     * @return query
-     */
-    public function create($args)
-    {
-        $query = new Query($args);
-        $this->generateUUID($query);
-        $query->setUserId($this->getUserId());
-        $query->setConnectionName(isset($this->configuration) ? $this->configuration->getConnection() : Configuration::DEFAULT_CONNECTION);
-        return $query;
-    }
 
 }

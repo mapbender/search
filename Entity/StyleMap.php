@@ -1,6 +1,7 @@
 <?php
 
 namespace Mapbender\SearchBundle\Entity;
+
 use Eslider\Entity\UniqueBaseEntity;
 
 /**
@@ -11,68 +12,92 @@ use Eslider\Entity\UniqueBaseEntity;
  */
 class StyleMap extends UniqueBaseEntity
 {
-    /* @var int Test */
-    protected $test;
 
-    /* @var Style SelectStyle */
-    protected $selectStyle;
+    /* @var Style[] Styles */
+    protected $styles;
 
-    /* @var Style DefaultStyle */
-    protected $defaultStyle;
+    /** @var string userId **/
+    protected $userId;
 
     /**
-     * @return int
+     * @return string
      */
-    public function getTest()
+    public function getUserId()
     {
-        return $this->test;
+        return $this->userId;
     }
 
     /**
-     * @param int $test
-     * @return StyleMap
+     * @param string $userId
      */
-    public function setTest($test)
+    public function setUserId($userId)
     {
-        $this->test = $test;
-        return $this;
+        $this->userId = $userId;
     }
 
     /**
-     * @return Style
+     * @return Style[]
      */
-    public function getSelectStyle()
+    public function getStyles()
     {
-        return $this->selectStyle;
-    }
-
-    /**
-     * @param Style $selectStyle
-     * @return StyleMap
-     */
-    public function setSelectStyle($selectStyle)
-    {
-        $this->selectStyle = $selectStyle;
-        return $this;
+        return $this->styles;
     }
 
     /**
      * @return Style
      */
-    public function getDefaultStyle()
+    public function getStyle($name = 'default')
     {
-        return $this->defaultStyle;
+        return $this->styles[ $name ];
+    }
+
+
+    /**
+     * @param Style  $style
+     * @param string $name
+     * @return Style
+     */
+    public function setStyle(Style $style, $name = 'default')
+    {
+        $this->styles[ $name ] = $style;
+        return $style;
+    }
+
+
+    /**
+     * @param Style $style
+     * @return Style|boolean
+     */
+    public function removeStyle(Style $style)
+    {
+        $result = false;
+        foreach ($this->styles as $key => $value) {
+            if ($value->getId() == $style->getId()) {
+                $result = $this->styles[ $key ];
+                unset($this->styles[ $key ]);
+                return $result;
+            }
+        }
+        return $result;
     }
 
     /**
-     * @param Style $defaultStyle
-     * @return StyleMap
+     * @param string $name
+     * @return Style|boolean
      */
-    public function setDefaultStyle($defaultStyle)
+    public function removeStyleByName($name)
     {
-        $this->defaultStyle = $defaultStyle;
-        return $this;
+        $result = false;
+        foreach ($this->styles as $key => $value) {
+            if ($value->getName() == $name) {
+                $result = $this->styles[ $key ];
+                unset($this->styles[ $key ]);
+                return $result;
+            }
+        }
+        return $result;
     }
+
 
 
 }
