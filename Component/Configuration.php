@@ -1,15 +1,15 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ransomware
- * Date: 06/10/16
- * Time: 10:32
- **/
 
 namespace Mapbender\SearchBundle\Component;
 
 use Eslider\Entity\UniqueBaseEntity;
 
+/**
+ * Class Configuration
+ *
+ * @package Mapbender\SearchBundle\Component
+ * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
+ */
 class Configuration extends UniqueBaseEntity
 {
 
@@ -168,14 +168,6 @@ class Configuration extends UniqueBaseEntity
     {
         $this->allowUserPublishing = $allowUserPublishing;
         return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getConnection()
-    {
-        return $this->connection;
     }
 
 
