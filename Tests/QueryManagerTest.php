@@ -2,7 +2,6 @@
 
 namespace Mapbender\DataSourceBundle\Tests;
 
-use Mapbender\SearchBundle\Entity\Query;
 use Mapbender\SearchBundle\Entity\StyleMap;
 use Mapbender\SearchBundle\Component\QueryManager;
 use Mapbender\SearchBundle\Entity\QueryCondition;
@@ -17,38 +16,43 @@ class QueryManagerTest extends SymfonyTest2
 {
 
 
+    /** @var QueryManager */
+    protected $queryManager;
+
+
+    protected function setUp()
+    {
+        $this->queryManager = $this->getQueryManager();
+
+    }
+
+    protected function tearDown()
+    {
+        $dropDatabaseFailedMessage = "It was not possible to drop the Database";
+        self::assertTrue($this->queryManager->dropDatabase(), $dropDatabaseFailedMessage);
+
+    }
+
     public function testSave()
     {
 
-        $queryManager = $this->getQueryManager();
-        $query        = $this->getMockupQuery();
-        $hkv          = $queryManager->save($query);
+        $query = $this->getMockupQuery();
+        $hkv   = $this->queryManager->save($query);
 
         $saveFailedMessage = "Querymanager could not save the query: " . json_encode($query->toArray());
         $idKey             = "id";
         self::assertObjectHasAttribute($idKey, $hkv, $saveFailedMessage);
-
-        $hkvToArray = $hkv->toArray();
-
-        self::assertNotEquals(null, $hkvToArray["id"], json_encode($hkv));
-
+        self::assertNotEquals(null, $hkv->getId(), json_encode($hkv));
     }
 
     public function testGetById()
     {
 
-        $this->markTestIncomplete(
-            'This test has not been implemented properly yet.'
-        );
+        $query = $this->getMockupQuery();
+        $this->queryManager->save($query);
+        $result = $this->queryManager->getById($query->getId());
 
-        $container    = self::$container;
-        $queryManager = new QueryManager($container);
-
-        $query  = $this->getMockupQuery();
-        $hkv    = $queryManager->save($query);
-        $result = $queryManager->getById($hkv->getId());
-
-        $getByIdFailedMessage = "ID: " . $hkv->getId() . "QueryManager could not resolve the query:" . json_encode($query->toArray());
+        $getByIdFailedMessage = "ID: " . $query->getId() . " QueryManager could not resolve the query:" . json_encode($query->toArray());
         self::assertNotNull($result, $getByIdFailedMessage);
 
     }
@@ -56,41 +60,40 @@ class QueryManagerTest extends SymfonyTest2
 
     public function testListQueries()
     {
-        $this->markTestIncomplete(
-            'This test has not been implemented properly yet.'
-        );
-        $queryManager = $this->getQueryManager();
-        $query        = $this->getMockupQuery();
-        $queryManager->save($query);
-
+        $query = $this->getMockupQuery();
+        $this->queryManager->save($query);
+        $queryList = $this->queryManager->listQueries();
+        $count     = $queryList != null ? count($queryList) : 0;
+        self::assertGreaterThan(0, $count);
     }
 
     public function testRemove()
     {
-
-        $this->markTestIncomplete(
-            'This test has not been implemented properly yet.'
-        );
-        $queryManager = $this->getQueryManager();
-
-        $query = $this->getMockupQuery();
-
-        $hkv                   = $queryManager->save($query);
+        $query                 = $this->getMockupQuery();
+        $hkv                   = $this->queryManager->save($query);
         $removingFailedMessage = "The Querymanager could not resolve the query : " . json_encode($query->toArray());
-        self::assertTrue($queryManager->remove($hkv->getId()), $removingFailedMessage);
 
+        $this->queryManager->remove($query->getId());
+        self::assertNull($this->queryManager->getById($query->getId()), $removingFailedMessage);
     }
+
 
     /**
      * Helpmethods
      */
 
+    /**
+     * @return QueryManager
+     */
     public function getQueryManager()
     {
         $container = self::$container;
         return new QueryManager($container);
     }
 
+    /**
+     * @return \Mapbender\SearchBundle\Entity\Query
+     */
     public function getMockupQuery()
     {
         $queryConditionArgs = array("fieldName" => "name",
@@ -109,7 +112,9 @@ class QueryManagerTest extends SymfonyTest2
                            "userId"     => 0
         );
 
-        return new Query($queryArgs);
+        return $this->queryManager->create($queryArgs);
 
     }
+
+
 }
