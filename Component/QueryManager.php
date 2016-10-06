@@ -2,16 +2,19 @@
 namespace Mapbender\SearchBundle\Component;
 
 use Eslider\Driver\HKVStorage;
+use Eslider\Entity\HKV;
 use Eslider\Entity\HKVSearchFilter;
 use FOM\UserBundle\Entity\User;
 use Mapbender\ConfiguratorBundle\Component\BaseComponent;
+use Mapbender\ConfiguratorBundle\Component\Configurator;
+use Mapbender\CoreBundle\Component\SecurityContext;
 use Mapbender\SearchBundle\Entity\Query;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Class QueryManager
  *
- * @package Mapbender\SearchBundle\Element
+ * @package Mapbender\SearchBundle\Component
  */
 class QueryManager extends BaseComponent
 {
@@ -19,99 +22,111 @@ class QueryManager extends BaseComponent
     protected $db;
 
 
-    /* @var Configuration */
+    /* @var Configuration configuration */
     protected $configuration;
 
-    /* @var User */
-    protected $user;
+    /* @var int userid */
+    protected $userid;
 
 
     /**
-     * Configurator constructor.
+     * configurator constructor.
      *
-     * @param ContainerInterface $container
+     * @param ContainerInterface
+     * $container
      */
     public function __construct(ContainerInterface $container = null)
     {
         $this->container = $container;
-
-        $kernel    = $this->container->get('kernel');
-        $path      = $kernel->getRootDir() . "/config/queries.sqlite";
-        $tableName = "queries";
-        $this->db  = new HKVStorage($path, $tableName);
+        $kernel          = $this->container->get('kernel');
+        $path            = $kernel->getRootDir() . "/config/queries.sqlite";
+        $tableName       = "queries";
+        $this->db        = new HKVStorage($path, $tableName);
 
         parent::__construct($container);
     }
 
-    /**
-     * Save query
-     *
-     * @param Query $query
-     */
-    public function save(Query $query)
-    {
-        // $user   = $this->getUser();
-        // $userId = $user->getId();
-        // $query->setUserId($userId);
 
+    /**
+     * save query
+     *
+     * @param query $query
+     * @return hkv
+     */
+    public function save(query $query)
+    {
         $list   = $this->listQueries();
         $list[] = $query;
-        return $this->db->saveData("queries", $list);
+        $userid = $query->getUserId();
+        return $this->db->saveData("queries", $list, null, null, $userid);
     }
 
 
     /**
-     * Get query by id
+     * get query by id
      *
      * @param int $id
+     * @return hkv|null
      */
-    public function getById($id)
+    public function getById($id, $userId = null)
     {
-        $filterData = array("id" => $id);
-        $filter     = new HKVSearchFilter($filterData);
-        return $this->db->get($filter);
+        $list = $this->listQueries();
+
+        foreach ($list as $key => $value) {
+            if ($value->getId() == $id && $value->getUserId() == $userId) {
+                return $value;
+            }
+        }
+
+        return null;
     }
 
 
     /**
-     * List all Queries
+     * List all queries
      *
      * @param int $id
+     * @return hkv[]
      */
     public function listQueries()
     {
-        if (isset($this->user)) {
-            $user   = $this->user;
-            $userId = $user->getId();
-            $list   = $this->db->getParentByChildrenId($userId);
-            return $list;
-        }
-
-        return array();
+        return $this->db->getData("queries", null, null, $this->getUserId());
     }
 
     /**
-     * Remove Query with certain $queryId
+     * remove query with certain $queryid
      *
-     * @param $queryId
+     * @param $queryid
+     * @return bool
      */
-
-    public function remove($queryId)
+    public function remove($queryid)
     {
+        $found = false;
 
         $queries = $this->listQueries();
-
-        foreach ($queries as $key => $value) {
-            if ($value->id == $queryId) {
+        foreach ($queries as $key => $query) {
+            if ($query->getId() == $queryid) {
                 unset($queries[ $key ]);
-                $this->db->saveData("queries", $queries);
-                return;
+                $found = true;
             }
         }
+        $this->db->saveData("queries", $queries);
+        return $found;
+    }
+
+
+    /**
+     * drop database
+     *
+     * @return bool
+     */
+    public function dropDatabase()
+    {
+        return $this->db->destroy();
     }
 
     /**
-     * @return Configuration
+     * @return configuration
      */
     public function getConfiguration()
     {
@@ -119,8 +134,8 @@ class QueryManager extends BaseComponent
     }
 
     /**
-     * @param Configuration $configuration
-     * @return QueryManager
+     * @param configuration $configuration
+     * @return querymanager
      */
     public function setConfiguration($configuration)
     {
@@ -129,21 +144,43 @@ class QueryManager extends BaseComponent
     }
 
     /**
-     * @param User $user
-     * @return QueryManager
+     * @param int $userid
+     * @return querymanager
      */
-    public function setUser($user)
+    public function setUserId($userid)
     {
-        $this->user = $user;
+        $this->userid = $userid;
         return $this;
     }
 
     /**
-     * @return User
+     * @return int
      */
-    public function getUser()
+    public function getUserId()
     {
-        return $this->user;
+        return $this->userid;
+    }
+
+    /**
+     * @param query $query
+     */
+    private function generateUUID($query)
+    {
+        $query->setId(uniqid("", true));
+    }
+
+
+    /**
+     * @param $args
+     * @return query
+     */
+    public function create($args)
+    {
+        $query = new Query($args);
+        $this->generateUUID($query);
+        $query->setUserId($this->getUserId());
+        $query->setConnectionName(isset($this->configuration) ? $this->configuration->getConnection() : Configuration::DEFAULT_CONNECTION);
+        return $query;
     }
 
 }
