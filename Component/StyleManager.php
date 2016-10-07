@@ -44,7 +44,7 @@ class StyleManager extends BaseManager
         $styleMap->setUserId($this->getUserId());
         return $styleMap;
     }
-    
+
 
     /**
      * save query
