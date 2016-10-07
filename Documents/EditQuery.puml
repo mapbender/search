@@ -21,7 +21,7 @@ partition Actions {
        EditQuerySourceViewContainer     ..>  ===StartQueryValidation===
        EditQueryGeneralViewContainer    ..>  ===StartQueryValidation===
 
-       ===StartQueryValidation===  --> [ajax] "Check if given
+       ===StartQueryValidation===  --> [ajax] "Check if givens
        query name is unique" as QueryNameValidation
        ===StartQueryValidation===  --> [ajax] "Validate selected
        source by ID" as SourceValidation
