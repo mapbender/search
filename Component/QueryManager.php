@@ -29,6 +29,7 @@ class QueryManager extends BaseManager
     /* @var int UserId */
     protected $userId;
 
+    const SERVICE_NAME="mapbender.query.manager";
 
     /**
      * QueryManager constructor.

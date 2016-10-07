@@ -30,7 +30,7 @@ class StyleManager extends BaseManager
         parent::__construct($container, "styles");
     }
 
-    const SERVICE_NAME = "mapbender.feature.style";
+    const SERVICE_NAME = "mapbender.style.manager";
 
 
     /**

@@ -16,7 +16,7 @@ class StyleManagerTest extends SymfonyTest2
 {
 
 
-    /** @var StyleManager */
+    /** @var StyleManager Style Manager */
     protected $styleManager;
 
 
