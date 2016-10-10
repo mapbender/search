@@ -199,9 +199,9 @@
             var widget = this;
             this.widget = this;
 
-            // if(!Mapbender.checkTarget("mbSearch", widget.options.target)) {
-            //     return;
-            // }
+            if(!Mapbender.checkTarget("mbSearch", widget.options.target)) {
+                return;
+            }
 
             var element = widget.element;
             widget.elementUrl = Mapbender.configuration.application.urls.element + '/' + element.attr('id') + '/';
@@ -212,18 +212,26 @@
             var frames = [];
             var widget = this;
             var element = $(widget.element);
-            var titleElement = $("> div.title", element);
-            var selector = widget.selector = $("select.selector", element);
+            var selector = widget.selector = $('<select class="selector" />', element);
             var options = widget.options;
             var map = widget.map = $('#' + options.target).data('mapbenderMbMap').map.olMap;
-            var hasOnlyOneScheme = _.size(options.schemes) === 1;
 
-            if(hasOnlyOneScheme) {
-                titleElement.html(_.toArray(options.schemes)[0].label);
-                selector.css('display', 'none');
-            } else {
-                titleElement.css('display', 'none');
-            }
+            element.generateElements({
+                type:     'button',
+                title:    'Add query',
+                cssClass: 'new-query',
+                click:    function() {
+                    var queyManagerContainer = $("<div/>");
+                    queyManagerContainer.querymanager({
+                        onReady: function(manager) {
+                            var form = manager.showPopup();
+                        }
+                    });
+                }
+            });
+
+            element.append(selector);
+            // element.append(selector);
 
             function createSubMenu(olFeature) {
                 var layer = olFeature.layer;
@@ -401,6 +409,13 @@
                         widget._openFeatureEditDialog(olFeature);
                     }
                 });
+                buttons.push({
+                    title:     translate('feature.bookmark'),
+                    className: 'bookmark',
+                    onClick:   function(olFeature, ui) {
+                        widget._openFeatureEditDialog(olFeature);
+                    }
+                });
 
                 if(schema.allowDelete) {
                     buttons.push({
@@ -530,6 +545,10 @@
                 frame.css('display','none');
 
                 frame.data("schemaSettings", schema);
+                var accordionTest = $('<div class="accordionTest"/>');
+
+                accordionTest.accordion();
+                frame.append(accordionTest);
 
                 element.append(frame);
                 option.data("schemaSettings",schema);
