@@ -98,6 +98,10 @@ class StyleMap extends UniqueBaseEntity
         return $result;
     }
 
+    public function fill(array &$data)
+    {
+        parent::fill($data);
+    }
 
 
 }
