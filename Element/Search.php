@@ -16,8 +16,8 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class Search extends BaseElement
 {
-    protected static $title                = "Search";
-    protected static $description          = "Object search element";
+    protected static $title       = "Search";
+    protected static $description = "Object search element";
 
     /**
      * @inheritdoc
@@ -61,7 +61,7 @@ class Search extends BaseElement
             foreach ($configuration["schemes"] as $key => &$scheme) {
                 if (is_string($scheme['featureType'])) {
                     $featureTypes          = $this->container->getParameter('featureTypes');
-                    $scheme['featureType'] = $featureTypes[$scheme['featureType']];
+                    $scheme['featureType'] = $featureTypes[ $scheme['featureType'] ];
                 }
                 if (isset($scheme['formItems'])) {
                     $scheme['formItems'] = $this->prepareItems($scheme['formItems']);
@@ -70,6 +70,7 @@ class Search extends BaseElement
         }
         return $configuration;
     }
+
     /**
      * @inheritdoc
      */
@@ -102,9 +103,9 @@ class Search extends BaseElement
                 switch ($formItem['type']) {
                     case 'select':
                         if (isset($formItem['multiple'])) {
-                            $separator                  = isset($formItem['separator']) ? $formItem['separator'] : ',';
-                            if(is_array($feature["properties"][$formItem['name']])){
-                                $feature["properties"][$formItem['name']] = implode($separator, $feature["properties"][$formItem['name']]);
+                            $separator = isset($formItem['separator']) ? $formItem['separator'] : ',';
+                            if (is_array($feature["properties"][ $formItem['name'] ])) {
+                                $feature["properties"][ $formItem['name'] ] = implode($separator, $feature["properties"][ $formItem['name'] ]);
                             }
                         }
                         break;
@@ -132,7 +133,7 @@ class Search extends BaseElement
             throw new Exception('For initialization there is no name of the declared scheme');
         }
 
-        $schema     = $schemas[$schemaName];
+        $schema = $schemas[ $schemaName ];
 
         if (is_array($schema['featureType'])) {
             $featureType = new FeatureType($this->container, $schema['featureType']);
@@ -145,7 +146,7 @@ class Search extends BaseElement
         switch ($action) {
             case 'select':
 
-                $results         = $featureType->search(array_merge($defaultCriteria, $request));
+                $results = $featureType->search(array_merge($defaultCriteria, $request));
                 break;
 
             case 'save':
@@ -164,13 +165,13 @@ class Search extends BaseElement
                             $featureData = $this->prepareQueriedFeatureData($feature, $schema['formItems']);
 
                             foreach ($featureType->getFileInfo() as $fileConfig) {
-                                if (!isset($fileConfig['field']) || !isset($featureData["properties"][$fileConfig['field']])) {
+                                if (!isset($fileConfig['field']) || !isset($featureData["properties"][ $fileConfig['field'] ])) {
                                     continue;
                                 }
-                                $url                                             = $featureType->getFileUrl($fileConfig['field']);
-                                $requestUrl                                      = $featureData["properties"][$fileConfig['field']];
-                                $newUrl                                          = str_replace($url . "/", "", $requestUrl);
-                                $featureData["properties"][$fileConfig['field']] = $newUrl;
+                                $url                                               = $featureType->getFileUrl($fileConfig['field']);
+                                $requestUrl                                        = $featureData["properties"][ $fileConfig['field'] ];
+                                $newUrl                                            = str_replace($url . "/", "", $requestUrl);
+                                $featureData["properties"][ $fileConfig['field'] ] = $newUrl;
                             }
 
                             $feature = $featureType->save($featureData);
@@ -182,7 +183,7 @@ class Search extends BaseElement
                     $results = $featureType->toFeatureCollection($results);
                 } catch (DBALException $e) {
                     $message = $debugMode ? $e->getMessage() : "Feature can't be saved. Maybe something is wrong configured or your database isn't available?\n" .
-                        "For more information have a look at the webserver log file. \n Error code: " .$e->getCode();
+                        "For more information have a look at the webserver log file. \n Error code: " . $e->getCode();
                     $results = array('errors' => array(
                         array('message' => $message, 'code' => $e->getCode())
                     ));
@@ -195,15 +196,15 @@ class Search extends BaseElement
                 break;
 
             case 'file-upload':
-                $fieldName     = $requestService->get('field');
-                $urlParameters = array('schema' => $schemaName,
-                                       'fid'    => $requestService->get('fid'),
-                                       'field'  => $fieldName);
-                $serverUrl     = preg_replace('/\\?.+$/', "", $_SERVER["REQUEST_URI"]) . "?" . http_build_query($urlParameters);
-                $uploadDir     = $featureType->getFilePath($fieldName);
-                $uploadUrl = $featureType->getFileUrl($fieldName) . "/";
+                $fieldName                  = $requestService->get('field');
+                $urlParameters              = array('schema' => $schemaName,
+                                                    'fid'    => $requestService->get('fid'),
+                                                    'field'  => $fieldName);
+                $serverUrl                  = preg_replace('/\\?.+$/', "", $_SERVER["REQUEST_URI"]) . "?" . http_build_query($urlParameters);
+                $uploadDir                  = $featureType->getFilePath($fieldName);
+                $uploadUrl                  = $featureType->getFileUrl($fieldName) . "/";
                 $urlParameters['uploadUrl'] = $uploadUrl;
-                $uploadHandler = new Uploader(array(
+                $uploadHandler              = new Uploader(array(
                     'upload_dir'                   => $uploadDir . "/",
                     'script_url'                   => $serverUrl,
                     'upload_url'                   => $uploadUrl,
@@ -216,11 +217,18 @@ class Search extends BaseElement
                         'POST',
                         'PUT',
                         'PATCH',
-                        //                        'DELETE'
+                        //'DELETE'
                     ),
                 ));
-                $results       = array_merge($uploadHandler->get_response(), $urlParameters);
+                $results                    = array_merge($uploadHandler->get_response(), $urlParameters);
 
+                break;
+
+            case 'style/get':
+            case 'style/update':
+            case 'style/remove':
+
+                new StyleRequestHandler($configuration, $requestService, $this->container->get("kernel"));
                 break;
 
             case 'datastore/get':
@@ -240,9 +248,8 @@ class Search extends BaseElement
                 $dataItemData = null;
                 if ($dataItem) {
                     $dataItemData = $dataItem->toArray();
+                    $results = $dataItemData;
                 }
-
-                $results = $dataItemData;
                 break;
 
             case 'datastore/save':
@@ -271,7 +278,6 @@ class Search extends BaseElement
                     ))
                 );
         }
-
 
         return new JsonResponse($results);
     }
