@@ -50,9 +50,9 @@ class StyleManager extends BaseManager
      * save query
      *
      * @param StyleMap $styleMap
-     * @return HKV
+     * @return StyleMap
      */
-    public function save(StyleMap $styleMap,$scope=null,$parentId=null)
+    public function save(StyleMap $styleMap, $scope = null, $parentId = null)
     {
         $list   = $this->listStyleMaps();
         $list[] = $styleMap;
@@ -65,7 +65,7 @@ class StyleManager extends BaseManager
      * Get StyleMap by id
      *
      * @param int $id
-     * @return HKV|null
+     * @return StyleMap|null
      */
     public function getById($id, $userId = null)
     {
@@ -85,7 +85,7 @@ class StyleManager extends BaseManager
      * List all StyleMaps
      *
      * @param int $id
-     * @return HKV[]
+     * @return StyleMap[]
      */
     public function listStyleMaps()
     {
@@ -112,5 +112,27 @@ class StyleManager extends BaseManager
         $this->db->saveData($this->tableName, $styleMaps);
         return $found;
     }
+
+
+    /**
+     * Update existing
+     *
+     * @param array $args
+     * @return StyleMap
+     */
+    public function update($args)
+    {
+        $list = $this->listStyleMaps();
+        foreach ($list as $key => $value) {
+            $hasStyleMap = $value->getId() == $args["id"];
+            if ($hasStyleMap) {
+                /** @var  StyleMap $value **/
+                $value->fill($args);
+                return $this->save($value);
+            }
+        }
+        return $this->save($this->create($args));
+    }
+
 
 }
