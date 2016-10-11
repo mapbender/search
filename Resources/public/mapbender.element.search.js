@@ -4,11 +4,12 @@
      *
      * @type {RegExp}
      */
-    var translationReg = /^trans:\w+\.(\w|-|\.{1}\w+)+\w+$/;
+    var translationReg = /^trans:\w+\.(\w|-|\.\w+)+\w+$/;
 
     /**
      * Translate digitizer keywords
      * @param title
+     * @param withoutSuffix
      * @returns {*}
      */
     function translate(title, withoutSuffix) {
@@ -23,6 +24,9 @@
      */
     function translateObject(items) {
         for (var k in items) {
+            if(!items.hasOwnProperty(k)){
+                continue;
+            }
             var item = items[k];
             if(typeof item === "string" && item.match(translationReg)) {
                 items[k] = translate(item.split(':')[1], true);
@@ -241,6 +245,8 @@
                 click:    function() {
                     var queyManagerContainer = $("<div/>");
                     queyManagerContainer.querymanager();
+
+                    debugger;
                 }
             });
 
@@ -416,15 +422,15 @@
 
                 var buttons = [];
 
-                buttons.push({
-                    title:     translate('feature.edit'),
-                    className: 'edit',
-                    onClick:   function(olFeature, ui) {
-                        // widget._openFeatureEditDialog(olFeature);
-                        var queyManagerContainer = $("<div/>");
-                        queyManagerContainer.querymanager();
-                    }
-                });
+                // buttons.push({
+                //     title:     translate('feature.edit'),
+                //     className: 'edit',
+                //     onClick:   function(olFeature, ui) {
+                //         // widget._openFeatureEditDialog(olFeature);
+                //         var queyManagerContainer = $("<div/>");
+                //         queyManagerContainer.querymanager();
+                //     }
+                // });
                 buttons.push({
                     title:     translate('feature.bookmark'),
                     className: 'bookmark',
@@ -484,9 +490,9 @@
                     processing: false,
                     ordering: true,
                     paging: true,
-                    selectable: false,
                     autoWidth: false,
                     columns:  columns,
+                    selectable: true,
                     buttons: buttons
                 };
 
@@ -668,11 +674,11 @@
                     widget._highlightFeature(row.data(), false);
                 });
 
-                table.delegate("tbody > tr", 'click', function() {
-                    var tr = this;
-                    var row = tableApi.row(tr);
-                    widget.zoomToJsonFeature(row.data());
-                });
+                // table.delegate("tbody > tr", 'click', function() {
+                //     var tr = this;
+                //     var row = tableApi.row(tr);
+                //     widget.zoomToJsonFeature(row.data());
+                // });
 
                 widget._getData();
             }

@@ -1,8 +1,8 @@
 .mb-element-search.modal-body {
-  .form-group > button.btn {
-    margin-left: 15px;
-    margin-right: 15px;
-  }
+  //.form-group > button.btn {
+  //  margin-left: 15px;
+  //  margin-right: 15px;
+  //}
   [class^="fa-"]:before, [class*=" fa-"]:before {
     font: normal normal normal 14px/1 FontAwesome;
   }
@@ -36,6 +36,9 @@
 
     table.dataTable {
       tbody > tr {
+        &.warning{
+          background-color: #fcffc6;
+        }
         td {
           word-break: break-all;
         }
