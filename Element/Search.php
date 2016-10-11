@@ -282,24 +282,4 @@ class Search extends BaseElement
 
         return new JsonResponse($results);
     }
-
-    /**
-     * Get assets. This method is overloaded,
-     * course of needing to aggregate CSS from configuration.
-     *
-     * @inheritdoc
-     */
-    public function getAssets()
-    {
-        $configuration = $this->getConfiguration();
-        $assets        = parent::getAssets();
-        if (isset($configuration['css'])) {
-            if (is_array($configuration['css'])) {
-                $assets['css'] = array_merge($assets['css'], $configuration['css']);
-            } else {
-                $assets['css'][] = $configuration['css'];
-            }
-        }
-        return $assets;
-    }
 }
