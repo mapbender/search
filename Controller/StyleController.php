@@ -48,18 +48,13 @@ class StyleController
      */
     public function handle($key, Request $request)
     {
-
-        $idErrorMessage = $this->checkId($key, $request);
-        if ($idErrorMessage != null) {
-        }
-
         switch ($key) {
             case 'style/get':
-                return $this->get($request);
+                return $this->get($request->get("id"));
             case 'style/update':
                 return $this->update($request);
             case 'style/remove':
-                return $this->remove($request);
+                return $this->remove($request->get("id"));
         }
     }
 
