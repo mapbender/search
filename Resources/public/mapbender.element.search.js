@@ -206,6 +206,24 @@
             var element = widget.element;
             widget.elementUrl = Mapbender.configuration.application.urls.element + '/' + element.attr('id') + '/';
             Mapbender.elementRegistry.onElementReady(widget.options.target, $.proxy(widget._setup, widget));
+
+            widget.load("querymanager.js");
+
+        },
+
+        /**
+         * Load extern source
+         *
+         * @param uri
+         * @param onComplete
+         */
+        load:    function(uri, onComplete) {
+            var assetUrl = Mapbender.configuration.application.urls.asset + "/bundles/mapbendersearch/";
+            $.getScript(assetUrl + uri, function(data, statusCode, xhr) {
+                onComplete
+                    && typeof onComplete == "function"
+                    && onComplete(eval(data), data, statusCode, xhr, uri);
+            });
         },
 
         _setup: function() {
@@ -222,11 +240,7 @@
                 cssClass: 'new-query',
                 click:    function() {
                     var queyManagerContainer = $("<div/>");
-                    queyManagerContainer.querymanager({
-                        onReady: function(manager) {
-                            var form = manager.showPopup();
-                        }
-                    });
+                    queyManagerContainer.querymanager();
                 }
             });
 
@@ -406,14 +420,24 @@
                     title:     translate('feature.edit'),
                     className: 'edit',
                     onClick:   function(olFeature, ui) {
-                        widget._openFeatureEditDialog(olFeature);
+                        // widget._openFeatureEditDialog(olFeature);
+                        var queyManagerContainer = $("<div/>");
+                        queyManagerContainer.querymanager();
                     }
                 });
                 buttons.push({
                     title:     translate('feature.bookmark'),
                     className: 'bookmark',
                     onClick:   function(olFeature, ui) {
-                        widget._openFeatureEditDialog(olFeature);
+                       $.notify("Bookmarked");
+                    }
+                });
+                buttons.push({
+                    title:     translate('feature.zoomTo'),
+                    className: 'zoomTo',
+                    onClick:   function(olFeature, ui) {
+                       $.notify("Zoom to " + olFeature.fid);
+                        widget.zoomToJsonFeature(olFeature);
                     }
                 });
 

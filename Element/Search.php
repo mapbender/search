@@ -30,7 +30,7 @@ class Search extends BaseElement
                              '../../vendor/blueimp/jquery-file-upload/js/jquery.fileupload.js',
                              '../../vendor/blueimp/jquery-file-upload/js/jquery.iframe-transport.js',
                              "/components/jquery-context-menu/jquery-context-menu-built.js",
-                             'querymanager.js',
+                             //'querymanager.js',
                              'mapbender.element.search.js'
                          ),
                      'css'   => array('sass/element/search.scss'),
@@ -280,25 +280,5 @@ class Search extends BaseElement
         }
 
         return new JsonResponse($results);
-    }
-
-    /**
-     * Get assets. This method is overloaded,
-     * course of needing to aggregate CSS from configuration.
-     *
-     * @inheritdoc
-     */
-    public function getAssets()
-    {
-        $configuration = $this->getConfiguration();
-        $assets        = parent::getAssets();
-        if (isset($configuration['css'])) {
-            if (is_array($configuration['css'])) {
-                $assets['css'] = array_merge($assets['css'], $configuration['css']);
-            } else {
-                $assets['css'][] = $configuration['css'];
-            }
-        }
-        return $assets;
     }
 }

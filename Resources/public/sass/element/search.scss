@@ -9,9 +9,30 @@
 
   .new-query {
     margin-bottom: 10px;
+    &:before {
+      font-family: FontAwesome;
+      content: "\f067";
+      padding-right: 3px;
+    }
+
   }
 
   .mapbender-element-result-table {
+
+    .bookmark {
+      &:before {
+        font-family: FontAwesome;
+        content: "\f005";
+        padding-right: 3px;
+      }
+    }
+    .zoomTo {
+      &:before {
+        font-family: FontAwesome;
+        content: "\f05b";
+        padding-right: 3px;
+      }
+    }
 
     table.dataTable {
       tbody > tr {
