@@ -117,6 +117,10 @@ class Search extends BaseElement
         return $feature;
     }
 
+    private function getMethod($text){
+        $text =substr($text,strrpos($text,"/")+1);
+        return $text;
+    }
     /**
      * @inheritdoc
      */
@@ -227,10 +231,13 @@ class Search extends BaseElement
                 break;
 
             case 'style/get':
-            case 'style/update':
             case 'style/remove':
                 $styleRequestHandler = new StyleController($this->container);
-                return $styleRequestHandler->handle($action, $requestService);
+                return $styleRequestHandler->{$this->getMethod($action)}($requestService->get("id"));
+            case 'style/update':
+                $styleRequestHandler = new StyleController($this->container);
+                return $styleRequestHandler->{$this->getMethod($action)}($requestService);
+            
             case 'datastore/get':
                 // TODO: get request ID and check
                 if (!isset($request['id']) || !isset($request['dataItemId'])) {

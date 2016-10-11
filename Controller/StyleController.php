@@ -40,25 +40,7 @@ class StyleController
         $this->styleManager    = $container->get("mapbender.style.manager");
         $this->user            = $this->securityContext->getUser();
     }
-
-
-    /**
-     * @param string  $key
-     * @param Request $request
-     */
-    public function handle($key, Request $request)
-    {
-        switch ($key) {
-            case 'style/get':
-                return $this->get($request->get("id"));
-            case 'style/update':
-                return $this->update($request);
-            case 'style/remove':
-                return $this->remove($request->get("id"));
-        }
-    }
-
-
+    
     /**
      * @param       $message
      * @param int   $status
