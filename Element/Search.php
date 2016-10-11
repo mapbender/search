@@ -7,6 +7,7 @@ use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Element\BaseElement;
 use Mapbender\DataSourceBundle\Entity\Feature;
 use Mapbender\DigitizerBundle\Component\Uploader;
+use Mapbender\SearchBundle\Controller\StyleController;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -228,10 +229,8 @@ class Search extends BaseElement
             case 'style/get':
             case 'style/update':
             case 'style/remove':
-
-                new StyleRequestHandler($configuration, $requestService, $this->container->get("kernel"));
-                break;
-
+                $styleRequestHandler = new StyleController($this->container);
+                return $styleRequestHandler->handle($action, $requestService);
             case 'datastore/get':
                 // TODO: get request ID and check
                 if (!isset($request['id']) || !isset($request['dataItemId'])) {
@@ -249,7 +248,7 @@ class Search extends BaseElement
                 $dataItemData = null;
                 if ($dataItem) {
                     $dataItemData = $dataItem->toArray();
-                    $results = $dataItemData;
+                    $results      = $dataItemData;
                 }
                 break;
 

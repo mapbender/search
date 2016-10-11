@@ -1,111 +1,162 @@
 <?php
-
 namespace Mapbender\SearchBundle\Controller;
 
+use FOM\UserBundle\Entity\User;
 use Mapbender\CoreBundle\Component\SecurityContext;
-
 use Mapbender\DataSourceBundle\Utils\HTTPStatusConstants;
-
-use Mapbender\SearchBundle\Security\StyleManagerVoter;
+use Mapbender\SearchBundle\Component\StyleManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Bundle\FrameworkBundle\Routing\Router;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class StyleController
  *
- * @package Mapbender\SearchBundle\Controller
+ * @package Mapbender\SearchBundle\Element
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
- * @Route("/style/")
- * TODO: This class is still WIP and non-functional !
  */
-class StyleController extends Controller
+class StyleController
 {
+    /** @var SecurityContext */
+    private $securityContext;
+
+    /** @var StyleManager */
+    private $styleManager;
+
+    /** @var User */
+    private $user;
 
     /**
-     * @param int $id
-     * @Router("/{id}")
-     * @Method("GET")
-     * @return JSONResponse
+     * StyleController constructor.
+     *
+     * @param Request $requestService
      */
-    public function get($id)
+    public function __construct(ContainerInterface $container)
     {
-        /** @var SecurityContext $securityContext * */
-        $securityContext = $this->container->get("security.context");
-        $styleManager    = $this->container->get("mapbender.style.manager");
-        $styleManager->setUserId($securityContext->getUser()->getId());
-        $styleMap = array();
-        if ($securityContext->isGranted(StyleManagerVoter::GET, $styleManager)) {
-            $styleMap = $styleManager->getById($id);
+        $this->container       = $container;
+        $this->securityContext = $container->get("security.context");
+        $this->styleManager    = $container->get("mapbender.style.manager");
+        $this->user            = $this->securityContext->getUser();
+    }
 
-            $status = $styleMap == null ? HTTPStatusConstants::_NOT_FOUND : HTTPStatusConstants::_OK;
-            $header = array();
-            if ($styleMap != null) {
-                $isAllowedToGet = $styleMap->getId() == $userId ||
-                    $styleMap->getId() == SecurityContext::USER_ANONYMOUS_ID;
 
-                if (!$isAllowedToGet) {
-                    $styleMap = array();
-                    $status   = HTTPStatusConstants::_UNAUTHORIZED;
 
-                } else {
+    /**
+     * @param string  $key
+     * @param Request $request
+     */
+    public function handle($key, Request $request)
+    {
 
-                }
+        $idErrorMessage = $this->checkId($key, $request);
+        if ($idErrorMessage !=null){}
+
+            switch ($key) {
+                case 'style/get':
+                    return $this->get($request);
+                case 'style/update':
+                    return $this->update($request);
+                case 'style/remove':
+                    return $this->remove($request);
             }
-
-        }
-
-        $response = new JsonResponse($styleMap, $status, $header);
-        return $response;
-
     }
 
 
     /**
-     * @param array $args
-     * @Router("{id}/update")
-     * @Method("POST")
-     * @return JSONResponse
+     * @param       $message
+     * @param int   $status
+     * @param array $headers
+     * @return JsonResponse
      */
-    public function update($args)
+    private function getErrorMessage($message, $status = HTTPStatusConstants::_BAD_REQUEST, $headers = array())
     {
-        /** @var SecurityContext $securityContext * */
-        $securityContext = $this->container->get("security.context");
-        $styleManager    = $this->get("mapbender.style.manager");
+        $errors = array('errors' => array('message' => $message));
+        return new JsonResponse($errors, $status, $headers);
+    }
 
-        $hasId  = isset($args["id"]);
-        $status = $hasId ? HTTPStatusConstants::_OK : HTTPStatusConstants::_BAD_REQUEST;
-
-        $data     = array();
-        $header   = array();
-        $response = new JsonResponse($data, $status, $header);
-        if ($hasId) {
-
-        }
-        return $response;
+    /**
+     * @param int   $id
+     * @param int   $status
+     * @param array $headers
+     * @return JsonResponse
+     */
+    private function getEmptyMessage($id, $status = HTTPStatusConstants::_NOT_FOUND, $headers = array())
+    {
+        $errors = array('errors' => array('message' => "Could not alter/find stylemap for id " . $id));
+        return new JsonResponse($errors, $status, $headers);
     }
 
 
     /**
-     * @param int $id
-     * @Router("{id}/remove")
-     * @return JSONResponse
+     * @param string  $key
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function get(Request $request)
+    {
+        $id = $request->get("id");
+        if ($this->securityContext->isUserAllowedToView($this->user)) {
+            $styleMap = $this->styleManager->getById($id);
+
+            if ($styleMap != null) {
+                return $this->getSuccessMessage($styleMap);
+            } else {
+                return $this->getEmptyMessage($id);
+            }
+        }
+
+        return $this->getErrorMessage("Get: Current user is not authorized to access style with id " . $id, HTTPStatusConstants::_UNAUTHORIZED);
+
+    }
+
+    /**
+     * Updates or creates new StyleMap
+     * @Route("{id}/update")
+     * @Method("POST")
+     *
+     * @param string  $key
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function update($request)
+    {
+        $id = $request->get("id");
+
+        if ($this->securityContext->isUserAllowedToEdit($this->user)) {
+            $styleMap = $this->styleManager->update($request->request->all());
+            return $this->getSuccessMessage($styleMap);
+        }
+        return $this->getErrorMessage("Update : Current user is not authorized to access style with id " . $id, HTTPStatusConstants::_UNAUTHORIZED);
+
+    }
+
+
+    /**
+     * @Route("{id}/remove",requirements={"id" = "\w+"})
+     * @param string  $key
+     * @param Request $request
+     * @return JsonResponse
      */
     public function remove($id)
     {
+        if ($this->securityContext->isUserAllowedToDelete($this->user)) {
+            $isRemoved = $this->styleManager->remove($id);
+            return $isRemoved ? $this->getSuccessMessage($isRemoved) : $this->getEmptyMessage($id);
+        }
+        return $this->getErrorMessage("Remove: Current user is not authorized to access style with id " . $id, HTTPStatusConstants::_UNAUTHORIZED);
+    }
 
-        /** @var SecurityContext $securityContext * */
-        $securityContext = $this->container->get("security.context");
-
-        $status = 200;
-        $data   = array();
-        $header = array();
-
-        $response = new JsonResponse($data, $status, $header);
-
-        return $response;
+    /**
+     * @param mixed $payload
+     * @param int   $status
+     * @param array $headers
+     * @return JsonResponse
+     */
+    private function getSuccessMessage($payload, $status = HTTPStatusConstants::_OK, $headers = array())
+    {
+        return new JsonResponse($payload, $status, $headers);
     }
 
 
