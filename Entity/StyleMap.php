@@ -105,13 +105,11 @@ class StyleMap extends UniqueBaseEntity
     }
 
     /**
-     * @param string $name
-     * @param Style  $map
      * @return StyleMap
      */
-    public function addStyle($name, $map)
+    public function addStyle($map)
     {
-        $this->styles[ $name ] = $map;
+        $this->styles[ $map->getName() ] = $map;
         return $this;
     }
 
