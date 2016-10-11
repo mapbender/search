@@ -41,29 +41,6 @@ class StyleController
         $this->user            = $this->securityContext->getUser();
     }
 
-
-
-    /**
-     * @param string  $key
-     * @param Request $request
-     */
-    public function handle($key, Request $request)
-    {
-
-        $idErrorMessage = $this->checkId($key, $request);
-        if ($idErrorMessage !=null){}
-
-            switch ($key) {
-                case 'style/get':
-                    return $this->get($request);
-                case 'style/update':
-                    return $this->update($request);
-                case 'style/remove':
-                    return $this->remove($request);
-            }
-    }
-
-
     /**
      * @param       $message
      * @param int   $status
@@ -90,13 +67,13 @@ class StyleController
 
 
     /**
-     * @param string  $key
-     * @param Request $request
+     * @Route("{id}",requirements={"id" = "\w+"})
+     * @param int $int
+     * @Method("GET")
      * @return JsonResponse
      */
-    public function get(Request $request)
+    public function get($id)
     {
-        $id = $request->get("id");
         if ($this->securityContext->isUserAllowedToView($this->user)) {
             $styleMap = $this->styleManager->getById($id);
 
@@ -113,17 +90,14 @@ class StyleController
 
     /**
      * Updates or creates new StyleMap
-     * @Route("{id}/update")
+     * @Route("update")
      * @Method("POST")
      *
-     * @param string  $key
      * @param Request $request
      * @return JsonResponse
      */
     public function update($request)
     {
-        $id = $request->get("id");
-
         if ($this->securityContext->isUserAllowedToEdit($this->user)) {
             $styleMap = $this->styleManager->update($request->request->all());
             return $this->getSuccessMessage($styleMap);
@@ -135,8 +109,7 @@ class StyleController
 
     /**
      * @Route("{id}/remove",requirements={"id" = "\w+"})
-     * @param string  $key
-     * @param Request $request
+     * @Method("GET")
      * @return JsonResponse
      */
     public function remove($id)
