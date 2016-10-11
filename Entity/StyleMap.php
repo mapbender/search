@@ -16,8 +16,14 @@ class StyleMap extends UniqueBaseEntity
     /* @var Style[] Styles */
     protected $styles;
 
-    /** @var string userId **/
+    /** @var string userId * */
     protected $userId;
+
+    public function __construct(array &$data = null)
+    {
+        $this->styles = array();
+        parent::__construct($data);
+    }
 
     /**
      * @return string
@@ -97,6 +103,18 @@ class StyleMap extends UniqueBaseEntity
         }
         return $result;
     }
+
+    /**
+     * @param string $name
+     * @param Style  $map
+     * @return StyleMap
+     */
+    public function addStyle($name, $map)
+    {
+        $this->styles[ $name ] = $map;
+        return $this;
+    }
+
 
     public function fill(array &$data)
     {
