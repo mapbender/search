@@ -42,7 +42,6 @@ class StyleController
     }
 
 
-
     /**
      * @param string  $key
      * @param Request $request
@@ -51,16 +50,17 @@ class StyleController
     {
 
         $idErrorMessage = $this->checkId($key, $request);
-        if ($idErrorMessage !=null){}
+        if ($idErrorMessage != null) {
+        }
 
-            switch ($key) {
-                case 'style/get':
-                    return $this->get($request);
-                case 'style/update':
-                    return $this->update($request);
-                case 'style/remove':
-                    return $this->remove($request);
-            }
+        switch ($key) {
+            case 'style/get':
+                return $this->get($request);
+            case 'style/update':
+                return $this->update($request);
+            case 'style/remove':
+                return $this->remove($request);
+        }
     }
 
 
@@ -90,13 +90,13 @@ class StyleController
 
 
     /**
-     * @param string  $key
-     * @param Request $request
+     * @Route("{id}",requirements={"id" = "\w+"})
+     * @param int $int
+     * @Method("GET")
      * @return JsonResponse
      */
-    public function get(Request $request)
+    public function get($id)
     {
-        $id = $request->get("id");
         if ($this->securityContext->isUserAllowedToView($this->user)) {
             $styleMap = $this->styleManager->getById($id);
 
@@ -116,7 +116,6 @@ class StyleController
      * @Route("{id}/update")
      * @Method("POST")
      *
-     * @param string  $key
      * @param Request $request
      * @return JsonResponse
      */
@@ -135,8 +134,7 @@ class StyleController
 
     /**
      * @Route("{id}/remove",requirements={"id" = "\w+"})
-     * @param string  $key
-     * @param Request $request
+     * @Method("GET")
      * @return JsonResponse
      */
     public function remove($id)
