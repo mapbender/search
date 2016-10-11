@@ -40,7 +40,7 @@ class StyleController
         $this->styleManager    = $container->get("mapbender.style.manager");
         $this->user            = $this->securityContext->getUser();
     }
-    
+
     /**
      * @param       $message
      * @param int   $status
@@ -90,7 +90,7 @@ class StyleController
 
     /**
      * Updates or creates new StyleMap
-     * @Route("{id}/update")
+     * @Route("update")
      * @Method("POST")
      *
      * @param Request $request
@@ -98,8 +98,6 @@ class StyleController
      */
     public function update($request)
     {
-        $id = $request->get("id");
-
         if ($this->securityContext->isUserAllowedToEdit($this->user)) {
             $styleMap = $this->styleManager->update($request->request->all());
             return $this->getSuccessMessage($styleMap);
