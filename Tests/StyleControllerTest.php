@@ -126,10 +126,9 @@ class StyleControllerTest extends WebTestCase
         /**@var StyleMap $styleMap*/
 
         list($crawler,$styleMap) = $this->saveMockStyleMap();
-
         $id      = $styleMap->getId();
         $client  = static::createClient();
-        $crawler = null;
+        
         switch ($action) {
             case "get":
                 $crawler = $client->request('get', $this->getGetRoute($id));
