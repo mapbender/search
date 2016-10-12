@@ -1,14 +1,7 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ransomware
- * Date: 06/10/16
- * Time: 16:14
- */
-
 namespace Mapbender\SearchBundle\Component;
 
-use Eslider\Entity\HKV;
+
 use Mapbender\SearchBundle\Entity\Style;
 use Mapbender\SearchBundle\Entity\StyleMap;
 use Symfony\Component\DependencyInjection\ContainerInterface;

@@ -3,11 +3,6 @@ namespace Mapbender\SearchBundle\Component;
 
 use Eslider\Driver\HKVStorage;
 use Eslider\Entity\HKV;
-use Eslider\Entity\HKVSearchFilter;
-use FOM\UserBundle\Entity\User;
-use Mapbender\ConfiguratorBundle\Component\BaseComponent;
-use Mapbender\ConfiguratorBundle\Component\Configurator;
-use Mapbender\CoreBundle\Component\SecurityContext;
 use Mapbender\SearchBundle\Entity\Query;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 

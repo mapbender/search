@@ -4,7 +4,6 @@ namespace Mapbender\SearchBundle\Entity;
 
 use Eslider\Entity\UniqueBaseEntity;
 use Mapbender\CoreBundle\Component\SecurityContext;
-use Mapbender\SearchBundle\Entity\StyleMap;
 /**
  * Class SearchQuery
  *

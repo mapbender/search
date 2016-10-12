@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ransomware
- * Date: 06/10/16
- * Time: 16:15
- */
 
 namespace Mapbender\SearchBundle\Component;
 
