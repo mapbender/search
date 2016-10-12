@@ -95,14 +95,11 @@ class StyleControllerTest extends WebTestCase
 
     public function testUpdate()
     {
-        $crawlerAndStyle = $this->saveMockStyleMap();
-        $crawler         = $crawlerAndStyle["crawler"];
-        $style           = $crawlerAndStyle["style"];
-
+        list($crawler, $styleMap) = $this->saveMockStyleMap();
         $updateFailedMessage = "";
         $this->assertGreaterThan(
             0,
-            $crawler->filter('html:contains("' . $style->getName() . '")')->count(), $updateFailedMessage
+            $crawler->filter('html:contains("' . $styleMap->getName() . '")')->count(), $updateFailedMessage
         );
 
     }
@@ -122,15 +119,15 @@ class StyleControllerTest extends WebTestCase
 
 
     /**
-     * @param $action
+     * @param string $action
      */
     private function getOrRemoveMockStyleMapById($action)
     {
-        $crawlerAndStyle = $this->saveMockStyleMap();
-        /** @var StyleMap $style */
-        $style = $crawlerAndStyle["style"];
+        /**@var StyleMap $styleMap*/
 
-        $id      = $style->getId();
+        list($crawler,$styleMap) = $this->saveMockStyleMap();
+
+        $id      = $styleMap->getId();
         $client  = static::createClient();
         $crawler = null;
         switch ($action) {
@@ -161,12 +158,10 @@ class StyleControllerTest extends WebTestCase
         $client   = static::createClient();
         $styleMap = $this->getMockStyleMap();
         $crawler  = $client->request('POST', $this->updateRoute, array(), array(), array(), json_encode($styleMap->toArray()));
-        $styles   = $styleMap->getStyles();
         $style    = $styleMap->pop();
-        return array("crawler" => $crawler, "style" => $style);
+        return array($crawler, $style);
 
     }
-
     /**
      * @return StyleMap
      */
