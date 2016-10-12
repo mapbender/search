@@ -201,18 +201,20 @@
          */
         _create: function() {
             var widget = this;
-            this.widget = this;
+            var element = widget.element;
+            var options = widget.options;
+            var target = options.target;
 
-            if(!Mapbender.checkTarget("mbSearch", widget.options.target)) {
+            if(!Mapbender.checkTarget("mbSearch", target)) {
                 return;
             }
 
-            var element = widget.element;
             widget.elementUrl = Mapbender.configuration.application.urls.element + '/' + element.attr('id') + '/';
-            Mapbender.elementRegistry.onElementReady(widget.options.target, $.proxy(widget._setup, widget));
+            Mapbender.elementRegistry.onElementReady(target, $.proxy(widget._setup, widget));
 
-            widget.load("querymanager.js");
-
+            widget.load("querymanager.js",function() {
+                widget.openQueryManager()
+            });
         },
 
         /**
@@ -221,16 +223,21 @@
          * @param uri
          * @param onComplete
          */
-        load:    function(uri, onComplete) {
+        load: function(uri, onComplete) {
             var assetUrl = Mapbender.configuration.application.urls.asset + "/bundles/mapbendersearch/";
             $.getScript(assetUrl + uri, function(data, statusCode, xhr) {
-                onComplete
-                    && typeof onComplete == "function"
-                    && onComplete(eval(data), data, statusCode, xhr, uri);
+                onComplete && typeof onComplete == "function" && onComplete(eval(data), data, statusCode, xhr, uri);
             });
         },
 
-        _setup: function() {
+        /**
+         * Open query manager
+         */
+        openQueryManager: function(query) {
+            $("<div/>").querymanager({query: query});
+        },
+
+        _setup:           function() {
             var frames = [];
             var widget = this;
             var element = $(widget.element);
@@ -243,10 +250,7 @@
                 title:    'Add query',
                 cssClass: 'new-query',
                 click:    function() {
-                    var queyManagerContainer = $("<div/>");
-                    queyManagerContainer.querymanager();
-
-                    debugger;
+                    widget.openQueryManager();
                 }
             });
 
@@ -465,8 +469,29 @@
                 var columns = [];
                 var newFeatureDefaultProperties = {};
                 if( !schema.hasOwnProperty("tableFields")){
-                    console.error(translate("table.fields.not.defined"),schema );
+                    console.error(translate("table.fields.not.defined"), schema);
                 }
+
+                frame.generateElements({
+                    type:     'fieldSet',
+                    css:      {
+                        'margin-top': "10px",
+                    },
+                    children: [{
+                        type:    'select',
+                        value:   0,
+                        options: ['CSV', 'XLS']
+                    }, {
+                        type:  'button',
+                        title: "Export"
+                    }, {
+                        type:  'button',
+                        title: "Edit"
+                    }, {
+                        type:  'button',
+                        title: "Style"
+                    }]
+                });
 
                 $.each(schema.tableFields, function(fieldName, fieldSettings) {
                     newFeatureDefaultProperties[fieldName] = "";
