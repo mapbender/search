@@ -198,31 +198,32 @@ $.widget("rw.querymanager", {
         children: [{
             type:        "input",
             name:        "inputQueryName",
-            placeholder: "Query name",
-            title:       "Query-name"
+            placeholder: "Eindeutige Name",
+            title:       "Name",
+            mandatory: true
         }, {
             type:        "checkbox",
             name:        "inputExtentOnly",
             placeholder: "Extent only",
-            title:   "Extent only",
-            checked: true
+            title:       "Extent only",
+            checked:     true
 
         }, {
-            type:     "container",
+            type:     "fieldSet",
             children: [{
-                type:        "input",
-                name:        "inputStyle",
-                placeholder: "Style",
-                title:       "Style",
-                css: {
-                    width: "85%"
-                }
+                type:    "select",
+                name:    "inputStyle",
+                title:   "Style",
+                options: ['Style #1', 'Style #2', 'Style #3', 'Style #4'],
+                css:     {
+                    width: "80%"
+                },
             }, {
                 type:     "button",
                 name:     "buttonExtendInputStyle",
                 cssClass: "bars",
-                css: {
-                    width: "15%"
+                css:      {
+                    width: "20%"
                 }
             }]
         }]
@@ -315,15 +316,26 @@ $.widget("rw.querymanager", {
             width:       "500px",
             buttons:     [{
                 name:  "cancelSave",
-                title: "Cancel",
+                text:  "Abbrechen",
                 click: function() {
                     dialog.popupDialog('close');
                 }
             }, {
                 name:  "buttonSave",
-                title: "Save",
+                text:  "Speichern",
                 click: function() {
-
+                    data = dialog.formData();
+                    if(dialog.find(".has-error").size()) {
+                        $.notify(JSON.stringify(data));
+                    } else {
+                        $.notify("Erfolgreich gespeichert", "info");
+                        dialog.dispatch("dataValid", {
+                            data:   data,
+                            dialog: dialog,
+                            widget: widget
+                        });
+                        dialog.popupDialog("close");
+                    }
                 }
             }]
         });
