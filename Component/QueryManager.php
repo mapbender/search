@@ -19,17 +19,21 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class QueryManager extends BaseManager
 {
-    /** @var HKVStorage DB */
+    /** @var HKVStorage $db **/
     protected $db;
 
 
-    /* @var Configuration configuration */
+    /** @var Configuration $configuration **/
     protected $configuration;
 
-    /* @var int UserId */
+    /** @var int $userId **/
     protected $userId;
 
-    const SERVICE_NAME="mapbender.query.manager";
+
+    const SERVICE_NAME = "mapbender.query.manager";
+
+    /** @var boolean $isPublic **/
+    private $public;
 
     /**
      * QueryManager constructor.
@@ -157,6 +161,24 @@ class QueryManager extends BaseManager
     public function getUserId()
     {
         return $this->userId;
+    }
+
+    /**
+     * @param boolean $public
+     * @return QueryManager
+     */
+    public function setPublic($public)
+    {
+        $this->public = $public;
+        return $this;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isPublic()
+    {
+        return $this->public;
     }
 
 

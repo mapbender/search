@@ -9,6 +9,7 @@
 namespace Mapbender\SearchBundle\Component;
 
 use Eslider\Entity\HKV;
+use Mapbender\SearchBundle\Entity\Style;
 use Mapbender\SearchBundle\Entity\StyleMap;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -39,7 +40,17 @@ class StyleManager extends BaseManager
      */
     public function create($args)
     {
-        $styleMap = new StyleMap($args);
+        /** @var array $args */
+        $styleMap = new StyleMap();
+        if (isset($args["styles"])) {
+            $styles = $args["styles"];
+            foreach ($styles as $key => $arg) {
+                $styleMap->addStyle(new Style($arg));
+            }
+        } else {
+            $styleMap->addStyle(new Style($args));
+        }
+
         $styleMap->setId($this->generateUUID());
         $styleMap->setUserId($this->getUserId());
         return $styleMap;
@@ -126,7 +137,7 @@ class StyleManager extends BaseManager
         foreach ($list as $key => $value) {
             $hasStyleMap = $value->getId() == $args["id"];
             if ($hasStyleMap) {
-                /** @var  StyleMap $value **/
+                /** @var  StyleMap $value * */
                 $value->fill($args);
                 return $this->save($value);
             }
