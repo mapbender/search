@@ -24,13 +24,13 @@ class BaseManager extends BaseComponent
     /* @var Configuration configuration */
     protected $configuration;
 
-    /* @var int userId */
+    /* @var string userId */
     protected $userId = SecurityContext::USER_ANONYMOUS_ID;
 
-    /** @var string tableName * */
+    /** @var string tableName */
     protected $tableName;
 
-    /** @var string path * */
+    /** @var string path */
     protected $path;
 
     /** @var Logger */

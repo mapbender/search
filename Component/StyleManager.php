@@ -1,6 +1,7 @@
 <?php
 namespace Mapbender\SearchBundle\Component;
 
+use Eslider\Entity\HKV;
 use Mapbender\CoreBundle\Component\SecurityContext;
 use Mapbender\SearchBundle\Entity\Style;
 use Mapbender\SearchBundle\Entity\StyleMap;
@@ -57,7 +58,7 @@ class StyleManager extends BaseManager
      * save query
      *
      * @param StyleMap $styleMap
-     * @return StyleMap
+     * @return HKV
      */
     public function save(StyleMap $styleMap, $scope = null, $parentId = null)
     {
@@ -139,7 +140,7 @@ class StyleManager extends BaseManager
         if ($isUpdating) {
             return $this->updateInternal($list, $args);
         } else {
-            return $this->createInternal($args);
+            return $this->create($args);
         }
 
     }
@@ -151,7 +152,11 @@ class StyleManager extends BaseManager
      */
     public function create($args)
     {
-        return $this->createInternal($args);
+        if ($args == null) {
+            return null;
+        }
+
+        return $this->createStyleMap($args);
     }
 
     /**
@@ -173,20 +178,6 @@ class StyleManager extends BaseManager
         }
 
         return $styleMaps;
-    }
-
-    /**
-     * @param  array $args
-     * @return StyleMap
-     */
-    private function createInternal($args)
-    {
-        if ($args == null) {
-            return null;
-        }
-
-        return $this->save($this->createStyleMap($args));
-
     }
 
 

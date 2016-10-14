@@ -19,7 +19,7 @@ class Query extends UniqueBaseEntity
     /** @var QueryCondition[] Conditions **/
     protected $conditions;
 
-    /** @var int Userid **/
+    /** @var int $userId **/
     protected $userId = SecurityContext::USER_ANONYMOUS_ID;
 
     /** @var StyleMap StyleMap * **/

@@ -149,7 +149,8 @@ class StyleControllerTest extends ControllerTest
         $response = $client->getResponse();
         var_dump($response->getContent());
 
-        $style = $styleMap->getStyles();
+        var_dump($styleMap);
+
         return array($crawler, $style);
 
     }
