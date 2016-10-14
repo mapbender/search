@@ -1,6 +1,6 @@
 <?php
 
-namespace Mapbender\DataSourceBundle\Utils;
+namespace Mapbender\SearchBundle\Utils;
 
 /**
  * Class QueryManagerTest

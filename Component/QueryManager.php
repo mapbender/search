@@ -3,6 +3,7 @@ namespace Mapbender\SearchBundle\Component;
 
 use Eslider\Driver\HKVStorage;
 use Eslider\Entity\HKV;
+use Mapbender\CoreBundle\Component\SecurityContext;
 use Mapbender\SearchBundle\Entity\Query;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -60,10 +61,11 @@ class QueryManager extends BaseManager
     /**
      * Get query by id
      *
-     * @param int $id
+     * @param int    $id
+     * @param string $userId
      * @return HKV|null
      */
-    public function getById($id, $userId = null)
+    public function getById($id, $userId = SecurityContext::USER_ANONYMOUS_ID)
     {
         $list = $this->listQueries();
 
@@ -89,18 +91,18 @@ class QueryManager extends BaseManager
     }
 
     /**
-     * remove query with certain $queryid
+     * Remove query with certain $queryId
      *
-     * @param $queryid
+     * @param $queryId
      * @return bool
      */
-    public function remove($queryid)
+    public function remove($queryId)
     {
         $found = false;
 
         $queries = $this->listQueries();
         foreach ($queries as $key => $query) {
-            if ($query->getId() == $queryid) {
+            if ($query->getId() == $queryId) {
                 unset($queries[ $key ]);
                 $found = true;
             }
@@ -158,23 +160,6 @@ class QueryManager extends BaseManager
         return $this->userId;
     }
 
-    /**
-     * @param boolean $public
-     * @return QueryManager
-     */
-    public function setPublic($public)
-    {
-        $this->public = $public;
-        return $this;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function isPublic()
-    {
-        return $this->public;
-    }
 
 
 }

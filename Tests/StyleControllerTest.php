@@ -1,11 +1,9 @@
 <?php
 
-namespace Mapbender\DataSourceBundle\Tests;
+namespace Mapbender\SearchBundle\Tests;
 
 use Mapbender\SearchBundle\Component\StyleManager;
 use Mapbender\SearchBundle\Entity\StyleMap;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
  * Class StyleControllerTest
@@ -13,25 +11,15 @@ use Symfony\Component\HttpKernel\KernelInterface;
  * @package Mapbender\DataSourceBundle\Tests
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
-class StyleControllerTest extends WebTestCase
+class StyleControllerTest extends ControllerTest
 {
-
-    /** @var StyleManager */
-    private $styleManager;
-
-    /** @var KernelInterface */
-    private $styleControllerKernel;
-
     /**@var array */
     private $styleData;
 
     /**@var string */
-    private $routeBase;
+    private $saveRoute;
 
     /**@var string */
-    private $updateRoute;
-    /**@var string */
-
     private $authErrorMessage;
 
     /**@var string */
@@ -39,35 +27,32 @@ class StyleControllerTest extends WebTestCase
 
     protected function setUp()
     {
-
-        $this->styleControllerKernel = $this->createKernel();
-        $this->styleControllerKernel->boot();
-
-        $this->styleManager = $this->styleControllerKernel->getContainer()->get("mapbender.style.manager");
-        $this->styleData    = array("name"            => "DefaultStyle",
-                                    "borderSize"      => 5,
-                                    "borderColor"     => "0c0c0c",
-                                    "borderAlpha"     => 255,
-                                    "backgroundSize"  => 41,
-                                    "backgroundAlpha" => 255,
-                                    "backgroundColor" => "fc0c0c",
-                                    "graphicWidth"    => "100px",
-                                    "graphicHeight"   => "100px",
-                                    "graphicOpacity"  => "50%",
-                                    "graphicXOffset"  => "40px",
-                                    "graphicYOffset"  => "20px",
-                                    "graphicName"     => "DefaultGraphic",
-                                    "externalGraphic" => "$(default)",
-                                    "fillOpacity"     => "50%",
-                                    "fillColor"       => "#411232",
-                                    "strokeColor"     => "#dcc23a",
-                                    "strokeOpacity"   => "30%",
-                                    "strokeWidth"     => "3px"
+        $this->styleData        = array("name"            => "DefaultStyle",
+                                        "borderSize"      => 5,
+                                        "borderColor"     => "0c0c0c",
+                                        "borderAlpha"     => 255,
+                                        "backgroundSize"  => 41,
+                                        "backgroundAlpha" => 255,
+                                        "backgroundColor" => "fc0c0c",
+                                        "graphicWidth"    => "100px",
+                                        "graphicHeight"   => "100px",
+                                        "graphicOpacity"  => "50%",
+                                        "graphicXOffset"  => "40px",
+                                        "graphicYOffset"  => "20px",
+                                        "graphicName"     => "DefaultGraphic",
+                                        "externalGraphic" => "$(default)",
+                                        "fillOpacity"     => "50%",
+                                        "fillColor"       => "#411232",
+                                        "strokeColor"     => "#dcc23a",
+                                        "strokeOpacity"   => "30%",
+                                        "strokeWidth"     => "3px"
         );
         $this->routeBase        = '/style/';
-        $this->updateRoute      = $this->routeBase . 'update';
+        $this->serviceName      = "mapbender.style.manager";
+        $this->saveRoute        = $this->routeBase . 'update';
         $this->authErrorMessage = "Failed to get/remove StyleMap because of a lack of permissions!";
         $this->saveErrorMessage = "Failed to get/remove StyleMap for given id. It was probably not correctly saved. Check the save/update test case.";
+        parent::setUp();
 
     }
 
@@ -95,8 +80,9 @@ class StyleControllerTest extends WebTestCase
 
     public function testUpdate()
     {
+        /**@var StyleMap $styleMap */
         list($crawler, $styleMap) = $this->saveMockStyleMap();
-        $updateFailedMessage = "";
+        $updateFailedMessage = "Failed to update/create StyleMap: " . json_encode($styleMap->toArray());
         $this->assertGreaterThan(
             0,
             $crawler->filter('html:contains("' . $styleMap->getName() . '")')->count(), $updateFailedMessage
@@ -123,12 +109,12 @@ class StyleControllerTest extends WebTestCase
      */
     private function getOrRemoveMockStyleMapById($action)
     {
-        /**@var StyleMap $styleMap*/
+        /**@var StyleMap $styleMap */
 
-        list($crawler,$styleMap) = $this->saveMockStyleMap();
-        $id      = $styleMap->getId();
-        $client  = static::createClient();
-        
+        list($crawler, $styleMap) = $this->saveMockStyleMap();
+        $id     = $styleMap->getId();
+        $client = static::createClient();
+
         switch ($action) {
             case "get":
                 $crawler = $client->request('get', $this->getGetRoute($id));
@@ -154,18 +140,25 @@ class StyleControllerTest extends WebTestCase
      */
     private function saveMockStyleMap()
     {
-        $client   = static::createClient();
-        $styleMap = $this->getMockStyleMap();
-        $crawler  = $client->request('POST', $this->updateRoute, array(), array(), array(), json_encode($styleMap->toArray()));
-        $style    = $styleMap->pop();
+        $client        = static::createClient();
+        $styleMap      = $this->getMockStyleMap();
+        $styleMapArray = $styleMap->toArray();
+        $styleMapJson  = json_encode($styleMapArray);
+
+        $crawler  = $client->request('POST', $this->saveRoute, $styleMapArray, array(), array('CONTENT_TYPE' => 'application/json'), $styleMapJson);
+        $response = $client->getResponse();
+        var_dump($response->getContent());
+
+        $style = $styleMap->getStyles();
         return array($crawler, $style);
 
     }
+
     /**
      * @return StyleMap
      */
     private function getMockStyleMap()
     {
-        return $this->styleManager->create($this->styleData);
+        return $this->manager->create($this->styleData);
     }
 }

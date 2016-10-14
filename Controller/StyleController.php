@@ -3,10 +3,9 @@ namespace Mapbender\SearchBundle\Controller;
 
 use FOM\UserBundle\Entity\User;
 use Mapbender\CoreBundle\Component\SecurityContext;
-use Mapbender\DataSourceBundle\Utils\HTTPStatusConstants;
 use Mapbender\SearchBundle\Component\StyleManager;
+use Mapbender\SearchBundle\Utils\HTTPStatusConstants;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -16,30 +15,32 @@ use Symfony\Component\Routing\Annotation\Route;
  *
  * @package Mapbender\SearchBundle\Element
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
+ * @Route("/style/")
  */
-class StyleController
+class StyleController extends MapbenderController
 {
+
     /** @var SecurityContext */
-    private $securityContext;
+    protected $securityContext;
 
     /** @var StyleManager */
-    private $styleManager;
+    protected $styleManager;
 
     /** @var User */
-    private $user;
+    protected $user;
 
     /**
-     * StyleController constructor.
+     *This method has desired services injected.
      *
-     * @param Request $requestService
+     * @return string[]
      */
-    public function __construct(ContainerInterface $container)
+    protected function mappings()
     {
-        $this->container       = $container;
-        $this->securityContext = $container->get("security.context");
-        $this->styleManager    = $container->get("mapbender.style.manager");
-        $this->user            = $this->securityContext->getUser();
+        return array("styleManager"    => static::MAPBENDER_STYLE_MANAGER,
+                     "securityContext" => static::MAPBENDER_SECURITY_CONTEXT
+        );
     }
+
 
     /**
      * @param       $message
@@ -96,13 +97,17 @@ class StyleController
      * @param Request $request
      * @return JsonResponse
      */
-    public function update($request)
+    public function update(Request $request)
     {
+
         if ($this->securityContext->isUserAllowedToEdit($this->user)) {
-            $styleMap = $this->styleManager->update($request->request->all());
+            $styles = $request->request->all();
+
+            $styleMap = $this->styleManager->update($styles);
+
             return $this->getSuccessMessage($styleMap);
         }
-        return $this->getErrorMessage("Update : Current user is not authorized to access style with id " . $id, HTTPStatusConstants::_UNAUTHORIZED);
+        return $this->getErrorMessage("Update : Current user is not authorized to access style with id " . $request->get("id"), HTTPStatusConstants::_UNAUTHORIZED);
 
     }
 

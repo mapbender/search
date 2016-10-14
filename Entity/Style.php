@@ -2,6 +2,7 @@
 
 namespace Mapbender\SearchBundle\Entity;
 
+
 use Eslider\Entity\UniqueBaseEntity;
 
 /**

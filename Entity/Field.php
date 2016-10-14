@@ -1,13 +1,15 @@
 <?php
 namespace Mapbender\SearchBundle\Entity;
 
+use Eslider\Entity\UniqueBaseEntity;
+
 /**
  * Class Field
  *
  * @package Mapbender\SearchBundle\Entity
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
-class Field
+class Field extends UniqueBaseEntity
 {
     /* @var string $name */
     protected $name;

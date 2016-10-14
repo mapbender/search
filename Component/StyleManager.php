@@ -1,7 +1,7 @@
 <?php
 namespace Mapbender\SearchBundle\Component;
 
-
+use Mapbender\CoreBundle\Component\SecurityContext;
 use Mapbender\SearchBundle\Entity\Style;
 use Mapbender\SearchBundle\Entity\StyleMap;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -28,24 +28,27 @@ class StyleManager extends BaseManager
 
 
     /**
-     * @param $args
+     * @param array $args
      * @return StyleMap
      */
-    public function create($args)
+    public function createStyleMap($args)
     {
-        /** @var array $args */
         $styleMap = new StyleMap();
-        if (isset($args["styles"])) {
-            $styles = $args["styles"];
-            foreach ($styles as $key => $arg) {
-                $styleMap->addStyle(new Style($arg));
-            }
-        } else {
-            $styleMap->addStyle(new Style($args));
-        }
-
+        $style    = $this->createStyle($args);
+        $styleMap->addStyle($style);
         $styleMap->setId($this->generateUUID());
         $styleMap->setUserId($this->getUserId());
+        return $styleMap;
+    }
+
+    /**
+     * @param $args
+     * @return Style
+     */
+    public function createStyle($args)
+    {
+        $styleMap = new Style($args);
+        $styleMap->setId($this->generateUUID());
         return $styleMap;
     }
 
@@ -58,20 +61,24 @@ class StyleManager extends BaseManager
      */
     public function save(StyleMap $styleMap, $scope = null, $parentId = null)
     {
-        $list   = $this->listStyleMaps();
+        $list = $this->listStyleMaps();
+
         $list[] = $styleMap;
         $userId = $styleMap->getUserId();
-        return $this->db->saveData($this->tableName, $list, $scope, $parentId, $userId);
+        $result = $this->db->saveData($this->tableName, $list, $scope, $parentId, $userId);
+
+        return $result;
     }
 
 
     /**
      * Get StyleMap by id
      *
-     * @param int $id
+     * @param int    $id
+     * @param string $userId
      * @return StyleMap|null
      */
-    public function getById($id, $userId = null)
+    public function getById($id, $userId = SecurityContext::USER_ANONYMOUS_ID)
     {
         $list = $this->listStyleMaps();
 
@@ -126,16 +133,60 @@ class StyleManager extends BaseManager
      */
     public function update($args)
     {
-        $list = $this->listStyleMaps();
+        $list       = $this->listStyleMaps();
+        $isUpdating = $list != null;
+
+        if ($isUpdating) {
+            return $this->updateInternal($list, $args);
+        } else {
+            return $this->createInternal($args);
+        }
+
+    }
+
+
+    /**
+     * @param $args
+     * @return StyleMap
+     */
+    public function create($args)
+    {
+        return $this->createInternal($args);
+    }
+
+    /**
+     * @param  StyleMap[] $list
+     * @param  array      $args
+     * @return array
+     */
+    private function updateInternal($list, $args)
+    {
+        $styleMaps = array();
         foreach ($list as $key => $value) {
             $hasStyleMap = $value->getId() == $args["id"];
             if ($hasStyleMap) {
-                /** @var  StyleMap $value * */
+                /** @var  StyleMap $value */
                 $value->fill($args);
-                return $this->save($value);
+                $styleMaps[] = $this->save($value);
             }
+
         }
-        return $this->save($this->create($args));
+
+        return $styleMaps;
+    }
+
+    /**
+     * @param  array $args
+     * @return StyleMap
+     */
+    private function createInternal($args)
+    {
+        if ($args == null) {
+            return null;
+        }
+
+        return $this->save($this->createStyleMap($args));
+
     }
 
 

@@ -4,7 +4,6 @@ namespace Mapbender\DataSourceBundle\Tests;
 
 use Mapbender\SearchBundle\Component\StyleManager;
 use Mapbender\SearchBundle\Entity\StyleMap;
-use Mapbender\SearchBundle\Entity\QueryCondition;
 
 /**
  * Class StyleManagerTest
@@ -96,23 +95,29 @@ class StyleManagerTest extends SymfonyTest2
      */
     public function getMockupStyleMap()
     {
-        $queryConditionArgs = array("fieldName" => "name",
-                                    "operator"  => "LIKE",
-                                    "value"     => "Matthias",
-                                    "sql"       => ""
+
+        $styleData = array("name"            => "DefaultStyle",
+                           "borderSize"      => 5,
+                           "borderColor"     => "0c0c0c",
+                           "borderAlpha"     => 255,
+                           "backgroundSize"  => 41,
+                           "backgroundAlpha" => 255,
+                           "backgroundColor" => "fc0c0c",
+                           "graphicWidth"    => "100px",
+                           "graphicHeight"   => "100px",
+                           "graphicOpacity"  => "50%",
+                           "graphicXOffset"  => "40px",
+                           "graphicYOffset"  => "20px",
+                           "graphicName"     => "DefaultGraphic",
+                           "externalGraphic" => "$(default)",
+                           "fillOpacity"     => "50%",
+                           "fillColor"       => "#411232",
+                           "strokeColor"     => "#dcc23a",
+                           "strokeOpacity"   => "30%",
+                           "strokeWidth"     => "3px"
         );
 
-        $queryCondition  = new QueryCondition($queryConditionArgs);
-        $queryConditions = array($queryCondition);
-
-        $styleMap  = new StyleMap();
-        $queryArgs = array("name"       => "Test",
-                           "conditions" => $queryConditions,
-                           "styleMap"   => $styleMap,
-                           "userId"     => 0
-        );
-
-        return $this->styleManager->create($queryArgs);
+        return $this->styleManager->createStyleMap($styleData);
 
     }
 

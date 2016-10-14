@@ -6,7 +6,8 @@
     <parameters>
 
         <!-- VOTER -->
-        <parameter key="mapbender.style.manager.voter.class">Mapbender\SearchBundle\Security\StyleManagerVoter</parameter>
+        <parameter key="mapbender.style.manager.voter.class">Mapbender\SearchBundle\Security\StyleManagerVoter
+        </parameter>
 
     </parameters>
 
@@ -18,6 +19,10 @@
             <argument type="service" id="service_container"/>
         </service>
         <service class="Mapbender\SearchBundle\Component\StyleManager" id="mapbender.style.manager">
+            <argument type="service" id="service_container"/>
+        </service>
+
+        <service class="Mapbender\SearchBundle\Controller\StyleController" id="mapbender.style.controller">
             <argument type="service" id="service_container"/>
         </service>
 
