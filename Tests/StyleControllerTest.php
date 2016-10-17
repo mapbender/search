@@ -2,8 +2,11 @@
 
 namespace Mapbender\SearchBundle\Tests;
 
+use Eslider\Driver\HKVStorage;
+use Eslider\Entity\HKV;
 use Mapbender\SearchBundle\Component\StyleManager;
 use Mapbender\SearchBundle\Entity\StyleMap;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class StyleControllerTest
@@ -49,22 +52,11 @@ class StyleControllerTest extends ControllerTest
         );
         $this->routeBase        = '/style/';
         $this->serviceName      = "mapbender.style.manager";
-        $this->saveRoute        = $this->routeBase . 'update';
+        $this->saveRoute        = $this->routeBase . 'save';
         $this->authErrorMessage = "Failed to get/remove StyleMap because of a lack of permissions!";
         $this->saveErrorMessage = "Failed to get/remove StyleMap for given id. It was probably not correctly saved. Check the save/update test case.";
         parent::setUp();
 
-    }
-
-    /**
-     *  Get the controller remove route based on the id
-     *
-     * @param $id
-     * @return string
-     */
-    private function getRemoveRoute($id)
-    {
-        return $this->routeBase . $id . "/remove";
     }
 
     /**
@@ -75,65 +67,25 @@ class StyleControllerTest extends ControllerTest
      */
     private function getGetRoute($id)
     {
-        return $this->routeBase . $id;
-    }
-
-    public function testUpdate()
-    {
-        /**@var StyleMap $styleMap */
-        list($crawler, $styleMap) = $this->saveMockStyleMap();
-        $updateFailedMessage = "Failed to update/create StyleMap: " . json_encode($styleMap->toArray());
-        $this->assertGreaterThan(
-            0,
-            $crawler->filter('html:contains("' . $styleMap->getName() . '")')->count(), $updateFailedMessage
-        );
-
+        return $this->routeBase . "get/" . $id;
     }
 
 
     public function testGet()
     {
 
-        $this->getOrRemoveMockStyleMapById("get");
+        $mockStyleMap = $this->saveMockStyleMap();
+        $hkv          = HKVStorage::decodeValue($mockStyleMap);
+        $id           = $hkv->getValue()->getId();
+        $client       = static::createClient();
+        $client->request('get', $this->getGetRoute($id));
+        $response = $client->getResponse();
+        $styleMap = HKVStorage::decodeValue($response->getContent());
 
+        $this->assertEquals($hkv->getValue(), $styleMap, "Saved and fetched stylemap not equal.");
+        $this->assertNotNull($styleMap, "Response may not be null.");
     }
 
-    public function testRemove()
-    {
-        $this->getOrRemoveMockStyleMapById("remove");
-    }
-
-
-    /**
-     * @param string $action
-     */
-    private function getOrRemoveMockStyleMapById($action)
-    {
-        /**@var StyleMap $styleMap */
-
-        list($crawler, $styleMap) = $this->saveMockStyleMap();
-        $id     = $styleMap->getId();
-        $client = static::createClient();
-
-        switch ($action) {
-            case "get":
-                $crawler = $client->request('get', $this->getGetRoute($id));
-                break;
-            case "remove":
-                $crawler = $client->request('get', $this->getRemoveRoute($id));
-                break;
-        }
-
-        $this->assertLessThan(
-            1,
-            $crawler->filter('html:contains("' . "not authorized" . '")')->count(), $this->authErrorMessage
-        );
-
-        $this->assertLessThan(
-            1,
-            $crawler->filter('html:contains("' . "not alter/find stylemap" . '")')->count(), $this->saveErrorMessage
-        );
-    }
 
     /**
      * @return array
@@ -144,16 +96,11 @@ class StyleControllerTest extends ControllerTest
         $styleMap      = $this->getMockStyleMap();
         $styleMapArray = $styleMap->toArray();
         $styleMapJson  = json_encode($styleMapArray);
-
-        $crawler  = $client->request('POST', $this->saveRoute, $styleMapArray, array(), array('CONTENT_TYPE' => 'application/json'), $styleMapJson);
-        $response = $client->getResponse();
-        var_dump($response->getContent());
-
-        var_dump($styleMap);
-
-        return array($crawler, $style);
+        $client->request('POST', $this->saveRoute, $styleMapArray, array(), array('CONTENT_TYPE' => 'application/json'), $styleMapJson);
+        return $client->getResponse()->getContent();
 
     }
+
 
     /**
      * @return StyleMap
