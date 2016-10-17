@@ -226,8 +226,8 @@ $.widget("rw.querymanager", {
                 title:   "Style",
                 value:   0,
                 options: ['Style #1', 'Style #2', 'Style #3', 'Style #4'],
-                css: {
-                    width: "80%"
+                css:     {
+                    width: "90%"
                 }
             }, {
                 type:     "button",
@@ -235,11 +235,11 @@ $.widget("rw.querymanager", {
                 cssClass: "bars",
                 title:    "Edit",
                 click:    function() {
-                    $.notify("Edit", 'notice');
+                    var styleManager = $("<div/>").featureStyleManager();
                     return false;
                 },
                 css:      {
-                    width: "20%"
+                    width: "10%"
                 }
             }]
         }]
