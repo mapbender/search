@@ -47,20 +47,30 @@ $.widget("rw.querymanager", {
 
     version: "1.0.1",
 
+    options: {
+        query: null
+    },
+
     source: {
         title:    "Source",
+        type:     'fieldSet',
         children: [{
             type:        "select",
             name:        "selectFeatureTyp",
             placeholder: "Feature type",
             title:       "Featuretype",
-            options:     ['IPE', 'Grundstücke', 'EO-Projekt', 'Bauliche Anlage aus SAP']
-
+            options:     ['IPE', 'Grundstücke', 'EO-Projekt', 'Bauliche Anlage aus SAP'],
+            css:      {
+                width: "90%"
+            }
         }, {
             type:     "button",
             name:     "buttonExtendFeatureType",
             cssClass: "bars",
-            title:    "Add"
+            title:    "Add",
+            css:      {
+                width: "10%"
+            }
         }]
     },
 
@@ -200,7 +210,7 @@ $.widget("rw.querymanager", {
             name:        "inputQueryName",
             placeholder: "Eindeutige Name",
             title:       "Name",
-            mandatory: true
+            mandatory:   true
         }, {
             type:        "checkbox",
             name:        "inputExtentOnly",
@@ -208,20 +218,26 @@ $.widget("rw.querymanager", {
             title:       "Extent only",
             checked:     true
 
-        }, {
+        }, {type: "breakLine"}, {
             type:     "fieldSet",
             children: [{
                 type:    "select",
                 name:    "inputStyle",
                 title:   "Style",
+                value:   0,
                 options: ['Style #1', 'Style #2', 'Style #3', 'Style #4'],
-                css:     {
+                css: {
                     width: "80%"
-                },
+                }
             }, {
                 type:     "button",
                 name:     "buttonExtendInputStyle",
                 cssClass: "bars",
+                title:    "Edit",
+                click:    function() {
+                    $.notify("Edit", 'notice');
+                    return false;
+                },
                 css:      {
                     width: "20%"
                 }
@@ -243,7 +259,6 @@ $.widget("rw.querymanager", {
 
     eventMap: {},
 
-    options: {},
 
     /**
      * Constructor
