@@ -14,7 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @package Mapbender\SearchBundle\Component
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
-class BaseManager extends BaseComponent
+abstract class BaseManager extends BaseComponent implements ManagerInterface
 {
 
     /** @var HKVStorage */
