@@ -14,22 +14,21 @@ use Mapbender\CoreBundle\Component\SecurityContext;
  */
 interface ManagerInterface
 {
-    public function save();
+    /**
+     * Saves the entity
+     *
+     * @param UniqueBaseEntity|BaseEntity $args
+     * @param int                         $scope
+     * @param int                         $parentId
+     * @return UniqueBaseEntity|BaseEntity
+     */
+    public function save($args, $scope = null, $parentId = null);
 
     /**
      * @param        $id
-     * @param string $userId
      * @return UniqueBaseEntity|BaseEntity
      */
-    public function getById($id, $userId = SecurityContext::USER_ANONYMOUS_ID);
-
-    /**
-     * Remove query with certain $queryId
-     *
-     * @param string|int $queryId
-     * @return bool
-     */
-    public function remove($queryId);
+    public function getById($id);
 
     /**
      * Returns the entity
