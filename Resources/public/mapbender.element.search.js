@@ -213,7 +213,8 @@
             Mapbender.elementRegistry.onElementReady(target, $.proxy(widget._setup, widget));
 
             widget.load("querymanager.js",function() {
-                widget.openQueryManager()
+                widget.openQueryManager();
+                $("<div/>").featureStyleManager();
             });
         },
 
