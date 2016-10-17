@@ -3,7 +3,6 @@ namespace Mapbender\SearchBundle\Component;
 
 use Eslider\Entity\HKV;
 use Eslider\Entity\HKVSearchFilter;
-use Mapbender\CoreBundle\Component\SecurityContext;
 use Mapbender\SearchBundle\Entity\Style;
 use Mapbender\SearchBundle\Entity\StyleMap;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -59,12 +58,29 @@ class StyleManager extends BaseManager
      * @param      $styleMap
      * @param int  $scope
      * @param int  $parentId
-     * @return HKV
+     * @return StyleMap
      */
     public function save($styleMap, $scope = null, $parentId = null)
     {
-        $result = $this->db->saveData($this->tableName, $styleMap, $scope, $parentId, $this->getUserId());
-        return $result;
+
+        $styleMaps = $this->listStyleMaps();
+
+        if ($styleMaps == null) {
+            $styleMaps = array();
+        }
+
+        $styleMaps[ $styleMap->getId() ] = $styleMap;
+        $result                          = $this->db->saveData($this->tableName, $styleMaps, $scope, $parentId, $this->getUserId());
+
+        $children = $result->getChildren();
+
+        foreach ($children as $key => $child) {
+            if ($child->getKey() == $styleMap->getId()) {
+                return $child;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -89,17 +105,8 @@ class StyleManager extends BaseManager
      */
     public function getById($id)
     {
-        $filter = new HKVSearchFilter();
-        $filter->setKey($this->tableName);
-        $filter->setUserId($this->getUserId());
-        $hkv = $this->db->get($filter);
-
-        $styleMap      = $hkv->getValue();
-        $styleMapFound = $hkv != null &&
-            $styleMap != null &&
-            $styleMap->getId() == $id;
-
-        return $styleMapFound ? $styleMap : null;
+        $styleMaps = $this->listStyleMaps();
+        return isset($styleMaps[ $id ]) ? $styleMaps[ $id ] : null;
 
     }
 
@@ -107,8 +114,7 @@ class StyleManager extends BaseManager
     /**
      * List all StyleMaps
      *
-     * @param int $id
-     * @return HKV[]|null
+     * @return HKV|null
      */
     public function listStyleMaps()
     {

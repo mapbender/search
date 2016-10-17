@@ -71,7 +71,7 @@ class StyleController extends MapbenderController
 
 
     /**
-     * @Route("get/{id}")
+     * @Route("{id}/get")
      * @param int $int
      * @Method("GET")
      * @return Response
@@ -86,7 +86,26 @@ class StyleController extends MapbenderController
                 return $this->getEmptyMessage($id);
             }
         }
-        return $this->getErrorMessage("Get: Current user is not authorized to access style with id " . $id, HTTPStatusConstants::_UNAUTHORIZED);
+        return $this->getErrorMessage("Get: Current user is not authorized to access style w ith id " . $id, HTTPStatusConstants::_UNAUTHORIZED);
+
+    }
+
+    /**
+     * @Route("list")
+     * @Method("GET")
+     * @return Response
+     */
+    public function listStyles()
+    {
+        if ($this->securityContext->isUserAllowedToView($this->user)) {
+            $styleMap = $this->styleManager->listStyleMaps();
+            if ($styleMap != null) {
+                return $this->getSuccessMessage($styleMap);
+            } else {
+                return $this->getEmptyMessage("all");
+            }
+        }
+        return $this->getErrorMessage("Get: Current user is not authorized to list styles", HTTPStatusConstants::_UNAUTHORIZED);
 
     }
 

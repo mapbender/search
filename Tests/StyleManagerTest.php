@@ -68,6 +68,8 @@ class StyleManagerTest extends SymfonyTest2
     }
 
 
+
+
     /**
      * Help methods
      */
@@ -87,7 +89,7 @@ class StyleManagerTest extends SymfonyTest2
     public function getMockupStyleMap()
     {
 
-        $styleData = array("name"            => "DefaultStyle",
+        $stylesData = array("name"            => "DefaultStyle",
                            "borderSize"      => 5,
                            "borderColor"     => "0c0c0c",
                            "borderAlpha"     => 255,
@@ -108,7 +110,7 @@ class StyleManagerTest extends SymfonyTest2
                            "strokeWidth"     => "3px"
         );
 
-        return $this->styleManager->createStyleMap($styleData);
+        return $this->styleManager->createStyleMap(array("styles"=>$stylesData));
 
     }
 

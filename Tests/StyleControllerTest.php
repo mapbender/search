@@ -3,10 +3,7 @@
 namespace Mapbender\SearchBundle\Tests;
 
 use Eslider\Driver\HKVStorage;
-use Eslider\Entity\HKV;
-use Mapbender\SearchBundle\Component\StyleManager;
 use Mapbender\SearchBundle\Entity\StyleMap;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class StyleControllerTest
@@ -21,6 +18,9 @@ class StyleControllerTest extends ControllerTest
 
     /**@var string */
     private $saveRoute;
+
+    /**@var string */
+    private $listRoute;
 
     /**@var string */
     private $authErrorMessage;
@@ -53,6 +53,7 @@ class StyleControllerTest extends ControllerTest
         $this->routeBase        = '/style/';
         $this->serviceName      = "mapbender.style.manager";
         $this->saveRoute        = $this->routeBase . 'save';
+        $this->listRoute        = $this->routeBase . 'list';
         $this->authErrorMessage = "Failed to get/remove StyleMap because of a lack of permissions!";
         $this->saveErrorMessage = "Failed to get/remove StyleMap for given id. It was probably not correctly saved. Check the save/update test case.";
         parent::setUp();
@@ -67,7 +68,7 @@ class StyleControllerTest extends ControllerTest
      */
     private function getGetRoute($id)
     {
-        return $this->routeBase . "get/" . $id;
+        return $this->routeBase . $id . "/get/";
     }
 
 
@@ -84,6 +85,29 @@ class StyleControllerTest extends ControllerTest
 
         $this->assertEquals($hkv->getValue(), $styleMap, "Saved and fetched stylemap not equal.");
         $this->assertNotNull($styleMap, "Response may not be null.");
+    }
+
+    public function testList()
+    {
+
+        $mockStyleMaps        = array();
+        $decodedMockStyleMaps = array();
+
+        for ($i = 0; $i < 10; $i++) {
+            $mockStyleMap           = $this->saveMockStyleMap();
+            $mockStyleMaps[]        = $mockStyleMap;
+            $decodedMockStyleMaps[] = HKVStorage::decodeValue($mockStyleMap);
+        }
+
+        $client = static::createClient();
+        $client->request('get', $this->listRoute);
+        $response = $client->getResponse();
+        $styleMap = HKVStorage::decodeValue($response->getContent());
+        
+        self::assertNotNull($styleMap,"List is null despite being filled by at least 10 style maps.");
+        foreach ($decodedMockStyleMaps as $k => $v) {
+            self::assertNotNull($styleMap[ $v->getValue()->getId() ], "At least one stylemap was not saved.");
+        }
     }
 
 
@@ -109,4 +133,6 @@ class StyleControllerTest extends ControllerTest
     {
         return $this->manager->create($this->styleData);
     }
+
+
 }
