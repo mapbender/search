@@ -132,7 +132,7 @@
             oneInstanceEdit: true,
             searchType: "currentExtent",
             inlineSearch: false,
-            useContextMenu: false,
+            useContextMenu: true,
             clustering: [
                 {scale: 5000000, distance: 30}
             ]
@@ -484,7 +484,10 @@
                         options: ['CSV', 'XLS']
                     }, {
                         type:  'button',
-                        title: "Export"
+                        title: "Export",
+                        click: function() {
+
+                        }
                     }, {
                         type:  'button',
                         title: "Edit"
