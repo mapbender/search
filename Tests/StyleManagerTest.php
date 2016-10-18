@@ -38,7 +38,7 @@ class StyleManagerTest extends SymfonyTest2
         $styleMap = $this->getMockupStyleMap();
         $hkv      = $this->styleManager->save($styleMap);
 
-        $saveFailedMessage = "StyleManager could not save the query: " . json_encode($styleMap->toArray());
+        $saveFailedMessage = "StyleManager could not save the stylemap: " . json_encode($styleMap->toArray());
         $idKey             = "id";
 
         self::assertNotNull($hkv, $saveFailedMessage);
@@ -52,8 +52,9 @@ class StyleManagerTest extends SymfonyTest2
         $styleMap = $this->getMockupStyleMap();
         $this->styleManager->save($styleMap);
         $result = $this->styleManager->getById($styleMap->getId());
-        $getByIdFailedMessage = "ID: " . $styleMap->getId() . " StyleManager could not resolve the query:" . json_encode($styleMap->toArray());
+        $getByIdFailedMessage = "ID: " . $styleMap->getId() . " StyleManager could not resolve the stylemap:" . json_encode($styleMap->toArray());
         self::assertNotNull($result, $getByIdFailedMessage);
+
 
     }
 
@@ -65,6 +66,9 @@ class StyleManagerTest extends SymfonyTest2
         $styleMaps = $this->styleManager->listStyleMaps();
         $count     = $styleMaps != null ? count($styleMaps) : 0;
         self::assertGreaterThan(0, $count);
+        $notContainedInListErrorMessage = "The saved StyleMap is not contained by the stylemap list!";
+        self::assertEquals($styleMap, $styleMaps[$styleMap->getId()], $notContainedInListErrorMessage);
+
     }
 
 

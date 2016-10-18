@@ -15,21 +15,16 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class QueryManager extends BaseManager
 {
-    /** @var HKVStorage $db **/
+    /** @var HKVStorage $db */
     protected $db;
 
 
-    /** @var Configuration $configuration **/
+    /** @var Configuration $configuration */
     protected $configuration;
-
-    /** @var int $userId **/
-    protected $userId;
 
 
     const SERVICE_NAME = "mapbender.query.manager";
 
-    /** @var boolean $isPublic **/
-    private $public;
 
     /**
      * QueryManager constructor.
@@ -44,17 +39,45 @@ class QueryManager extends BaseManager
 
 
     /**
-     * save query
+     * Save query
+     *
+     * @param array $array
+     * @return HKV
+     */
+    public function saveArray($array, $scope = null, $parentId = null)
+    {
+        $query = $this->create($array);
+        $HKV   = $this->save($query, $scope, $parentId);
+        return $HKV;
+    }
+
+    /**
+     * Save query
      *
      * @param Query $query
      * @return HKV
      */
-    public function save(Query $query, $scope = null, $parentId = null)
+    public function save($query, $scope = null, $parentId = null)
     {
-        $list   = $this->listQueries();
-        $list[] = $query;
-        $userId = $query->getUserId();
-        return $this->db->saveData($this->tableName, $list, $scope, $parentId, $userId);
+        $queries = $this->listQueries();
+
+        if ($queries == null) {
+            $queries = array();
+        }
+
+        $queries[ $query->getId() ] = $query;
+        $result                     = $this->db->saveData($this->tableName, $queries, $scope, $parentId, $this->getUserId());
+
+        $children = $result->getChildren();
+
+        foreach ($children as $key => $child) {
+            if ($child->getKey() == $query->getId()) {
+                return $child;
+            }
+        }
+
+        return null;
+
     }
 
 
@@ -65,17 +88,10 @@ class QueryManager extends BaseManager
      * @param string $userId
      * @return HKV|null
      */
-    public function getById($id, $userId = SecurityContext::USER_ANONYMOUS_ID)
+    public function getById($id)
     {
-        $list = $this->listQueries();
-
-        foreach ($list as $key => $value) {
-            if ($value->getId() == $id && $value->getUserId() == $userId) {
-                return $value;
-            }
-        }
-
-        return null;
+        $queries = $this->listQueries();
+        return isset($queries[ $id ]) ? $queries[ $id ] : null;
     }
 
 
@@ -90,26 +106,6 @@ class QueryManager extends BaseManager
         return $this->db->getData($this->tableName, null, null, $this->getUserId());
     }
 
-    /**
-     * Remove query with certain $queryId
-     *
-     * @param $queryId
-     * @return bool
-     */
-    public function remove($queryId)
-    {
-        $found = false;
-
-        $queries = $this->listQueries();
-        foreach ($queries as $key => $query) {
-            if ($query->getId() == $queryId) {
-                unset($queries[ $key ]);
-                $found = true;
-            }
-        }
-        $this->db->saveData($this->tableName, $queries);
-        return $found;
-    }
 
     /**
      * @param $args
@@ -159,7 +155,6 @@ class QueryManager extends BaseManager
     {
         return $this->userId;
     }
-
 
 
 }

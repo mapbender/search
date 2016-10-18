@@ -4,10 +4,13 @@ namespace Mapbender\SearchBundle\Tests;
 
 use Mapbender\SearchBundle\Component\ManagerInterface;
 
+use Symfony\Bundle\FrameworkBundle\Client;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\BrowserKit\Cookie;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 /**
  * Class ControllerTest
@@ -42,5 +45,32 @@ class ControllerTest extends WebTestCase
             throw new Exception("The service " . $this->serviceName . " has to be registered.");
         }
     }
+
+    /**
+     * @param Client $client
+     * @param string $username
+     * @param string $password
+     */
+    protected function login($client, $username = null, $password = null)
+    {
+
+        $session = $client->getContainer()->get('session');
+
+        // the firewall context (defaults to the firewall name)
+        $firewall = 'secured_area';
+
+        $token = new UsernamePasswordToken('root', "root", $firewall, array('ROLE_ADMIN'));
+        $session->set('_security_'.$firewall, serialize($token));
+        $session->save();
+
+        $cookie = new Cookie($session->getName(), $session->getId());
+        $client->getCookieJar()->set($cookie);
+
+
+
+
+
+    }
+
 
 }
