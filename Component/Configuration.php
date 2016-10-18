@@ -170,5 +170,22 @@ class Configuration extends UniqueBaseEntity
         return $this;
     }
 
+    /**
+     * @return string
+     */
+    public function getConnection()
+    {
+        return $this->connection;
+    }
+
+    /**
+     * @param string $connection
+     */
+    public function setConnection($connection)
+    {
+        $this->connection = $connection;
+        return $this;
+    }
+
 
 }
