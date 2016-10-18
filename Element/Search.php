@@ -236,12 +236,19 @@ class Search extends BaseElement
                 break;
 
             case 'style/get':
-            case 'style/remove':
                 $styleRequestHandler = $this->container->get("mapbender.style.controller");
                 return $styleRequestHandler->{$this->getMethod($action)}($requestService->get("id"));
-            case 'style/update':
-                $styleRequestHandler = new StyleController($this->container);
+            case 'style/save':
+                $styleRequestHandler = $this->container->get("mapbender.style.controller");
                 return $styleRequestHandler->{$this->getMethod($action)}($requestService);
+
+            case 'query/get':
+                $queryRequestHandler = $this->container->get("mapbender.query.controller");
+                return $queryRequestHandler->{$this->getMethod($action)}($requestService->get("id"));
+
+            case 'query/save':
+                $queryRequestHandler = $this->container->get("mapbender.query.controller");
+                return $queryRequestHandler->{$this->getMethod($action)}($requestService);
 
             case 'datastore/get':
                 // TODO: get request ID and check
