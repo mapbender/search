@@ -12,12 +12,8 @@ use Eslider\Entity\UniqueBaseEntity;
  */
 class Configuration extends UniqueBaseEntity
 {
-
-    const DEFAULT_CONNECTION = "default";
-
     /** @var string Connection ** */
-    protected $connection = DEFAULT_CONNECTION;
-
+    protected $connectionName = "default";
 
     /**
      * Permission
@@ -185,6 +181,24 @@ class Configuration extends UniqueBaseEntity
     {
         $this->connection = $connection;
         return $this;
+    }
+
+    /**
+     * @param string $connectionName
+     * @return Configuration
+     */
+    public function setConnectionName($connectionName)
+    {
+        $this->connectionName = $connectionName;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getConnectionName()
+    {
+        return $this->connectionName;
     }
 
 
