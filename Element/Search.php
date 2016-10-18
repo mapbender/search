@@ -32,6 +32,7 @@ class Search extends BaseElement
                              '../../vendor/blueimp/jquery-file-upload/js/jquery.iframe-transport.js',
                              "/components/jquery-context-menu/jquery-context-menu-built.js",
                              //'querymanager.js',
+                             '/components/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js',
                              '../../vendor/mapbender/style-manager/Resources/public/feature-style-manager.js',
                              'mapbender.element.search.js'
                          ),

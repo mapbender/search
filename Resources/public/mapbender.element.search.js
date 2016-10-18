@@ -132,7 +132,7 @@
             oneInstanceEdit: true,
             searchType: "currentExtent",
             inlineSearch: false,
-            useContextMenu: false,
+            useContextMenu: true,
             clustering: [
                 {scale: 5000000, distance: 30}
             ]
@@ -213,7 +213,8 @@
             Mapbender.elementRegistry.onElementReady(target, $.proxy(widget._setup, widget));
 
             widget.load("querymanager.js",function() {
-                widget.openQueryManager()
+                widget.openQueryManager();
+                $("<div/>").featureStyleManager();
             });
         },
 
@@ -483,7 +484,10 @@
                         options: ['CSV', 'XLS']
                     }, {
                         type:  'button',
-                        title: "Export"
+                        title: "Export",
+                        click: function() {
+
+                        }
                     }, {
                         type:  'button',
                         title: "Edit"
