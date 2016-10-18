@@ -2,7 +2,6 @@
 namespace Mapbender\SearchBundle\Component;
 
 use Eslider\Entity\HKV;
-use Eslider\Entity\HKVSearchFilter;
 use Mapbender\SearchBundle\Entity\Style;
 use Mapbender\SearchBundle\Entity\StyleMap;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -41,6 +40,8 @@ class StyleManager extends BaseManager
     }
 
     /**
+     * Create style object
+     *
      * @param $args
      * @return Style
      */
@@ -62,7 +63,6 @@ class StyleManager extends BaseManager
      */
     public function save($styleMap, $scope = null, $parentId = null)
     {
-
         $styleMaps = $this->listStyleMaps();
 
         if ($styleMaps == null) {
@@ -86,16 +86,19 @@ class StyleManager extends BaseManager
     /**
      * Save query
      *
-     * @param array $array
-     * @return HKV
+     * @param array $args
+     * @param null  $scope
+     * @param null  $parentId
+     * @return StyleMap
      */
-    public function saveArray($array, $scope = null, $parentId = null)
+    public function saveArray($args, $scope = null, $parentId = null)
     {
-        $styleMap = $this->createStyleMap($array);
-        $HKV      = $this->save($styleMap, $scope, $parentId);
-        return $HKV;
+        return $this->save(
+            $this->createStyleMap($args),
+            $scope,
+            $parentId
+        );
     }
-
 
     /**
      * Get StyleMap by id
@@ -109,7 +112,6 @@ class StyleManager extends BaseManager
         return isset($styleMaps[ $id ]) ? $styleMaps[ $id ] : null;
 
     }
-
 
     /**
      * List all StyleMaps
@@ -130,10 +132,13 @@ class StyleManager extends BaseManager
         if ($args == null) {
             return null;
         }
+
         $style = $this->createStyle($args);
 
-        return $this->createStyleMap(array("styles" => array($style->getName() => $style)));
+        return $this->createStyleMap(
+            array(
+                "styles" => array($style->getName() => $style)
+            )
+        );
     }
-
-
 }
