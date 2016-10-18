@@ -84,7 +84,7 @@ class StyleManager extends BaseManager
     }
 
     /**
-     * save query
+     * Save query
      *
      * @param array $array
      * @return HKV

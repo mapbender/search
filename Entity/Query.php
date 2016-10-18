@@ -4,6 +4,7 @@ namespace Mapbender\SearchBundle\Entity;
 
 use Eslider\Entity\UniqueBaseEntity;
 use Mapbender\CoreBundle\Component\SecurityContext;
+
 /**
  * Class SearchQuery
  *
@@ -13,31 +14,31 @@ use Mapbender\CoreBundle\Component\SecurityContext;
 class Query extends UniqueBaseEntity
 {
 
-    /** @var string Name **/
+    /** @var string Name */
     protected $name;
 
-    /** @var QueryCondition[] Conditions **/
+    /** @var QueryCondition[] Conditions */
     protected $conditions;
 
-    /** @var int $userId **/
-    protected $userId = SecurityContext::USER_ANONYMOUS_ID;
+    /** @var int $userId */
+    protected $userId;
 
-    /** @var StyleMap StyleMap * **/
+    /** @var StyleMap StyleMap */
     protected $styleMap;
 
-    /** @var string ConnectionName  **/
+    /** @var string ConnectionName */
     protected $connectionName;
 
-    /** @var string SchemaName  **/
+    /** @var string SchemaName */
     protected $schemaName;
 
-    /** @var string TableName **/
+    /** @var string TableName */
     protected $tableName;
 
-    /** @var string SQL **/
+    /** @var string SQL */
     protected $sql;
 
-    /** @var string Where **/
+    /** @var string Where */
     protected $where;
 
     /**

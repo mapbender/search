@@ -3,14 +3,6 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
-    <parameters>
-
-        <!-- VOTER -->
-        <parameter key="mapbender.style.manager.voter.class">Mapbender\SearchBundle\Security\StyleManagerVoter
-        </parameter>
-
-    </parameters>
-
 
     <services>
         <!-- Services -->
@@ -26,10 +18,10 @@
             <argument type="service" id="service_container"/>
         </service>
 
-
-        <!-- Voters -->
-        <service id="mapbender.style.manager.voter" class="%mapbender.style.manager.voter.class%" public="false">
-            <tag name="security.voter"/>
+        <service class="Mapbender\SearchBundle\Controller\QueryController" id="mapbender.query.controller">
+            <argument type="service" id="service_container"/>
         </service>
+
+
     </services>
 </container>
