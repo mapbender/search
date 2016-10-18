@@ -4,7 +4,6 @@ namespace Mapbender\DataSourceBundle\Tests;
 
 use Mapbender\SearchBundle\Component\StyleManager;
 use Mapbender\SearchBundle\Entity\StyleMap;
-use Mapbender\SearchBundle\Entity\QueryCondition;
 
 /**
  * Class StyleManagerTest
@@ -30,29 +29,30 @@ class StyleManagerTest extends SymfonyTest2
     {
         $dropDatabaseFailedMessage = "It was not possible to drop the Database";
         self::assertTrue($this->styleManager->dropDatabase(), $dropDatabaseFailedMessage);
-
     }
+
 
     public function testSave()
     {
 
-        $query = $this->getMockupStyleMap();
-        $hkv   = $this->styleManager->save($query);
+        $styleMap = $this->getMockupStyleMap();
+        $hkv      = $this->styleManager->save($styleMap);
 
-        $saveFailedMessage = "StyleManager could not save the query: " . json_encode($query->toArray());
+        $saveFailedMessage = "StyleManager could not save the query: " . json_encode($styleMap->toArray());
         $idKey             = "id";
+
+        self::assertNotNull($hkv, $saveFailedMessage);
         self::assertObjectHasAttribute($idKey, $hkv, $saveFailedMessage);
-        self::assertNotEquals(null, $hkv->getId(), json_encode($hkv));
+        self::assertNotEquals(null, $hkv->getId(), "\$hkv has no id field because it was not saved properly!: " . json_encode($hkv));
     }
 
     public function testGetById()
     {
 
-        $query = $this->getMockupStyleMap();
-        $this->styleManager->save($query);
-        $result = $this->styleManager->getById($query->getId());
-
-        $getByIdFailedMessage = "ID: " . $query->getId() . " StyleManager could not resolve the query:" . json_encode($query->toArray());
+        $styleMap = $this->getMockupStyleMap();
+        $this->styleManager->save($styleMap);
+        $result = $this->styleManager->getById($styleMap->getId());
+        $getByIdFailedMessage = "ID: " . $styleMap->getId() . " StyleManager could not resolve the query:" . json_encode($styleMap->toArray());
         self::assertNotNull($result, $getByIdFailedMessage);
 
     }
@@ -60,22 +60,14 @@ class StyleManagerTest extends SymfonyTest2
 
     public function testListQueries()
     {
-        $query = $this->getMockupStyleMap();
-        $this->styleManager->save($query);
-        $queryList = $this->styleManager->listStyleMaps();
-        $count     = $queryList != null ? count($queryList) : 0;
+        $styleMap = $this->getMockupStyleMap();
+        $this->styleManager->save($styleMap);
+        $styleMaps = $this->styleManager->listStyleMaps();
+        $count     = $styleMaps != null ? count($styleMaps) : 0;
         self::assertGreaterThan(0, $count);
     }
 
-    public function testRemove()
-    {
-        $query = $this->getMockupStyleMap();
-        $this->styleManager->save($query);
-        $removingFailedMessage = "The StyleManager could not resolve the query : " . json_encode($query->toArray());
 
-        $this->styleManager->remove($query->getId());
-        self::assertNull($this->styleManager->getById($query->getId()), $removingFailedMessage);
-    }
 
 
     /**
@@ -96,23 +88,29 @@ class StyleManagerTest extends SymfonyTest2
      */
     public function getMockupStyleMap()
     {
-        $queryConditionArgs = array("fieldName" => "name",
-                                    "operator"  => "LIKE",
-                                    "value"     => "Matthias",
-                                    "sql"       => ""
+
+        $stylesData = array("name"            => "DefaultStyle",
+                           "borderSize"      => 5,
+                           "borderColor"     => "0c0c0c",
+                           "borderAlpha"     => 255,
+                           "backgroundSize"  => 41,
+                           "backgroundAlpha" => 255,
+                           "backgroundColor" => "fc0c0c",
+                           "graphicWidth"    => "100px",
+                           "graphicHeight"   => "100px",
+                           "graphicOpacity"  => "50%",
+                           "graphicXOffset"  => "40px",
+                           "graphicYOffset"  => "20px",
+                           "graphicName"     => "DefaultGraphic",
+                           "externalGraphic" => "$(default)",
+                           "fillOpacity"     => "50%",
+                           "fillColor"       => "#411232",
+                           "strokeColor"     => "#dcc23a",
+                           "strokeOpacity"   => "30%",
+                           "strokeWidth"     => "3px"
         );
 
-        $queryCondition  = new QueryCondition($queryConditionArgs);
-        $queryConditions = array($queryCondition);
-
-        $styleMap  = new StyleMap();
-        $queryArgs = array("name"       => "Test",
-                           "conditions" => $queryConditions,
-                           "styleMap"   => $styleMap,
-                           "userId"     => 0
-        );
-
-        return $this->styleManager->create($queryArgs);
+        return $this->styleManager->createStyleMap(array("styles"=>$stylesData));
 
     }
 

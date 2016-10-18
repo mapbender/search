@@ -11,19 +11,19 @@ use Eslider\Entity\UniqueBaseEntity;
  */
 class QueryCondition extends UniqueBaseEntity
 {
-    /** @var string Name **/
+    /** @var string Name */
     protected $name;
 
-    /** @var string $fieldName* **/
+    /** @var string $fieldName */
     protected $fieldName;
 
-    /** @var string Operator **/
+    /** @var string Operator */
     protected $operator;
 
-    /** @var string Value **/
+    /** @var string Value */
     protected $value;
 
-    /** @var string SQL **/
+    /** @var string SQL */
     protected $sql;
 
     /**

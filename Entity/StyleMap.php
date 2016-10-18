@@ -68,9 +68,9 @@ class StyleMap extends UniqueBaseEntity
      * @param string $name
      * @return Style
      */
-    public function setStyle(Style $style, $name = 'default')
+    public function setStyle(Style $style)
     {
-        $this->styles[ $name ] = $style;
+        $this->styles[ $style->getName() ] = $style;
         return $style;
     }
 
@@ -110,7 +110,7 @@ class StyleMap extends UniqueBaseEntity
     }
 
     /**
-     * @param Style
+     * @param Style $map
      * @return StyleMap
      */
     public function addStyle($map)
@@ -121,7 +121,7 @@ class StyleMap extends UniqueBaseEntity
 
 
     /**
-     * @return Style|mixed|null
+     * @return Style|null
      */
     public function pop()
     {
@@ -131,6 +131,11 @@ class StyleMap extends UniqueBaseEntity
         return null;
     }
 
+    /**
+     * @param array $data
+     * @internal param $methods
+     * @internal param $vars
+     */
     public function fill(array &$data)
     {
         parent::fill($data);

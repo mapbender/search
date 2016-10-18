@@ -1,15 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ransomware
- * Date: 06/10/16
- * Time: 16:15
- */
 
 namespace Mapbender\SearchBundle\Component;
 
 use Eslider\Driver\HKVStorage;
 use Mapbender\ConfiguratorBundle\Component\BaseComponent;
+use Mapbender\CoreBundle\Component\SecurityContext;
+use Monolog\Logger;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -18,7 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @package Mapbender\SearchBundle\Component
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
-class BaseManager extends BaseComponent
+abstract class BaseManager extends BaseComponent implements ManagerInterface
 {
 
     /** @var HKVStorage */
@@ -28,14 +24,17 @@ class BaseManager extends BaseComponent
     /* @var Configuration configuration */
     protected $configuration;
 
-    /* @var int userid */
-    protected $userId;
+    /* @var string userId */
+    protected $userId = SecurityContext::USER_ANONYMOUS_ID;
 
-    /** @var string tableName **/
+    /** @var string tableName */
     protected $tableName;
 
-    /** @var string path **/
+    /** @var string path */
     protected $path;
+
+    /** @var Logger */
+    protected $logger;
 
     /**
      * BaseManager constructor.
@@ -50,6 +49,7 @@ class BaseManager extends BaseComponent
         $this->path      = $kernel->getRootDir() . "/config/" . $tableName . ".sqlite";
         $this->tableName = $tableName;
         $this->db        = new HKVStorage($this->path, $tableName);
+        $this->logger    = $this->container->get('logger');
 
         parent::__construct($container);
     }

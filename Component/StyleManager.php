@@ -1,14 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ransomware
- * Date: 06/10/16
- * Time: 16:14
- */
-
 namespace Mapbender\SearchBundle\Component;
 
 use Eslider\Entity\HKV;
+use Eslider\Entity\HKVSearchFilter;
 use Mapbender\SearchBundle\Entity\Style;
 use Mapbender\SearchBundle\Entity\StyleMap;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -21,6 +15,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class StyleManager extends BaseManager
 {
+    const SERVICE_NAME = "mapbender.style.manager";
+    const TABLE_NAME   = "styles";
+
     /**
      * StyleManager constructor.
      *
@@ -28,47 +25,75 @@ class StyleManager extends BaseManager
      */
     public function __construct(ContainerInterface $container = null)
     {
-        parent::__construct($container, "styles");
+        parent::__construct($container, self::TABLE_NAME);
     }
 
-    const SERVICE_NAME = "mapbender.style.manager";
-
-
     /**
-     * @param $args
+     * @param array $args
      * @return StyleMap
      */
-    public function create($args)
+    public function createStyleMap($args)
     {
-        /** @var array $args */
-        $styleMap = new StyleMap();
-        if (isset($args["styles"])) {
-            $styles = $args["styles"];
-            foreach ($styles as $key => $arg) {
-                $styleMap->addStyle(new Style($arg));
-            }
-        } else {
-            $styleMap->addStyle(new Style($args));
-        }
-
+        $styleMap = new StyleMap($args);
         $styleMap->setId($this->generateUUID());
         $styleMap->setUserId($this->getUserId());
         return $styleMap;
     }
 
+    /**
+     * @param $args
+     * @return Style
+     */
+    public function createStyle($args)
+    {
+        $styleMap = new Style($args);
+        $styleMap->setId($this->generateUUID());
+        return $styleMap;
+    }
+
+
+    /**
+     * Save style.
+     *
+     * @param      $styleMap
+     * @param int  $scope
+     * @param int  $parentId
+     * @return StyleMap
+     */
+    public function save($styleMap, $scope = null, $parentId = null)
+    {
+
+        $styleMaps = $this->listStyleMaps();
+
+        if ($styleMaps == null) {
+            $styleMaps = array();
+        }
+
+        $styleMaps[ $styleMap->getId() ] = $styleMap;
+        $result                          = $this->db->saveData($this->tableName, $styleMaps, $scope, $parentId, $this->getUserId());
+
+        $children = $result->getChildren();
+
+        foreach ($children as $key => $child) {
+            if ($child->getKey() == $styleMap->getId()) {
+                return $child;
+            }
+        }
+
+        return null;
+    }
 
     /**
      * save query
      *
-     * @param StyleMap $styleMap
-     * @return StyleMap
+     * @param array $array
+     * @return HKV
      */
-    public function save(StyleMap $styleMap, $scope = null, $parentId = null)
+    public function saveArray($array, $scope = null, $parentId = null)
     {
-        $list   = $this->listStyleMaps();
-        $list[] = $styleMap;
-        $userId = $styleMap->getUserId();
-        return $this->db->saveData($this->tableName, $list, $scope, $parentId, $userId);
+        $styleMap = $this->createStyleMap($array);
+        $HKV      = $this->save($styleMap, $scope, $parentId);
+        return $HKV;
     }
 
 
@@ -78,25 +103,18 @@ class StyleManager extends BaseManager
      * @param int $id
      * @return StyleMap|null
      */
-    public function getById($id, $userId = null)
+    public function getById($id)
     {
-        $list = $this->listStyleMaps();
+        $styleMaps = $this->listStyleMaps();
+        return isset($styleMaps[ $id ]) ? $styleMaps[ $id ] : null;
 
-        foreach ($list as $key => $value) {
-            if ($value->getId() == $id && $value->getUserId() == $userId) {
-                return $value;
-            }
-        }
-
-        return null;
     }
 
 
     /**
      * List all StyleMaps
      *
-     * @param int $id
-     * @return StyleMap[]
+     * @return HKV|null
      */
     public function listStyleMaps()
     {
@@ -104,45 +122,17 @@ class StyleManager extends BaseManager
     }
 
     /**
-     * Remove StyleMap with certain $styleMapId
-     *
-     * @param $styleMapId
-     * @return bool
-     */
-    public function remove($styleMapId)
-    {
-        $found = false;
-
-        $styleMaps = $this->listStyleMaps();
-        foreach ($styleMaps as $key => $query) {
-            if ($query->getId() == $styleMapId) {
-                unset($styleMaps[ $key ]);
-                $found = true;
-            }
-        }
-        $this->db->saveData($this->tableName, $styleMaps);
-        return $found;
-    }
-
-
-    /**
-     * Update existing
-     *
-     * @param array $args
+     * @param $args
      * @return StyleMap
      */
-    public function update($args)
+    public function create($args)
     {
-        $list = $this->listStyleMaps();
-        foreach ($list as $key => $value) {
-            $hasStyleMap = $value->getId() == $args["id"];
-            if ($hasStyleMap) {
-                /** @var  StyleMap $value * */
-                $value->fill($args);
-                return $this->save($value);
-            }
+        if ($args == null) {
+            return null;
         }
-        return $this->save($this->create($args));
+        $style = $this->createStyle($args);
+
+        return $this->createStyleMap(array("styles" => array($style->getName() => $style)));
     }
 
 
