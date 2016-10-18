@@ -16,6 +16,7 @@ class MapbenderController extends Controller implements ContainerAwareInterface
 {
 
 
+    const MAPBENDER_QUERY_MANAGER    = "mapbender.query.manager";
     const MAPBENDER_STYLE_MANAGER    = "mapbender.style.manager";
     const MAPBENDER_SECURITY_CONTEXT = "security.context";
 
