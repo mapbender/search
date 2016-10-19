@@ -8,6 +8,7 @@ use Mapbender\DataSourceBundle\Element\BaseElement;
 use Mapbender\DataSourceBundle\Entity\Feature;
 use Mapbender\DigitizerBundle\Component\Uploader;
 use Mapbender\SearchBundle\Controller\StyleController;
+use Mapbender\SearchBundle\Entity\ExportRequest;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -151,14 +152,14 @@ class Search extends BaseElement
         } else {
             throw new Exception("FeatureType settings not correct");
         }
-
+        
         $results = array();
 
         switch ($action) {
             case 'select':
-
-                $results = $featureType->search(array_merge($defaultCriteria, $request));
-                break;
+                $queryManager   = $this->container->get("mapbender.query.manager");
+                $featureService = $this->container->get("features");
+                return $queryManager->listQueriesByFeatureType($featureService);
 
             case 'save':
                 // save once
@@ -185,7 +186,7 @@ class Search extends BaseElement
                                 $featureData["properties"][ $fileConfig['field'] ] = $newUrl;
                             }
 
-                            $feature = $featureType->save($featureData);
+                            $feature  = $featureType->save($featureData);
                             $results = array_merge($featureType->search(array(
                                 'srid'  => $feature->getSrid(),
                                 'where' => $featureType->getUniqueId() . '=' . $feature->getId())));
@@ -193,7 +194,7 @@ class Search extends BaseElement
                     }
                     $results = $featureType->toFeatureCollection($results);
                 } catch (DBALException $e) {
-                    $message = $debugMode ? $e->getMessage() : "Feature can't be saved. Maybe something is wrong configured or your database isn't available?\n" .
+                    $message  = $debugMode ? $e->getMessage() : "Feature can't be saved. Maybe something is wrong configured or your database isn't available?\n" .
                         "For more information have a look at the webserver log file. \n Error code: " . $e->getCode();
                     $results = array('errors' => array(
                         array('message' => $message, 'code' => $e->getCode())
@@ -231,7 +232,7 @@ class Search extends BaseElement
                         //'DELETE'
                     ),
                 ));
-                $results                    = array_merge($uploadHandler->get_response(), $urlParameters);
+                $results                   = array_merge($uploadHandler->get_response(), $urlParameters);
 
                 break;
 
@@ -250,6 +251,11 @@ class Search extends BaseElement
                 $queryRequestHandler = $this->container->get("mapbender.query.controller");
                 return $queryRequestHandler->{$this->getMethod($action)}($requestService);
 
+            case 'export':
+                $exportController = $this->container->get("mapbender.export.controller");
+                $exportRequest    = new ExportRequest($request);
+                return $exportController->{$action}($exportRequest);
+
             case 'datastore/get':
                 // TODO: get request ID and check
                 if (!isset($request['id']) || !isset($request['dataItemId'])) {
@@ -267,7 +273,7 @@ class Search extends BaseElement
                 $dataItemData = null;
                 if ($dataItem) {
                     $dataItemData = $dataItem->toArray();
-                    $results      = $dataItemData;
+                    $results     = $dataItemData;
                 }
                 break;
 
