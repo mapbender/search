@@ -3,8 +3,11 @@ namespace Mapbender\SearchBundle\Component;
 
 use Eslider\Driver\HKVStorage;
 use Eslider\Entity\HKV;
-use Mapbender\CoreBundle\Component\SecurityContext;
+use Mapbender\DataSourceBundle\Component\FeatureType;
+use Mapbender\DataSourceBundle\Component\FeatureTypeService;
+use Mapbender\DataSourceBundle\Entity\Feature;
 use Mapbender\SearchBundle\Entity\Query;
+use Mapbender\SearchBundle\Entity\QueryCondition;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -29,8 +32,7 @@ class QueryManager extends BaseManager
     /**
      * QueryManager constructor.
      *
-     * @param ContainerInterface
-     * $container
+     * @param ContainerInterface|null $container
      */
     public function __construct(ContainerInterface $container = null)
     {
@@ -98,14 +100,73 @@ class QueryManager extends BaseManager
     /**
      * List all queries
      *
-     * @param int $id
-     * @return HKV[]
+     * @return \Mapbender\SearchBundle\Entity\Query[]
+     * @internal param int $id
      */
     public function listQueries()
     {
         return $this->db->getData($this->tableName, null, null, $this->getUserId());
     }
 
+    /**
+     * Returns all
+     *
+     * @param FeatureTypeService $featureService
+     * @return Feature[]
+     */
+    public function listQueriesByFeatureType($featureService = null)
+    {
+        $queries = $this->listQueries();
+        $results = array();
+        if ($featureService != null) {
+            foreach ($featureService->getFeatureTypeDeclarations() as $i => $feature) {
+                foreach ($queries as $j => $query) {
+                    $this->addFeatureType($results, $featureService, $feature, $query);
+                }
+            }
+        }
+
+        return $results;
+    }
+
+
+    /**
+     * @param array              $results
+     * @param FeatureTypeService $featureService
+     * @param Feature            $feature
+     * @param Query              $query
+     */
+    private function addFeatureType(&$results, $featureService, $feature, $query)
+    {
+        if ($feature->getType() == $query->getFeatureType()) {
+
+            $featureType     = $featureService->get($feature->getType());
+            $queryConditions = $query->getConditions();
+
+            $criteria = $this->buildCriteria($queryConditions, $featureType);
+            array_merge($results, $featureType->search($criteria));
+
+        }
+    }
+
+    /**
+     * @param QueryCondition[] $queryConditions
+     * @param FeatureType      $featureType
+     * @return array
+     */
+    private function buildCriteria($queryConditions, $featureType)
+    {
+        $queryParts = array();
+        $escaper    = $featureType->getConnection();
+        foreach ($queryConditions as $k => $condition) {
+            $queryParts[] = $escaper->quoteIdentifier($condition->getFieldName())
+                . " " . $condition->getOperator()
+                . " " . $escaper->quote($condition->getValue())
+                . " ";
+
+        }
+        return array("where" => implode(" AND ", $queryParts));
+    }
 
     /**
      * @param $args
