@@ -30,7 +30,7 @@ class Query extends UniqueBaseEntity
     protected $connectionName;
 
     /** @var string SchemaName */
-    protected $schemaName;
+    protected $featureType;
 
     /** @var string TableName */
     protected $tableName;
@@ -116,18 +116,18 @@ class Query extends UniqueBaseEntity
     /**
      * @return string
      */
-    public function getSchemaName()
+    public function getFeatureType()
     {
-        return $this->schemaName;
+        return $this->featureType;
     }
 
     /**
-     * @param string $schemaName
+     * @param string $featureType
      * @return Query
      */
-    public function setSchemaName($schemaName)
+    public function setFeatureType($featureType)
     {
-        $this->schemaName = $schemaName;
+        $this->featureType = $featureType;
         return $this;
     }
 
