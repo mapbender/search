@@ -152,14 +152,15 @@ class Search extends BaseElement
         } else {
             throw new Exception("FeatureType settings not correct");
         }
-        
         $results = array();
 
         switch ($action) {
             case 'select':
                 $queryManager   = $this->container->get("mapbender.query.manager");
                 $featureService = $this->container->get("features");
-                return $queryManager->listQueriesByFeatureType($featureService);
+
+                $featureTypes = isset($request['features']) ? $request['features'] : array();
+                return $queryManager->listQueriesByAllFeatureTypes($featureService, $featureTypes);
 
             case 'save':
                 // save once
@@ -186,7 +187,7 @@ class Search extends BaseElement
                                 $featureData["properties"][ $fileConfig['field'] ] = $newUrl;
                             }
 
-                            $feature  = $featureType->save($featureData);
+                            $feature = $featureType->save($featureData);
                             $results = array_merge($featureType->search(array(
                                 'srid'  => $feature->getSrid(),
                                 'where' => $featureType->getUniqueId() . '=' . $feature->getId())));
@@ -194,7 +195,7 @@ class Search extends BaseElement
                     }
                     $results = $featureType->toFeatureCollection($results);
                 } catch (DBALException $e) {
-                    $message  = $debugMode ? $e->getMessage() : "Feature can't be saved. Maybe something is wrong configured or your database isn't available?\n" .
+                    $message = $debugMode ? $e->getMessage() : "Feature can't be saved. Maybe something is wrong configured or your database isn't available?\n" .
                         "For more information have a look at the webserver log file. \n Error code: " . $e->getCode();
                     $results = array('errors' => array(
                         array('message' => $message, 'code' => $e->getCode())
@@ -235,7 +236,6 @@ class Search extends BaseElement
                 $results                   = array_merge($uploadHandler->get_response(), $urlParameters);
 
                 break;
-
             case 'style/get':
                 $styleRequestHandler = $this->container->get("mapbender.style.controller");
                 return $styleRequestHandler->{$this->getMethod($action)}($requestService->get("id"));
@@ -273,7 +273,7 @@ class Search extends BaseElement
                 $dataItemData = null;
                 if ($dataItem) {
                     $dataItemData = $dataItem->toArray();
-                    $results     = $dataItemData;
+                    $results      = $dataItemData;
                 }
                 break;
 
