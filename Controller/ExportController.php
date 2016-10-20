@@ -43,12 +43,14 @@ class ExportController extends MapbenderController
 
     /**
      * @Method("POST")
+     * @Route("export")
      * @param ExportRequest $request
+     * @return ExportResponse
      */
     public function export($request)
     {
 
-        $features = $this->queryManager->listQueriesByFeatureType($this->featureService);
+        $features = $this->queryManager->listQueriesByFeatureTypes($this->featureService, $request->getIds());
 
         return new ExportResponse($features, $request->getFilename(),
             $request->getType(), $request->getEncodingFrom(),
