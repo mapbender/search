@@ -52,25 +52,26 @@ $.widget("rw.querymanager", {
     },
 
     source: {
-        title:    "Source",
-        type:     'fieldSet',
+        title:    'Source',
         children: [{
-            type:        "select",
-            name:        "selectFeatureTyp",
-            placeholder: "Feature type",
-            title:       "Featuretype",
-            options:     ['IPE', 'Grundstücke', 'EO-Projekt', 'Bauliche Anlage aus SAP'],
-            css:      {
-                width: "90%"
-            }
-        }, {
-            type:     "button",
-            name:     "buttonExtendFeatureType",
-            cssClass: "bars",
-            title:    "Add",
-            css:      {
-                width: "10%"
-            }
+            type:     "fieldSet",
+            children: [{
+                type:    "select",
+                name:    "selectFeatureTyp",
+                title:   "Feature type",
+                options: ['IPE', 'Grundstücke', 'EO-Projekt', 'Bauliche Anlage aus SAP'],
+                css:     {
+                    width: "90%"
+                }
+            }, {
+                type:     "button",
+                name:     "buttonExtendFeatureType",
+                cssClass: "bars button btn",
+                title:    "Add",
+                css:      {
+                    width: "10%"
+                }
+            }]
         }]
     },
 
@@ -222,7 +223,7 @@ $.widget("rw.querymanager", {
             type:     "fieldSet",
             children: [{
                 type:    "select",
-                name:    "inputStyle",
+                name:    "style",
                 title:   "Style",
                 value:   0,
                 options: ['Style #1', 'Style #2', 'Style #3', 'Style #4'],
@@ -233,12 +234,21 @@ $.widget("rw.querymanager", {
                 type:     "button",
                 name:     "buttonExtendInputStyle",
                 cssClass: "bars",
-                title:    "Edit",
-                click:    function() {
-                    var styleManager = $("<div/>").featureStyleManager();
-                    return false;
+                title: "Edit",
+                click: function(e) {
+                    debugger;
+                    var styleManagerContainer = $("<div/>");
+                    styleManagerContainer.featureStyleManager();
+                    styleManagerContainer.bind('featurestylemanagersubmit', function(e, fsm) {
+                        var featureStyleData = fsm.form.formData();
+                        widget.query('style/update', {
+                            data: featureStyleData
+                        }).done(function(r) {
+                            console.log(e, data);
+                        });
+                    });
                 },
-                css:      {
+                css:   {
                     width: "10%"
                 }
             }]
