@@ -212,14 +212,14 @@
             widget.elementUrl = Mapbender.configuration.application.urls.element + '/' + element.attr('id') + '/';
             Mapbender.elementRegistry.onElementReady(target, $.proxy(widget._setup, widget));
 
-            widget.load("querymanager.js",function() {
+            // For test only
+            widget.load("querymanager.js", function() {
                 widget.openQueryManager();
-                $("<div/>").featureStyleManager();
             });
         },
 
         /**
-         * Load extern source
+         * Load external source
          *
          * @param uri
          * @param onComplete
@@ -238,7 +238,20 @@
             $("<div/>").querymanager({query: query});
         },
 
-        _setup:           function() {
+        /**
+         * Create query
+         */
+        openCreateDialog: function(query) {
+            var widget = this;
+            widget.openQueryManager();
+        },
+
+        /**
+         * Setup widget
+         *
+         * @private
+         */
+        _setup: function() {
             var frames = [];
             var widget = this;
             var element = $(widget.element);
@@ -247,16 +260,18 @@
             var map = widget.map = $('#' + options.target).data('mapbenderMbMap').map.olMap;
 
             element.generateElements({
-                type:     'button',
-                title:    'Add query',
-                cssClass: 'new-query',
-                click:    function() {
-                    widget.openQueryManager();
-                }
+                type:     'fieldSet',
+                children: [{
+                    type:     'button',
+                    title:    'Add query',
+                    cssClass: 'btn new-query',
+                    click:    function() {
+                        widget.openCreateDialog();
+                    }
+                }]
             });
 
             element.append(selector);
-            // element.append(selector);
 
             function createSubMenu(olFeature) {
                 var layer = olFeature.layer;
