@@ -4,6 +4,7 @@ namespace Mapbender\SearchBundle\Tests;
 
 use Mapbender\SearchBundle\Component\ManagerInterface;
 
+use Mapbender\SearchBundle\Controller\MapbenderController;
 use Symfony\Bundle\FrameworkBundle\Client;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\BrowserKit\Cookie;
@@ -13,15 +14,15 @@ use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 /**
- * Class ControllerTest
+ * Class ManagerTest
  *
  * @package Mapbender\DataSourceBundle\Tests
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
-class ControllerTest extends WebTestCase
+class ManagerTest extends WebTestCase
 {
 
-    /** @var ManagerInterface */
+    /** @var ManagerInterface|MapbenderController */
     protected $manager;
     /** @var string */
     protected $serviceName;

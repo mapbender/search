@@ -5,7 +5,7 @@
 
 
     <services>
-        <!-- Services -->
+        <!-- Manager -->
 
         <service class="Mapbender\SearchBundle\Component\QueryManager" id="mapbender.query.manager">
             <argument type="service" id="service_container"/>
@@ -14,11 +14,21 @@
             <argument type="service" id="service_container"/>
         </service>
 
+        <service class="Mapbender\DataSourceBundle\Component\FeatureType" id="mapbender.featuretype.manager">
+            <argument type="service" id="service_container"/>
+        </service>
+
+
+        <!-- Services -->
         <service class="Mapbender\SearchBundle\Controller\StyleController" id="mapbender.style.controller">
             <argument type="service" id="service_container"/>
         </service>
 
         <service class="Mapbender\SearchBundle\Controller\QueryController" id="mapbender.query.controller">
+            <argument type="service" id="service_container"/>
+        </service>
+
+        <service class="Mapbender\SearchBundle\Controller\ExportController" id="mapbender.export.controller">
             <argument type="service" id="service_container"/>
         </service>
 

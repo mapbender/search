@@ -8,6 +8,7 @@ use Mapbender\DataSourceBundle\Element\BaseElement;
 use Mapbender\DataSourceBundle\Entity\Feature;
 use Mapbender\DigitizerBundle\Component\Uploader;
 use Mapbender\SearchBundle\Controller\StyleController;
+use Mapbender\SearchBundle\Entity\ExportRequest;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -151,14 +152,15 @@ class Search extends BaseElement
         } else {
             throw new Exception("FeatureType settings not correct");
         }
-
         $results = array();
 
         switch ($action) {
             case 'select':
+                $queryManager   = $this->container->get("mapbender.query.manager");
+                $featureService = $this->container->get("features");
 
-                $results = $featureType->search(array_merge($defaultCriteria, $request));
-                break;
+                $featureTypes = isset($request['features']) ? $request['features'] : array();
+                return $queryManager->listQueriesByAllFeatureTypes($featureService, $featureTypes);
 
             case 'save':
                 // save once
@@ -231,17 +233,28 @@ class Search extends BaseElement
                         //'DELETE'
                     ),
                 ));
-                $results                    = array_merge($uploadHandler->get_response(), $urlParameters);
+                $results                   = array_merge($uploadHandler->get_response(), $urlParameters);
 
                 break;
-
             case 'style/get':
-            case 'style/remove':
                 $styleRequestHandler = $this->container->get("mapbender.style.controller");
                 return $styleRequestHandler->{$this->getMethod($action)}($requestService->get("id"));
-            case 'style/update':
-                $styleRequestHandler = new StyleController($this->container);
+            case 'style/save':
+                $styleRequestHandler = $this->container->get("mapbender.style.controller");
                 return $styleRequestHandler->{$this->getMethod($action)}($requestService);
+
+            case 'query/get':
+                $queryRequestHandler = $this->container->get("mapbender.query.controller");
+                return $queryRequestHandler->{$this->getMethod($action)}($requestService->get("id"));
+
+            case 'query/save':
+                $queryRequestHandler = $this->container->get("mapbender.query.controller");
+                return $queryRequestHandler->{$this->getMethod($action)}($requestService);
+
+            case 'export':
+                $exportController = $this->container->get("mapbender.export.controller");
+                $exportRequest    = new ExportRequest($request);
+                return $exportController->{$action}($exportRequest);
 
             case 'datastore/get':
                 // TODO: get request ID and check

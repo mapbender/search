@@ -11,7 +11,7 @@ use Mapbender\SearchBundle\Entity\StyleMap;
  * @package Mapbender\DataSourceBundle\Tests
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
-class StyleControllerTest extends ControllerTest
+class StyleControllerTest extends ManagerTest
 {
     /**@var array */
     private $styleData;
