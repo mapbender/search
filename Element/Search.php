@@ -7,7 +7,6 @@ use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Element\BaseElement;
 use Mapbender\DataSourceBundle\Entity\Feature;
 use Mapbender\DigitizerBundle\Component\Uploader;
-use Mapbender\SearchBundle\Controller\StyleController;
 use Mapbender\SearchBundle\Entity\ExportRequest;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -156,11 +155,15 @@ class Search extends BaseElement
 
         switch ($action) {
             case 'select':
+                $results = $featureType->search(array_merge($defaultCriteria, $request));
+                break;
+
+            case 'queries/list':
                 $queryManager   = $this->container->get("mapbender.query.manager");
                 $featureService = $this->container->get("features");
-
-                $featureTypes = isset($request['features']) ? $request['features'] : array();
-                return $queryManager->listQueriesByAllFeatureTypes($featureService, $featureTypes);
+                $featureTypes   = isset($request['features']) ? $request['features'] : array();
+                $results        = $queryManager->listQueriesByFeatureTypes($featureService, $featureTypes);
+                break;
 
             case 'save':
                 // save once
