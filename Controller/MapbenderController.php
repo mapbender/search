@@ -2,7 +2,7 @@
 
 namespace Mapbender\SearchBundle\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Mapbender\ConfiguratorBundle\Controller\BaseController;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @package Mapbender\SearchBundle\Controller
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
-class MapbenderController extends Controller implements ContainerAwareInterface
+class MapbenderController extends BaseController implements ContainerAwareInterface
 {
 
     const MAPBENDER_FEATURE_SERVICE  = "features";
