@@ -495,13 +495,34 @@
                     },
                     children: [{
                         type:    'select',
-                        value:   0,
-                        options: ['CSV', 'XLS']
+                        value:   'xls',
+                        name:    'exportType',
+                        options: {
+                            csv: 'CSV',
+                            xls: 'XLS'
+                        }
                     }, {
                         type:  'button',
                         title: "Export",
                         click: function() {
+                            var api = table.resultTable('getApi');
+                            var ids = _.pluck(api.data(), 'fid');
+                            var form = $('<form enctype="multipart/form-data" method="POST" style="display: none"/>');
 
+                            form.append($('<input name="ids" value="' + ids.join(',') + '" />'));
+                            form.append($('<input name="schema" value="' + schemaName + '" />'));
+                            form.append($('<input name="type" value="' + frame.formData().exportType + '" />'));
+                            form.attr('action', widget.elementUrl + 'export');
+
+                            $("body").append(form);
+
+                            form.submit();
+
+                            setTimeout(function() {
+                                form.remove();
+                            }, 200);
+
+                            return false;
                         }
                     }, {
                         type:  'button',
