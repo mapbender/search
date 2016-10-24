@@ -87,9 +87,9 @@ class QueryManager extends BaseManager
     /**
      * Get query by id
      *
-     * @param int    $id
-     * @param string $userId
-     * @return Query | null
+     * @param int $id
+     * @return Query|null
+     * @internal param string $userId
      */
     public function getById($id)
     {
@@ -123,8 +123,8 @@ class QueryManager extends BaseManager
 
 
     /**
-     * @param    FeatureTypeService $featureService
-     * @param array                 $featureTypes
+     * @param FeatureTypeService $featureService
+     * @param array              $featureTypes
      * @return Feature[]
      */
     public function listQueriesByFeatureTypes($featureService, array $featureTypes)
