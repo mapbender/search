@@ -48,31 +48,8 @@ $.widget("rw.querymanager", {
     version: "1.0.1",
 
     options: {
-        query: null
-    },
-
-    source: {
-        title:    'Source',
-        children: [{
-            type:     "fieldSet",
-            children: [{
-                type:    "select",
-                name:    "selectFeatureTyp",
-                title:   "Feature type",
-                options: ['IPE', 'Grundstücke', 'EO-Projekt', 'Bauliche Anlage aus SAP'],
-                css:     {
-                    width: "90%"
-                }
-            }, {
-                type:     "button",
-                name:     "buttonExtendFeatureType",
-                cssClass: "bars button btn",
-                title:    "Add",
-                css:      {
-                    width: "10%"
-                }
-            }]
-        }]
+        query: null,
+        sources: []
     },
 
     fields:      {
@@ -204,56 +181,6 @@ $.widget("rw.querymanager", {
         }]
     },
 
-    general: {
-        title:    "General",
-        children: [{
-            type:        "input",
-            name:        "inputQueryName",
-            placeholder: "Eindeutige Name",
-            title:       "Name",
-            mandatory:   true
-        }, {
-            type:        "checkbox",
-            name:        "inputExtentOnly",
-            placeholder: "Extent only",
-            title:       "Extent only",
-            checked:     true
-
-        }, {type: "breakLine"}, {
-            type:     "fieldSet",
-            children: [{
-                type:    "select",
-                name:    "style",
-                title:   "Style",
-                value:   0,
-                options: ['Style #1', 'Style #2', 'Style #3', 'Style #4'],
-                css:     {
-                    width: "90%"
-                }
-            }, {
-                type:     "button",
-                name:     "buttonExtendInputStyle",
-                cssClass: "bars",
-                title: "Edit",
-                click: function(e) {
-                    debugger;
-                    var styleManagerContainer = $("<div/>");
-                    styleManagerContainer.featureStyleManager();
-                    styleManagerContainer.bind('featurestylemanagersubmit', function(e, fsm) {
-                        var featureStyleData = fsm.form.formData();
-                        widget.query('style/update', {
-                            data: featureStyleData
-                        }).done(function(r) {
-                            console.log(e, data);
-                        });
-                    });
-                },
-                css:   {
-                    width: "10%"
-                }
-            }]
-        }]
-    },
 
     onFormError: null,
     onOpen:      null,
@@ -322,14 +249,66 @@ $.widget("rw.querymanager", {
 
     getForm: function() {
         var widget = this;
+        var source = widget.option('sources');
         return widget.el.generateElements({
             type:     "tabs",
-            children: [
-                widget._getForm(widget.general, true),
-                widget._getForm(widget.source),
-                widget._getForm(widget.fields),
-                widget._getForm(widget.constraints)
-            ]
+            children: [widget._getForm({
+                title:    "General",
+                children: [{
+                    type:        "input",
+                    name:        "inputQueryName",
+                    placeholder: "Eindeutige Name",
+                    title:       "Name",
+                    mandatory:   true
+                }, {
+                    type:    "select",
+                    name:    "selectFeatureTyp",
+                    title:   "Feature type",
+                    value:   _.keys(source)[0],
+                    options: source
+                }, {
+                    type: "fieldSet",
+                    children: [{
+                        type: "select",
+                        name:    "style",
+                        title:   "Style",
+                        value:   0,
+                        options: ['Style #1', 'Style #2', 'Style #3', 'Style #4'],
+                        css:     {
+                            width: "90%"
+                        }
+                    }, {
+                        type:     "button",
+                        name:     "buttonExtendInputStyle",
+                        cssClass: "bars",
+                        title:    "Edit",
+                        click:    function(e) {
+                            var styleManagerContainer = $("<div/>");
+                            styleManagerContainer.featureStyleManager();
+                            styleManagerContainer.bind('featurestylemanagersubmit', function(e, fsm) {
+                                debugger;
+                                var featureStyleData = fsm.form.formData();
+                                widget.query('style/update', {
+                                    data: featureStyleData
+                                }).done(function(r) {
+                                    console.log(e, data);
+                                });
+                            });
+                            return false;
+                        },
+                        css:      {
+                            width: "10%"
+                        }
+                    }]
+                }, {
+                    type:        "checkbox",
+                    name:        "inputExtentOnly",
+                    placeholder: "Extent only",
+                    title:       "Extent only",
+                    checked:     true
+
+                }]
+            }, true), widget._getForm(widget.fields), widget._getForm(widget.constraints)]
         });
     },
 
@@ -349,18 +328,13 @@ $.widget("rw.querymanager", {
                 name:  "buttonSave",
                 text:  "Speichern",
                 click: function() {
-                    data = dialog.formData();
-                    if(dialog.find(".has-error").size()) {
-                        $.notify(JSON.stringify(data));
-                    } else {
-                        $.notify("Erfolgreich gespeichert", "info");
-                        dialog.dispatch("dataValid", {
-                            data:   data,
-                            dialog: dialog,
-                            widget: widget
-                        });
-                        dialog.popupDialog("close");
-                    }
+                    var data = dialog.formData();
+                    var hasError = dialog.find(".has-error").size() > 0;
+                    widget._trigger(hasError ? 'dataInvalid' : 'dataValid', null, {
+                        data:   data,
+                        dialog: dialog,
+                        widget: widget
+                    });
                 }
             }]
         });

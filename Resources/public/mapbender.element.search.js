@@ -235,7 +235,28 @@
          * Open query manager
          */
         openQueryManager: function(query) {
-            $("<div/>").querymanager({query: query});
+            var widget = this;
+            widget.query('featureType/list').done(function(sources) {
+                var queryManager = $("<div/>");
+                queryManager.querymanager({
+                    query:   query,
+                    sources: sources
+                });
+
+                queryManager.bind('querymanagerdatavalid', function(event, data) {
+                    widget.query('query/save', {query: data.data}).done(function(query) {
+                        debugger;
+                        $.notify("Erfolgreich gespeichert!", "info");
+                        // data.dialog.popupDialog("close");
+                    });
+
+                });
+                queryManager.bind('querymanagerdatainvalid', function(event, data) {
+                    $.notify(JSON.stringify(data.data));
+                    $.notify("Die Daten sind nicht vollständig", "notice");
+                });
+            });
+
         },
 
         /**

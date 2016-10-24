@@ -150,22 +150,22 @@ class Search extends BaseElement
         $requestService  = $this->container->get('request');
         $request         = $this->getRequestData();
         $schemas         = $configuration["schemes"];
+        $featureType     = null;
         $debugMode       = $configuration['debug'] || $this->container->get('kernel')->getEnvironment() == "dev";
         $schemaName      = isset($request["schema"]) ? $request["schema"] : $requestService->get("schema");
         $defaultCriteria = array('returnType' => 'FeatureCollection',
                                  'maxResults' => 2500);
-        if (empty($schemaName)) {
-            throw new Exception('For initialization there is no name of the declared scheme');
+        if (!empty($schemaName)) {
+            //throw new Exception('For initialization there is no name of the declared scheme');
+            $schema = $schemas[ $schemaName ];
+            if (is_array($schema['featureType'])) {
+                $featureType = new FeatureType($this->container, $schema['featureType']);
+                $this->setFeatureType($featureType);
+            } else {
+                throw new Exception("FeatureType settings not correct");
+            }
         }
 
-        $schema = $schemas[ $schemaName ];
-
-        if (is_array($schema['featureType'])) {
-            $featureType = new FeatureType($this->container, $schema['featureType']);
-            $this->setFeatureType($featureType);
-        } else {
-            throw new Exception("FeatureType settings not correct");
-        }
         $results = array();
 
         switch ($action) {
@@ -265,13 +265,6 @@ class Search extends BaseElement
                 $queryRequestHandler = $this->container->get("mapbender.query.controller");
                 return $queryRequestHandler->{$this->getMethod($action)}($requestService->get("id"));
 
-            case 'query/save':
-                $queryRequestHandler = $this->container->get("mapbender.query.controller");
-                return $queryRequestHandler->{$this->getMethod($action)}($requestService);
-
-            case 'export':
-                return $this->{$action.'Action'}($request);
-
             case 'datastore/get':
                 // TODO: get request ID and check
                 if (!isset($request['id']) || !isset($request['dataItemId'])) {
@@ -320,7 +313,7 @@ class Search extends BaseElement
                     $names[ $i ][0] = strtoupper($names[ $i ][0]);
                 }
                 $action     = implode($names);
-                $methodName = preg_replace('/[^a-z_-0-9]+/gi', '', $action) . 'Action';
+                $methodName = preg_replace('/[^a-z]+/si', null, $action) . 'Action';
                 return $this->{$methodName}($request);
         }
 
@@ -364,4 +357,35 @@ class Search extends BaseElement
         return new ExportResponse($featureType->exportByIds($ids), $fileName, $request["type"]);
     }
 
+    /**
+     * Export results
+     *
+     * @param $request
+     * @return mixed
+     */
+    public function listFeatureTypeAction($request)
+    {
+        $result = array();
+        foreach ($this->container->get('features')->getFeatureTypeDeclarations() as $key => $declaration) {
+            $title          = ucfirst($key);
+            $result[ $key ] = $title;
+        }
+        return new JsonResponse($result);
+    }
+
+    /**
+     * Export results
+     *
+     * @param $request
+     * @return mixed
+     */
+    public function saveQueryAction($request)
+    {
+        $result       = array();
+        $queryManager = $this->container->get('mapbender.query.manager');
+        $query        = $queryManager->saveArray($request['query']);
+        //$queryRequestHandler = $this->container->get("mapbender.query.controller");
+
+        return new JsonResponse($query->toArray());
+    }
 }
