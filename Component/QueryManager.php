@@ -2,7 +2,6 @@
 namespace Mapbender\SearchBundle\Component;
 
 use Eslider\Driver\HKVStorage;
-use Eslider\Entity\HKV;
 use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Component\FeatureTypeService;
 use Mapbender\DataSourceBundle\Entity\Feature;
@@ -45,33 +44,28 @@ class QueryManager extends BaseManager
      * Save query
      *
      * @param array $array
-     * @return HKV
+     * @return Query
      */
     public function saveArray($array, $scope = null, $parentId = null)
     {
         $query = $this->create($array);
-        $HKV   = $this->save($query, $scope, $parentId);
-        return $HKV;
+        return $this->save($query, $scope, $parentId);
     }
 
     /**
      * Save query
      *
      * @param Query $query
-     * @return HKV
+     * @param null  $scope
+     * @param null  $parentId
+     * @return Query
      */
     public function save($query, $scope = null, $parentId = null)
     {
-        $queries = $this->listQueries();
-
-        if ($queries == null) {
-            $queries = array();
-        }
-
+        $queries                    = $this->listQueries();
         $queries[ $query->getId() ] = $query;
         $result                     = $this->db->saveData($this->tableName, $queries, $scope, $parentId, $this->getUserId());
-
-        $children = $result->getChildren();
+        $children                   = $result->getChildren();
 
         foreach ($children as $key => $child) {
             if ($child->getKey() == $query->getId()) {
@@ -106,7 +100,8 @@ class QueryManager extends BaseManager
      */
     public function listQueries()
     {
-        return $this->db->getData($this->tableName, null, null, $this->getUserId());
+        $list = $this->db->getData($this->tableName, null, null, $this->getUserId());
+        return $list ? $list : array();
     }
 
 
@@ -192,7 +187,7 @@ class QueryManager extends BaseManager
         $query = new Query($args);
         $query->setId($this->generateUUID());
         $query->setUserId($this->getUserId());
-        $query->setConnectionName(isset($this->configuration) ? $this->configuration->getConnection() : Configuration::DEFAULT_CONNECTION);
+        $query->setConnectionName(isset($this->configuration) ? $this->configuration->getConnection() : 'default');
         return $query;
     }
 
