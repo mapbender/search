@@ -3,6 +3,7 @@
 namespace Mapbender\SearchBundle\Element;
 
 use Doctrine\DBAL\DBALException;
+use FOM\CoreBundle\Component\ExportResponse;
 use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Element\BaseElement;
 use Mapbender\DataSourceBundle\Entity\Feature;
@@ -19,6 +20,9 @@ class Search extends BaseElement
 {
     protected static $title       = "Search";
     protected static $description = "Object search element";
+
+    /** @var FeatureType */
+    protected        $featureType;
 
     /**
      *
@@ -126,6 +130,16 @@ class Search extends BaseElement
         return $text;
     }
 
+    protected function getRequestData()
+    {
+        $content = $this->container->get('request')->getContent();
+        $request = array_merge($_POST, $_GET);
+        if (!empty($content)) {
+            $request = array_merge($request, json_decode($content, true));
+        }
+        return $request;
+    }
+
     /**
      * @inheritdoc
      */
@@ -134,7 +148,7 @@ class Search extends BaseElement
         /** @var $requestService Request */
         $configuration   = $this->getConfiguration();
         $requestService  = $this->container->get('request');
-        $request         = json_decode($requestService->getContent(), true);
+        $request         = $this->getRequestData();
         $schemas         = $configuration["schemes"];
         $debugMode       = $configuration['debug'] || $this->container->get('kernel')->getEnvironment() == "dev";
         $schemaName      = isset($request["schema"]) ? $request["schema"] : $requestService->get("schema");
@@ -148,6 +162,7 @@ class Search extends BaseElement
 
         if (is_array($schema['featureType'])) {
             $featureType = new FeatureType($this->container, $schema['featureType']);
+            $this->setFeatureType($featureType);
         } else {
             throw new Exception("FeatureType settings not correct");
         }
@@ -255,9 +270,7 @@ class Search extends BaseElement
                 return $queryRequestHandler->{$this->getMethod($action)}($requestService);
 
             case 'export':
-                $exportController = $this->container->get("mapbender.export.controller");
-                $exportRequest    = new ExportRequest($request);
-                return $exportController->{$action}($exportRequest);
+                return $this->{$action.'Action'}($request);
 
             case 'datastore/get':
                 // TODO: get request ID and check
@@ -296,17 +309,59 @@ class Search extends BaseElement
                 $id          = $request['id'];
                 $dataStore   = $this->container->get("data.source")->get($id);
                 $uniqueIdKey = $dataStore->getDriver()->getUniqueId();
-                $dataItemId  = $request['dataItem'][ $uniqueIdKey ];
+                $dataItemId = $request['dataItem'][ $uniqueIdKey ];
                 $dataStore->remove($dataItemId);
                 break;
+
             default:
-                $results = array(
-                    array('errors' => array(
-                        array('message' => $action . " not defined!")
-                    ))
-                );
+                $names = explode('/', $action);
+                $names = array_reverse($names);
+                for ($i = 1; $i < count($names); $i++) {
+                    $names[ $i ][0] = strtoupper($names[ $i ][0]);
+                }
+                $action     = implode($names);
+                $methodName = preg_replace('/[^a-z_-0-9]+/gi', '', $action) . 'Action';
+                return $this->{$methodName}($request);
         }
 
         return new JsonResponse($results);
     }
+
+    /**
+     * Set feature type
+     *
+     * @param $featureType
+     */
+    private function setFeatureType(FeatureType $featureType)
+    {
+        $this->featureType = $featureType;
+    }
+
+    /**
+     * Get feature type
+     *
+     * @return FeatureType
+     */
+    public function getFeatureType()
+    {
+        return $this->featureType;
+    }
+
+    /**
+     * Export results
+     *
+     * @param $request
+     * @return mixed
+     */
+    public function exportAction($request)
+    {
+        $exportRequest = new ExportRequest($request);
+        $ids           = $exportRequest->getIds();
+        $featureType   = $this->getFeatureType();
+        $config        = $featureType->getConfiguration('export');
+        $fileName      = isset($config['fileName']) ? $config['fileName'] : "export";
+
+        return new ExportResponse($featureType->exportByIds($ids), $fileName, $request["type"]);
+    }
+
 }
