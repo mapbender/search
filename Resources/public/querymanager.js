@@ -184,12 +184,7 @@ $.widget("rw.querymanager", {
                             var styleManagerContainer = $("<div/>");
                             styleManagerContainer.featureStyleManager();
                             styleManagerContainer.bind('featurestylemanagersubmit', function(e, fsm) {
-                                var featureStyleData = fsm.form.formData();
-                                widget.query('style/update', {
-                                    data: featureStyleData
-                                }).done(function(r) {
-                                    console.log(e, data);
-                                });
+                                widget._trigger('styleChange', null, fsm);
                             });
                             return false;
                         },

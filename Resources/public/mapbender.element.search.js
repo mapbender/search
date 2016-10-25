@@ -244,6 +244,24 @@
                     featureTypeDescriptions: featureTypeList
                 });
 
+                queryManager.bind('querymanagerstylechange', function(event, context) {
+                    var errorInputs = $('.error', $(context.form));
+                    var styleDefinition = $(context.form).formData();
+                    var query = null; // TODO
+
+                    if(errorInputs.size()) {
+                        $.notify("Style Eingaben vervollständigen");
+                    } else {
+                        widget.query('style/save', {
+                            style: styleDefinition,
+                            query: query
+                        }).done(function(query) {
+                            context.dialog.data('query', query);
+                            $.notify("Erfolgreich gespeichert!", "info");
+                        });
+                    }
+                });
+
                 queryManager.bind('querymanagerdatavalid', function(event, context) {
                     widget.query('query/save', {query: context.data}).done(function(query) {
                         context.dialog.data('query', query);

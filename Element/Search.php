@@ -9,6 +9,7 @@ use Mapbender\DataSourceBundle\Element\BaseElement;
 use Mapbender\DataSourceBundle\Entity\Feature;
 use Mapbender\DigitizerBundle\Component\Uploader;
 use Mapbender\SearchBundle\Entity\ExportRequest;
+use Mapbender\SearchBundle\Entity\Style;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -418,5 +419,26 @@ class Search extends BaseElement
         $query        = $queryManager->saveArray($requestData);
 
         return new JsonResponse($query->toArray());
+    }
+
+    /**
+     * Export results
+     *
+     * @param $request
+     * @return mixed
+     */
+    public function saveStyleAction($request)
+    {
+        // TODO: implement
+        $errors = array();
+        $style  = new Style($request);
+
+
+        // TODO: save style....
+
+        return new JsonResponse(array(
+            'errors' => $errors,
+            'style'  => $style,
+        ));
     }
 }
