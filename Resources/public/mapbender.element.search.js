@@ -545,9 +545,12 @@
                         click: function() {
                             var api = table.resultTable('getApi');
                             var ids = _.pluck(api.data(), 'fid');
+
                             var form = $('<form enctype="multipart/form-data" method="POST" style="display: none"/>');
 
-                            form.append($('<input name="ids" value="' + ids.join(',') + '" />'));
+                            for (var key in ids) {
+                                form.append($('<input name="ids[]" value="' + ids[key] + '" />'));
+                            }
                             form.append($('<input name="schema" value="' + schemaName + '" />'));
                             form.append($('<input name="type" value="' + frame.formData().exportType + '" />'));
                             form.attr('action', widget.elementUrl + 'export');

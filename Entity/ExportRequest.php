@@ -43,14 +43,4 @@ class ExportRequest extends UniqueBaseEntity
     {
         return $this->ids;
     }
-
-    /**
-     * @param string $ids
-     * @return ExportRequest
-     */
-    public function setIds($ids)
-    {
-        $this->ids = is_string($ids) ? explode(",", $ids) : $ids;
-        return $this;
-    }
 }
