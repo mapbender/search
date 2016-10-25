@@ -13,12 +13,14 @@ use Mapbender\CoreBundle\Component\SecurityContext;
  */
 class Query extends UniqueBaseEntity
 {
-
     /** @var string Name */
     protected $name;
 
     /** @var QueryCondition[] Conditions */
     protected $conditions;
+
+    /** @var Field[] Fields */
+    protected $fields;
 
     /** @var int $userId */
     protected $userId;
@@ -26,20 +28,18 @@ class Query extends UniqueBaseEntity
     /** @var StyleMap StyleMap */
     protected $styleMap;
 
-    /** @var string ConnectionName */
-    protected $connectionName;
-
     /** @var string SchemaName */
     protected $featureType;
-
-    /** @var string TableName */
-    protected $tableName;
 
     /** @var string SQL */
     protected $sql;
 
     /** @var string Where */
     protected $where;
+
+    /** @var bool Look for extend only? */
+    protected $extendOnly = true;
+
 
     /**
      * @return string
@@ -98,24 +98,6 @@ class Query extends UniqueBaseEntity
     /**
      * @return string
      */
-    public function getConnectionName()
-    {
-        return $this->connectionName;
-    }
-
-    /**
-     * @param string $connectionName
-     * @return Query
-     */
-    public function setConnectionName($connectionName)
-    {
-        $this->connectionName = $connectionName;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
     public function getFeatureType()
     {
         return $this->featureType;
@@ -128,24 +110,6 @@ class Query extends UniqueBaseEntity
     public function setFeatureType($featureType)
     {
         $this->featureType = $featureType;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getTableName()
-    {
-        return $this->tableName;
-    }
-
-    /**
-     * @param string $tableName
-     * @return Query
-     */
-    public function setTableName($tableName)
-    {
-        $this->tableName = $tableName;
         return $this;
     }
 
@@ -215,6 +179,38 @@ class Query extends UniqueBaseEntity
             return $queryCondition;
         }
         return false;
+    }
+
+    /**
+     * @param Field[] $fields
+     */
+    public function setFields($fields)
+    {
+        $this->fields = $fields;
+    }
+
+    /**
+     * @return Field[]
+     */
+    public function getFields()
+    {
+        return $this->fields;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isExtendOnly()
+    {
+        return $this->extendOnly;
+    }
+
+    /**
+     * @param boolean $extendOnly
+     */
+    public function setExtendOnly($extendOnly)
+    {
+        $this->extendOnly = $extendOnly;
     }
 
 

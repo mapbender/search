@@ -48,139 +48,9 @@ $.widget("rw.querymanager", {
     version: "1.0.1",
 
     options: {
-        query: null,
+        query:   null,
         sources: []
     },
-
-    fields:      {
-        title:    "Fields",
-        children: [{
-            type: "label",
-            text: "Add display field:",
-            name: "labelAddDisplayField"
-        }, {
-            type:  "label",
-            title: "Field name",
-            name:  "labelFieldName"
-        }, {
-            type: "select",
-
-            name: "selectFieldName"
-        }, {
-            type:  "label",
-            title: "Title (alias)",
-            name:  "labelTitleAlias"
-        }, {
-            type: "input",
-            name: "inputTitleAlias"
-        }, {
-            type:     "button",
-            name:     "buttonAddField",
-            cssClass: "plus",
-            title:    " Add fields"
-        }, {
-            html: $('<div/>').resultTable({
-                lengthChange: false,
-                searching:    false,
-                info:         false,
-                columns:      [{
-                    data:  'fieldName',
-                    title: 'Field Name'
-                }, {
-                    data:  'title',
-                    title: 'Title'
-                }],
-                data:         [fieldsTableDataGen({
-                    placeholder: "Name",
-                    fieldName:   "name"
-                }), fieldsTableDataGen({
-                    placeholder: "Beschreibung",
-                    fieldName:   "description"
-                }), fieldsTableDataGen({
-                    placeholder: "Entfernung",
-                    fieldName:   "km"
-                })],
-                buttons:      [{
-                    title:     "",
-                    className: "fa fa-bars"
-                }]
-
-            })
-        }]
-    },
-    constraints: {
-        title:    "Constraints",
-        children: [{
-            type:  "label",
-            title: "Add condition:",
-            name:  "labelAddCondition"
-        }, {type:'breakLine'},{
-            type:  "label",
-            title: "Field",
-            name:  "labelField"
-        }, {
-            type: "select",
-            name: "selectField"
-        }, {
-            type:  "label",
-            title: "Operator",
-            name:  "labelOperator"
-        }, {
-            type: "select",
-            name: "selectOperator"
-        }, {
-            type:  "label",
-            title: "Value",
-            name:  "labelValue"
-        }, {
-            type: "input",
-            name: "inputConditionValue"
-        }, {
-            type:     "button",
-            name:     "buttonAddCondition",
-            cssClass: "plus",
-            title:    " Add Condition",
-            click:    function(e) {
-                var el = $(e.currentTarget);
-                var form = el.closest('.popup-dialog');
-                e.preventDefault();
-
-            }
-        }, {
-            html: $('<div/>').resultTable({
-                lengthChange: false,
-                searching:    false,
-                info:         false,
-                columns:      [{
-                    data:  'fieldName',
-                    title: 'Field Name'
-                }, {
-                    data:  'operator',
-                    title: 'Operator'
-                }, {
-                    data:  'value',
-                    title: 'Value'
-                }, {
-                    data:  'action',
-                    title: 'Action'
-                }],
-                data:         [constraintsTableDataGen({
-                    placeholder:   "mustermann",
-                    fieldName:     "name",
-                    selectOptions: constraintsOperators
-                }), constraintsTableDataGen({
-                    placeholder:   "about",
-                    fieldName:     "description",
-                    selectOptions: constraintsOperators
-                }), constraintsTableDataGen({
-                    placeholder:   20,
-                    fieldName:     "km",
-                    selectOptions: constraintsOperators
-                })]
-            })
-        }]
-    },
-
 
     onFormError: null,
     onOpen:      null,
@@ -247,30 +117,40 @@ $.widget("rw.querymanager", {
         return obj && obj[prop] !== undefined;
     },
 
+    addFieldAlias: function(formData) {
+        console.log(formData);
+    },
+
     getForm: function() {
         var widget = this;
         var source = widget.option('sources');
+        var fields = widget.option('fields');
+        var operators = widget.option('operators');
+
         return widget.el.generateElements({
             type:     "tabs",
             children: [widget._getForm({
                 title:    "General",
                 children: [{
                     type:        "input",
-                    name:        "inputQueryName",
+                    name:        "name",
                     placeholder: "Eindeutige Name",
                     title:       "Name",
                     mandatory:   true
                 }, {
                     type:    "select",
-                    name:    "selectFeatureTyp",
+                    name:    "featureType",
                     title:   "Feature type",
                     value:   _.keys(source)[0],
-                    options: source
+                    options: source,
+                    change: function(e) {
+                        debugger;
+                    }
                 }, {
                     type: "fieldSet",
                     children: [{
                         type: "select",
-                        name:    "style",
+                        name:    "styleMap",
                         title:   "Style",
                         value:   0,
                         options: ['Style #1', 'Style #2', 'Style #3', 'Style #4'],
@@ -286,7 +166,6 @@ $.widget("rw.querymanager", {
                             var styleManagerContainer = $("<div/>");
                             styleManagerContainer.featureStyleManager();
                             styleManagerContainer.bind('featurestylemanagersubmit', function(e, fsm) {
-                                debugger;
                                 var featureStyleData = fsm.form.formData();
                                 widget.query('style/update', {
                                     data: featureStyleData
@@ -302,13 +181,169 @@ $.widget("rw.querymanager", {
                     }]
                 }, {
                     type:        "checkbox",
-                    name:        "inputExtentOnly",
+                    name:        "extentOnly",
                     placeholder: "Extent only",
                     title:       "Extent only",
                     checked:     true
 
                 }]
-            }, true), widget._getForm(widget.fields), widget._getForm(widget.constraints)]
+            }, true),
+                widget._getForm({
+                title:    "Fields",
+                children: [{
+                    html: $('<div/>').resultTable({
+                        lengthChange: false,
+                        searching:    false,
+                        info:         false,
+                        paging:       false,
+                        columns:      [{
+                            data:  'fieldName',
+                            title: 'Field Name'
+                        }, {
+                            data:  'title',
+                            title: 'Title'
+                        }],
+                        data:         [fieldsTableDataGen({
+                            placeholder: "Name",
+                            fieldName:   "name"
+                        }), fieldsTableDataGen({
+                            placeholder: "Beschreibung",
+                            fieldName:   "description"
+                        }), fieldsTableDataGen({
+                            placeholder: "Entfernung",
+                            fieldName:   "km"
+                        })],
+                        buttons:      [{
+                            title:     "",
+                            className: "fa fa-bars"
+                        }]
+
+                    })
+                }, {
+                    type:     "button",
+                    name:     "buttonAddField",
+                    cssClass: "plus",
+                    title:    "Add field",
+                    click:    function() {
+                        var addFieldDialog = $("<div/>");
+                        addFieldDialog.generateElements({
+                            type:     'fieldSet',
+                            children: [{
+                                type:      "select",
+                                title:     "Field name",
+                                name:      "fieldName",
+                                options:   fields,
+                                mandatory: true,
+                                change:    function(e) {
+                                    var fieldName = addFieldDialog.formData().fieldName;
+                                    addFieldDialog.formData({title: fieldName})
+                                },
+                                css:       {width: "40%"}
+                            }, {
+                                type:  "input",
+                                title: "Title (alias)",
+                                name:  "title",
+                                css:   {width: "60%"}
+                            }]
+                        });
+
+                        addFieldDialog.popupDialog({
+                            title:   "Field alias",
+                            buttons: [{
+                                text:  "Add",
+                                click: function(e) {
+                                    widget.addFieldAlias(addFieldDialog.formData());
+                                }
+                            }]
+                        });
+                        return false;
+                    }
+                }]
+            }), widget._getForm({
+                    title:    "Constraints",
+                    children: [ {
+                        html: $('<div/>').resultTable({
+                            lengthChange: false,
+                            searching:    false,
+                            info:         false,
+                            paging:       false,
+                            columns:      [{
+                                data:  'fieldName',
+                                title: 'Field Name'
+                            }, {
+                                data:  'operator',
+                                title: 'Operator'
+                            }, {
+                                data:  'value',
+                                title: 'Value'
+                            }, {
+                                data:  'action',
+                                title: 'Action'
+                            }],
+                            data:         [constraintsTableDataGen({
+                                placeholder:   "mustermann",
+                                fieldName:     "name",
+                                selectOptions: constraintsOperators
+                            }), constraintsTableDataGen({
+                                placeholder:   "about",
+                                fieldName:     "description",
+                                selectOptions: constraintsOperators
+                            }), constraintsTableDataGen({
+                                placeholder:   20,
+                                fieldName:     "km",
+                                selectOptions: constraintsOperators
+                            })]
+                        })
+                    }, {
+                        type:     "button",
+                        name:     "buttonAddCondition",
+                        cssClass: "plus",
+                        title:    "Neue Bedienung",
+                        click:    function(e) {
+                            var el = $(e.currentTarget);
+                            var form = el.closest('.popup-dialog');
+                            var conditionForm = $("<div/>");
+                            conditionForm.generateElements({
+                                type:     'fieldSet',
+                                children: [{
+                                    title:     "Field",
+                                    type:      "select",
+                                    name:      "fieldName",
+                                    options:   fields,
+                                    mandatory: true,
+                                    css:       {width: "40%"}
+                                }, {
+                                    title:     "Operator",
+                                    type:      "select",
+                                    name:      "operator",
+                                    options:   operators,
+                                    mandatory: true,
+                                    css:       {width: "20%"}
+                                }, {
+                                    title:     "Value",
+                                    type:      "input",
+                                    name:      "value",
+                                    mandatory: true,
+                                    css:       {width: "40%"}
+                                }]
+                            });
+                            conditionForm.popupDialog({
+                                title:   'Bedienung',
+                                width:   500,
+                                buttons: [{
+                                    text:  "Speichern",
+                                    click: function() {
+                                        widget.addFieldAlias(conditionForm.formData());
+                                    }
+                                }]
+                            });
+
+                            e.preventDefault();
+
+                            return false;
+                        }
+                    }]
+                })]
         });
     },
 

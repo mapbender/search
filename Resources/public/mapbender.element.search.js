@@ -236,26 +236,37 @@
          */
         openQueryManager: function(query) {
             var widget = this;
-            widget.query('featureType/list').done(function(sources) {
+
+            widget.query('featureType/list').done(function(featureTypeList) {
+                debugger;
                 var queryManager = $("<div/>");
                 queryManager.querymanager({
-                    query:   query,
-                    sources: sources
+                    query:     query,
+                    sources:   featureTypeList,
+                    fields:    description.fieldNames,
+                    operators: description.operators
                 });
 
-                queryManager.bind('querymanagerdatavalid', function(event, data) {
-                    widget.query('query/save', {query: data.data}).done(function(query) {
-                        debugger;
+                queryManager.bind('querymanagerdatavalid', function(event, context) {
+                    widget.query('query/save', {query: context.data}).done(function(query) {
+                        context.dialog.data('query', query);
                         $.notify("Erfolgreich gespeichert!", "info");
-                        // data.dialog.popupDialog("close");
+                        // context.dialog.popupDialog("close");
                     });
-
                 });
-                queryManager.bind('querymanagerdatainvalid', function(event, data) {
-                    $.notify(JSON.stringify(data.data));
+                queryManager.bind('querymanagerdatainvalid', function(event, context) {
+                    $.notify(JSON.stringify(context.data));
                     $.notify("Die Daten sind nicht vollständig", "notice");
                 });
             });
+
+            widget.query('FeatureType/describe', {schema: widget.currentSettings.schemaName}).done(function(description) {
+                console.log(description);
+
+
+            });
+
+
 
         },
 
@@ -1804,8 +1815,6 @@
 
         save: function(dataItem) {
             debugger;
-            //dataItem.uniqueId
-
         },
 
         /**

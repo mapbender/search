@@ -44,6 +44,8 @@ class QueryManager extends BaseManager
      * Save query
      *
      * @param array $array
+     * @param null  $scope
+     * @param null  $parentId
      * @return Query
      */
     public function saveArray($array, $scope = null, $parentId = null)
@@ -62,18 +64,12 @@ class QueryManager extends BaseManager
      */
     public function save($query, $scope = null, $parentId = null)
     {
-        $queries                    = $this->listQueries();
-        $queries[ $query->getId() ] = $query;
-        $result                     = $this->db->saveData($this->tableName, $queries, $scope, $parentId, $this->getUserId());
-        $children                   = $result->getChildren();
+        $id             = $query->getId();
+        $queries        = $this->listQueries();
+        $queries[ $id ] = $query;
+        $result         = $this->db->saveData($this->tableName, $queries, $scope, $parentId, $this->getUserId());
 
-        foreach ($children as $key => $child) {
-            if ($child->getKey() == $query->getId()) {
-                return $child;
-            }
-        }
-
-        return null;
+        return $query;
 
     }
 

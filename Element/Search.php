@@ -367,10 +367,42 @@ class Search extends BaseElement
     {
         $result = array();
         foreach ($this->container->get('features')->getFeatureTypeDeclarations() as $key => $declaration) {
-            $title          = ucfirst($key);
-            $result[ $key ] = $title;
+            $title       = isset($declaration['title']) ? $declaration['title'] . " ($key)" : ucfirst($key);
+            $featureType = $this->container->get('features')->get($key);
+            $fieldNames  = $featureType->getFields();
+            $operators   = $featureType->getOperators();
+            $print       = $featureType->getConfiguration('print');
+
+            $result[ $key ] = array(
+                'title'      => $title,
+                'fieldNames' => array_combine($fieldNames, $fieldNames),
+                'operators'  => array_combine($operators, $operators),
+                'print'      => $print
+            );
         }
+
+        ksort($result);
+
         return new JsonResponse($result);
+    }
+
+    /**
+     * Describe feature type
+     *
+     * @param $request
+     * @return mixed
+     */
+    public function describeFeatureTypeAction($request)
+    {
+        $featureType = $this->getFeatureType();
+        $fields      = $this->getFeatureType()->getFields();
+        $operators   = $featureType->getOperators();
+
+        return new JsonResponse(array(
+            'operators'  => array_combine($operators, $operators),
+            'print'      => $featureType->getConfiguration('print'),
+            'fieldNames' => array_combine($fields, $fields)
+        ));
     }
 
     /**
@@ -381,10 +413,9 @@ class Search extends BaseElement
      */
     public function saveQueryAction($request)
     {
-        $result       = array();
         $queryManager = $this->container->get('mapbender.query.manager');
-        $query        = $queryManager->saveArray($request['query']);
-        //$queryRequestHandler = $this->container->get("mapbender.query.controller");
+        $requestData  = $request['query'];
+        $query        = $queryManager->saveArray($requestData);
 
         return new JsonResponse($query->toArray());
     }
