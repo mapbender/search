@@ -238,13 +238,10 @@
             var widget = this;
 
             widget.query('featureType/list').done(function(featureTypeList) {
-                debugger;
                 var queryManager = $("<div/>");
                 queryManager.querymanager({
-                    query:     query,
-                    sources:   featureTypeList,
-                    fields:    description.fieldNames,
-                    operators: description.operators
+                    query:                   query,
+                    featureTypeDescriptions: featureTypeList
                 });
 
                 queryManager.bind('querymanagerdatavalid', function(event, context) {
@@ -259,15 +256,6 @@
                     $.notify("Die Daten sind nicht vollständig", "notice");
                 });
             });
-
-            widget.query('FeatureType/describe', {schema: widget.currentSettings.schemaName}).done(function(description) {
-                console.log(description);
-
-
-            });
-
-
-
         },
 
         /**

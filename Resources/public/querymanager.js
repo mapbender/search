@@ -66,6 +66,10 @@ $.widget("rw.querymanager", {
 
     eventMap: {},
 
+    /**
+     * Current source (Feature type description)
+     */
+    currentSource: null,
 
     /**
      * Constructor
@@ -121,16 +125,29 @@ $.widget("rw.querymanager", {
         console.log(formData);
     },
 
+    changeSource: function(featureTypeId) {
+        var widget = this;
+        var featureTypeDescriptions = widget.option('featureTypeDescriptions');
+        var currentSource = widget.currentSource = featureTypeDescriptions[featureTypeId];
+
+        widget._trigger('changeSource', null, {
+            widget:                 widget,
+            featureTypeDeclaration: currentSource
+        });
+
+        return currentSource;
+    },
+
     getForm: function() {
         var widget = this;
-        var source = widget.option('sources');
-        var fields = widget.option('fields');
-        var operators = widget.option('operators');
+        var featureTypeDescriptions = widget.option('featureTypeDescriptions');
+        var featureTypeId = _.keys(featureTypeDescriptions)[0];
+        var currentSource = widget.changeSource(featureTypeId);
 
         return widget.el.generateElements({
             type:     "tabs",
             children: [widget._getForm({
-                title:    "General",
+                title:    "Allgemein",
                 children: [{
                     type:        "input",
                     name:        "name",
@@ -141,10 +158,11 @@ $.widget("rw.querymanager", {
                     type:    "select",
                     name:    "featureType",
                     title:   "Feature type",
-                    value:   _.keys(source)[0],
-                    options: source,
-                    change: function(e) {
-                        debugger;
+                    value:   featureTypeId,
+                    options: _.object(_.keys(featureTypeDescriptions), _.pluck(featureTypeDescriptions, 'title')),
+                    change:  function(e) {
+                        var featureTypeId = $('select', e.currentTarget).val();
+                        currentSource = widget.changeSource(featureTypeId)
                     }
                 }, {
                     type: "fieldSet",
@@ -189,7 +207,7 @@ $.widget("rw.querymanager", {
                 }]
             }, true),
                 widget._getForm({
-                title:    "Fields",
+                title:    "Felder",
                 children: [{
                     html: $('<div/>').resultTable({
                         lengthChange: false,
@@ -221,10 +239,9 @@ $.widget("rw.querymanager", {
                     })
                 }, {
                     type:     "button",
-                    name:     "buttonAddField",
                     cssClass: "plus",
-                    title:    "Add field",
-                    click:    function() {
+                    title:    "Feld hinzufügen", // tran
+                    click:    function(e) {
                         var addFieldDialog = $("<div/>");
                         addFieldDialog.generateElements({
                             type:     'fieldSet',
@@ -232,7 +249,7 @@ $.widget("rw.querymanager", {
                                 type:      "select",
                                 title:     "Field name",
                                 name:      "fieldName",
-                                options:   fields,
+                                options:   currentSource.fieldNames,
                                 mandatory: true,
                                 change:    function(e) {
                                     var fieldName = addFieldDialog.formData().fieldName;
@@ -248,7 +265,8 @@ $.widget("rw.querymanager", {
                         });
 
                         addFieldDialog.popupDialog({
-                            title:   "Field alias",
+                            title:   "Feldbenennung",
+                            width:   500,
                             buttons: [{
                                 text:  "Add",
                                 click: function(e) {
@@ -260,7 +278,7 @@ $.widget("rw.querymanager", {
                     }
                 }]
             }), widget._getForm({
-                    title:    "Constraints",
+                    title:    "Bedingungen",
                     children: [ {
                         html: $('<div/>').resultTable({
                             lengthChange: false,
@@ -269,16 +287,16 @@ $.widget("rw.querymanager", {
                             paging:       false,
                             columns:      [{
                                 data:  'fieldName',
-                                title: 'Field Name'
+                                title: 'Feldname'
                             }, {
                                 data:  'operator',
                                 title: 'Operator'
                             }, {
                                 data:  'value',
-                                title: 'Value'
+                                title: 'Wert'
                             }, {
                                 data:  'action',
-                                title: 'Action'
+                                title: 'Aktion'
                             }],
                             data:         [constraintsTableDataGen({
                                 placeholder:   "mustermann",
@@ -298,8 +316,8 @@ $.widget("rw.querymanager", {
                         type:     "button",
                         name:     "buttonAddCondition",
                         cssClass: "plus",
-                        title:    "Neue Bedienung",
-                        click:    function(e) {
+                        title:    "Neue Bedingung",
+                        click: function(e) {
                             var el = $(e.currentTarget);
                             var form = el.closest('.popup-dialog');
                             var conditionForm = $("<div/>");
@@ -309,14 +327,14 @@ $.widget("rw.querymanager", {
                                     title:     "Field",
                                     type:      "select",
                                     name:      "fieldName",
-                                    options:   fields,
+                                    options:   currentSource.fieldNames,
                                     mandatory: true,
                                     css:       {width: "40%"}
                                 }, {
                                     title:     "Operator",
                                     type:      "select",
                                     name:      "operator",
-                                    options:   operators,
+                                    options:   currentSource.operators,
                                     mandatory: true,
                                     css:       {width: "20%"}
                                 }, {
@@ -328,12 +346,13 @@ $.widget("rw.querymanager", {
                                 }]
                             });
                             conditionForm.popupDialog({
-                                title:   'Bedienung',
+                                title:   'Bedingung',
                                 width:   500,
                                 buttons: [{
                                     text:  "Speichern",
                                     click: function() {
                                         widget.addFieldAlias(conditionForm.formData());
+                                        return false;
                                     }
                                 }]
                             });
