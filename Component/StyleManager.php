@@ -28,18 +28,6 @@ class StyleManager extends BaseManager
     }
 
     /**
-     * @param array $args
-     * @return StyleMap
-     */
-    public function createStyleMap($args)
-    {
-        $styleMap = new StyleMap($args);
-        $styleMap->setId($this->generateUUID());
-        $styleMap->setUserId($this->getUserId());
-        return $styleMap;
-    }
-
-    /**
      * Create style object
      *
      * @param $args
@@ -48,7 +36,9 @@ class StyleManager extends BaseManager
     public function createStyle($args)
     {
         $style = new Style($args);
-        $style->setId($this->generateUUID());
+        if (!isset($args["id"])) {
+            $style->setId($this->generateUUID());
+        }
         $style->setUserId($this->getUserId());
         return $style;
     }
@@ -60,11 +50,11 @@ class StyleManager extends BaseManager
      * @param      $styleMap
      * @param int  $scope
      * @param int  $parentId
-     * @return StyleMap
+     * @return Style
      */
     public function save($styleMap, $scope = null, $parentId = null)
     {
-        $styleMaps = $this->listStyleMaps();
+        $styleMaps = $this->listStyles();
 
         if ($styleMaps == null) {
             $styleMaps = array();
@@ -90,7 +80,7 @@ class StyleManager extends BaseManager
      * @param array $args
      * @param null  $scope
      * @param null  $parentId
-     * @return StyleMap
+     * @return Style
      */
     public function saveArray($args, $scope = null, $parentId = null)
     {
@@ -104,22 +94,39 @@ class StyleManager extends BaseManager
     /**
      * Get StyleMap by id
      *
-     * @param int $id
-     * @return StyleMap|null
+     * @param string $id
+     * @return Style|null
      */
     public function getById($id)
     {
-        $styleMaps = $this->listStyleMaps();
+        $styleMaps = $this->listStyles();
         return isset($styleMaps[ $id ]) ? $styleMaps[ $id ] : null;
+
+    } /**
+     * Get StyleMap by ids
+     *
+     * @param string[] $id
+     * @return Style[]
+     */
+    public function getByIds($ids)
+    {
+        $styles    = array();
+        $styleMaps = $this->listStyles();
+
+        foreach($styleMaps as $key =>$value){
+
+            if(in_array($key,$ids)) $styles[$key]=$value;
+        }
+        return $styles;
 
     }
 
     /**
      * List all StyleMaps
      *
-     * @return HKV|null
+     * @return Style[]|null
      */
-    public function listStyleMaps()
+    public function listStyles()
     {
         return $this->db->getData($this->tableName, null, null, $this->getUserId());
     }
@@ -134,12 +141,24 @@ class StyleManager extends BaseManager
             return null;
         }
 
-        $style = $this->createStyle($args);
-
-        return $this->createStyleMap(
-            array(
-                "styles" => array($style->getName() => $style)
-            )
-        );
+       return $this->createStyle($args);
     }
+
+
+    /**
+     * @param string  $id
+     * @param string  $scope
+     * @param string  $parentId
+     * @return bool
+     */
+    public function remove($id, $scope = null, $parentId = null)
+    {
+        $list = $this->listStyles();
+        $wasMissed = isset($list[ $id ]);
+        unset($list[ $id ]);
+        $this->db->saveData($this->tableName, $list, $scope, $parentId, $this->getUserId());
+
+        return $wasMissed;
+    }
+
 }
