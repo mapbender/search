@@ -13,7 +13,7 @@ use Eslider\Entity\UniqueBaseEntity;
 class StyleMap extends UniqueBaseEntity
 {
 
-    /* @var Style[] Styles */
+    /* @var string[] Stylesids */
     protected $styles;
 
     /** @var string userId * */
@@ -47,7 +47,7 @@ class StyleMap extends UniqueBaseEntity
     }
 
     /**
-     * @return Style[]
+     * @return string[]
      */
     public function getStyles()
     {
@@ -55,7 +55,7 @@ class StyleMap extends UniqueBaseEntity
     }
 
     /**
-     * @return Style
+     * @return string
      */
     public function getStyle($name = 'default')
     {
@@ -94,7 +94,7 @@ class StyleMap extends UniqueBaseEntity
 
     /**
      * @param string $name
-     * @return Style|boolean
+     * @return string|boolean
      */
     public function removeStyleByName($name)
     {
@@ -110,8 +110,8 @@ class StyleMap extends UniqueBaseEntity
     }
 
     /**
-     * @param Style $map
-     * @return StyleMap
+     * @param string $map
+     * @return string
      */
     public function addStyle($map)
     {
@@ -121,7 +121,7 @@ class StyleMap extends UniqueBaseEntity
 
 
     /**
-     * @return Style|null
+     * @return string|null
      */
     public function pop()
     {
@@ -130,16 +130,5 @@ class StyleMap extends UniqueBaseEntity
         }
         return null;
     }
-
-    /**
-     * @param array $data
-     * @internal param $methods
-     * @internal param $vars
-     */
-    public function fill(array &$data)
-    {
-        parent::fill($data);
-    }
-
 
 }
