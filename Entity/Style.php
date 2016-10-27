@@ -115,6 +115,9 @@ class Style extends UniqueBaseEntity
     /** @var string Display **/
     protected $display;
 
+    /** @var int User ID */
+    protected $userId;
+
 
     /**
      * @return string
@@ -583,5 +586,21 @@ class Style extends UniqueBaseEntity
         return $this;
     }
 
+    /**
+     * Set user ID
+     *
+     * @param $userId
+     */
+    public function setUserId($userId)
+    {
+        $this->userId = $userId;
+    }
 
+    /**
+     * @return int
+     */
+    public function getUserId()
+    {
+        return $this->userId;
+    }
 }
