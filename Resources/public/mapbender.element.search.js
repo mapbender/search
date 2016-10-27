@@ -123,19 +123,20 @@
     $.widget("mapbender.mbSearch", {
         options: {
             // Default option values
-            allowDigitize: false,
-            allowDelete: false,
-            allowEditData:true,
+            allowDigitize:     false,
+            allowDelete:       false,
+            allowEditData:     true,
             openFormAfterEdit: true,
-            maxResults: 5001,
-            pageLength: 10,
-            oneInstanceEdit: true,
-            searchType: "currentExtent",
-            inlineSearch: false,
-            useContextMenu: true,
-            clustering: [
-                {scale: 5000000, distance: 30}
-            ]
+            maxResults:        5001,
+            pageLength:        10,
+            oneInstanceEdit:   true,
+            searchType:        "currentExtent",
+            inlineSearch:      true,
+            useContextMenu:    true,
+            clustering:        [{
+                scale:    5000000,
+                distance: 30
+            }]
         },
         // Default tool-sets
         toolsets: {
@@ -452,7 +453,7 @@
                 translateObject(options.tableTranslation);
             } else {
                 options.tableTranslation = {
-                    sSearch:       translate("search.title") + ':',
+                    sSearch:       'Filter:',
                     sEmptyTable:   translate("search.table.empty"),
                     sZeroRecords:  translate("search.table.zerorecords"),
                     sInfo:         translate("search.table.info.status"),
@@ -567,10 +568,27 @@
                         }
                     }, {
                         type:  'button',
-                        title: "Edit"
+                        title: "Bearbeiten",
+                        css:   {'margin-left': "10px"},
+                        click: function() {
+                            widget.openQueryManager();
+                            return false;
+                        }
                     }, {
                         type:  'button',
-                        title: "Style"
+                        title: "Löschen",
+                        click: function() {
+                            var button = $(this);
+                            Mapbender.confirmDialog({
+                                title:     'Abfrage löschen?',
+                                html:      'Die Abfrage löschen?',
+                                onSuccess: function() {
+                                    button.blur();
+                                    $.notify("Die Abfrage wurde gelöscht!", 'notice');
+                                }
+                            });
+                            return false;
+                        }
                     }]
                 });
 

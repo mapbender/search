@@ -171,7 +171,7 @@ $.widget("rw.querymanager", {
                         name:    "styleMap",
                         title:   "Style",
                         value:   0,
-                        options: ['Style #1', 'Style #2', 'Style #3', 'Style #4'],
+                        options: ['StyleMap #1', 'StyleMap #2', 'StyleMap #3', 'StyleMap #4'],
                         css:     {
                             width: "90%"
                         }
@@ -181,11 +181,93 @@ $.widget("rw.querymanager", {
                         cssClass: "bars",
                         title:    "Edit",
                         click:    function(e) {
-                            var styleManagerContainer = $("<div/>");
-                            styleManagerContainer.featureStyleManager();
-                            styleManagerContainer.bind('featurestylemanagersubmit', function(e, fsm) {
-                                widget._trigger('styleChange', null, fsm);
+
+                            function openStyleEditor() {
+                                var styleManagerContainer = $("<div/>");
+                                styleManagerContainer.featureStyleManager();
+                                styleManagerContainer.bind('featurestylemanagersubmit', function(e, fsm) {
+                                    widget._trigger('styleChange', null, fsm);
+                                });
+                            }
+
+                            var styles = ['Style #1', 'Style #2'];
+                            var styleSelectors = [];
+
+                            styleSelectors.push({
+                                type:        'input',
+                                title:       'Name',
+                                placeholder: 'Stylemap name',
+                                name:        'name'
                             });
+
+                            _.each(["Default", 'Hover', 'Select'], function(name) {
+                                styleSelectors.push({
+                                    type:     'fieldSet',
+                                    children: [{
+                                        type:    'select',
+                                        title:   name,
+                                        options: styles,
+                                        name:    name,
+                                        change:  function(e) {
+                                            var selectElement = $(this).find('select');
+                                            var currentValue = selectElement.val();
+                                            var selectElements = selectElement.closest("form").find("select");
+                                            _.each(selectElements, function(element) {
+                                                element = $(element);
+                                                if(element.val() == null) {
+                                                    element.val(currentValue);
+                                                }
+                                            });
+                                        },
+                                        css:     {width: '80%'}
+                                    }, {
+                                        type:  'button',
+                                        title:  'Edit',
+                                        css:   {width: '20%'},
+                                        click: function() {
+                                            var button = $(this);
+                                            var fieldSet = button.parent();
+                                            var styleId  = fieldSet.find("[name]").val();
+
+                                            console.log('Edit style #'+styleId);
+                                            openStyleEditor(styleId);
+
+                                            return false;
+                                        }
+                                    }]
+                                })
+                            });
+
+                            var styleMapPopup = $("<div/>");
+                            styleMapPopup.generateElements({
+                                type: 'popup',
+                                title: 'Style map',
+                                children: [{
+                                    type:     'form',
+                                    children: styleSelectors
+                                }],
+                                buttons:  [{
+                                    text:  'Style erstellen',
+                                    click: function() {
+                                        openStyleEditor();
+                                        return false;
+                                    }
+                                }, {
+                                    text:  'Abbrechen',
+                                    click: function() {
+                                        styleMapPopup.popupDialog('close');
+                                        return false;
+                                    }
+                                }, {
+                                    text:  'Speichern',
+                                    click: function() {
+                                        styleMapPopup.popupDialog('close');
+                                        $.notify("StyleMap gespeichert", 'notice');
+                                        return false;
+                                    }
+                                }]
+                            });
+
                             return false;
                         },
                         css:      {
