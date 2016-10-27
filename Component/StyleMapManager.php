@@ -184,7 +184,9 @@ class StyleMapManager extends BaseManager
         if ($styleMap != null) {
             $style = $this->styleManager->getById($styleId);
 
-            if($style==null) throw new Exception("Der Style kann nicht gelöscht werden. Er gehört nicht zu der Stylemap.");
+            if (!$style) {
+                throw new Exception("Der Style kann nicht gelöscht werden. Er gehört nicht zu der Stylemap.");
+            }
             $style->removeStyleMapById($styleMapId);
             $styleMap->removeStyleById($styleId);
 
