@@ -119,6 +119,11 @@ class Style extends UniqueBaseEntity
     protected $userId;
 
 
+    /** @var String[] Style Maps which contain this style */
+    protected $styleMaps;
+
+
+
     /**
      * @return string
      */
@@ -603,4 +608,67 @@ class Style extends UniqueBaseEntity
     {
         return $this->userId;
     }
+
+    /**
+     * @param \String[] $styleMaps
+     * @return Style
+     */
+    public function setStyleMaps($styleMaps)
+    {
+        $this->styleMaps = $styleMaps;
+        return $this;
+    }
+
+    /**
+     * @return \String[]
+     */
+    public function getStyleMaps()
+    {
+        return $this->styleMaps;
+    }
+
+    /**
+     * @return bool
+     */
+    public function canBeDeleted()
+    {
+        return empty($this->styleMaps);
+    }
+
+
+    /**
+     * @param string $id
+     * @return string|boolean
+     */
+    public function removeStyleMapById($id)
+    {
+        $wasRemoved = isset($this->styleMaps[ $id ]);
+        unset($this->styleMaps[ $id ]);
+        return $wasRemoved;
+    }
+
+
+    /**
+     * @param $id
+     * @return $this
+     */
+    public function addStyleMap($id)
+    {
+        $this->styleMaps[$id] = $id;
+        return $this;
+    }
+
+
+    /**
+     * @return string|null
+     */
+    public function pop()
+    {
+        foreach ($this->styleMaps as $key => $value) {
+            return $value;
+        }
+        return null;
+    }
+
+
 }
