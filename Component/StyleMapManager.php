@@ -4,6 +4,7 @@ namespace Mapbender\SearchBundle\Component;
 use Eslider\Entity\HKV;
 use Mapbender\SearchBundle\Entity\Style;
 use Mapbender\SearchBundle\Entity\StyleMap;
+use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -165,7 +166,7 @@ class StyleMapManager extends BaseManager
         if ($styleMap != null) {
             $styleMap->addStyle($styleId);
             $style = $this->styleManager->getById($styleId);
-            //TODO : handle style == null
+            if($style==null) throw new Exception("Der Style kann nicht hinzugefügt werden. Er existiert nicht mehr.");
             $style->addStyleMap($styleMapId);
             $this->styleManager->save($style);
         }
@@ -181,13 +182,14 @@ class StyleMapManager extends BaseManager
     {
         $styleMap = $this->getById($styleMapId);
         if ($styleMap != null) {
-            $styleMap->removeStyle($styleId);
-            return $this->save($styleMap);
-
             $style = $this->styleManager->getById($styleId);
-            //TODO : handle style == null
+
+            if($style==null) throw new Exception("Der Style kann nicht gelöscht werden. Er gehört nicht zu der Stylemap.");
             $style->removeStyleMapById($styleMapId);
+            $styleMap->removeStyleById($styleId);
+
             $this->styleManager->save($style);
+            $this->save($styleMap);
         }
         return false;
     }
