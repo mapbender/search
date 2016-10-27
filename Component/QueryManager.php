@@ -67,7 +67,13 @@ class QueryManager extends BaseManager
         $id             = $query->getId();
         $queries        = $this->listQueries();
         $queries[ $id ] = $query;
-        $result         = $this->db->saveData($this->tableName, $queries, $scope, $parentId, $this->getUserId());
+        $result         = $this->db->saveData(
+            $this->tableName,
+            $queries,
+            $scope,
+            $parentId,
+            $this->getUserId()
+        );
 
         return $query;
 
@@ -183,7 +189,6 @@ class QueryManager extends BaseManager
         $query = new Query($args);
         $query->setId($this->generateUUID());
         $query->setUserId($this->getUserId());
-        $query->setConnectionName(isset($this->configuration) ? $this->configuration->getConnection() : 'default');
         return $query;
     }
 
