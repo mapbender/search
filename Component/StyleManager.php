@@ -47,9 +47,10 @@ class StyleManager extends BaseManager
      */
     public function createStyle($args)
     {
-        $styleMap = new Style($args);
-        $styleMap->setId($this->generateUUID());
-        return $styleMap;
+        $style = new Style($args);
+        $style->setId($this->generateUUID());
+        $style->setUserId($this->getUserId());
+        return $style;
     }
 
 
@@ -94,7 +95,7 @@ class StyleManager extends BaseManager
     public function saveArray($args, $scope = null, $parentId = null)
     {
         return $this->save(
-            $this->createStyleMap($args),
+            $this->createStyle($args),
             $scope,
             $parentId
         );
