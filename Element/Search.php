@@ -23,7 +23,7 @@ class Search extends BaseElement
     protected static $description = "Object search element";
 
     /** @var FeatureType */
-    protected        $featureType;
+    protected $featureType;
 
     /**
      *
@@ -252,15 +252,12 @@ class Search extends BaseElement
                         //'DELETE'
                     ),
                 ));
-                $results                   = array_merge($uploadHandler->get_response(), $urlParameters);
+                $results                    = array_merge($uploadHandler->get_response(), $urlParameters);
 
                 break;
             case 'style/get':
                 $styleRequestHandler = $this->container->get("mapbender.style.controller");
                 return $styleRequestHandler->{$this->getMethod($action)}($requestService->get("id"));
-            case 'style/save':
-                $styleRequestHandler = $this->container->get("mapbender.style.controller");
-                return $styleRequestHandler->{$this->getMethod($action)}($requestService);
 
             case 'query/get':
                 $queryRequestHandler = $this->container->get("mapbender.query.controller");
@@ -303,7 +300,7 @@ class Search extends BaseElement
                 $id          = $request['id'];
                 $dataStore   = $this->container->get("data.source")->get($id);
                 $uniqueIdKey = $dataStore->getDriver()->getUniqueId();
-                $dataItemId = $request['dataItem'][ $uniqueIdKey ];
+                $dataItemId  = $request['dataItem'][ $uniqueIdKey ];
                 $dataStore->remove($dataItemId);
                 break;
 
@@ -422,23 +419,147 @@ class Search extends BaseElement
     }
 
     /**
-     * Export results
+     * Save Styles
      *
      * @param $request
      * @return mixed
      */
     public function saveStyleAction($request)
     {
-        // TODO: implement
-        $errors = array();
-        $style  = new Style($request);
-
-
-        // TODO: save style....
-
+        $styleManager = $this->container->get("mapbender.style.manager");
+        $style        = $styleManager->saveArray($request["style"]);
         return new JsonResponse(array(
-            'errors' => $errors,
-            'style'  => $style,
+            'style' => $style
         ));
     }
+
+
+    /**
+     * List styles
+     *
+     * @param $request
+     * @return mixed
+     */
+    public function listStyleAction($request)
+    {
+        $styleManager = $this->container->get("mapbender.style.manager");
+        $style        = $styleManager->listStyles();
+        return new JsonResponse(array(
+            'style' => $style
+        ));
+    }
+
+
+    /**
+     * Gets a Style Entity via ID
+     *
+     * @param $request
+     * @return mixed
+     */
+    public function getStyleAction($request)
+    {
+        $styleManager = $this->container->get("mapbender.style.manager");
+        $id           = isset($request["id"]) ? $request["id"] : "UNDEFINED";
+
+        $style = $styleManager->getById($id);
+        return new JsonResponse(array(
+            'style' => $style
+        ));
+    }
+
+
+
+    /**
+     * Removes a Style Entity via ID
+     *
+     * @param $request
+     * @return mixed
+     */
+    public function removeStyleAction($request)
+    {
+        $styleManager = $this->container->get("mapbender.style.manager");
+        $id           = isset($request["id"]) ? $request["id"] : "UNDEFINED";
+
+        $style = $styleManager->remove($id);
+        return new JsonResponse(array(
+            'style' => $style
+        ));
+    }
+
+
+    /**
+     * Saves a StyleMap Entity
+     *
+     * @param $request
+     * @return mixed
+     */
+    public function saveStyleMapAction($request)
+    {
+        $styleManager = $this->container->get("mapbender.stylemap.manager");
+        $style        = $styleManager->saveArray($request);
+
+        return new JsonResponse(array(
+            'stylemap' => $style
+        ));
+    }
+
+
+    /**
+     * Lists all StyleMap Entities
+     *
+     * @param $request
+     * @return mixed
+     */
+    public function listStyleMapAction($request)
+    {
+        $styleManager = $this->container->get("mapbender.stylemap.manager");
+        $style        = $styleManager->listStyles();
+
+        return new JsonResponse(array(
+            'stylemap' => $style
+        ));
+    }
+
+
+    /**
+     * Gets a StyleMap Entity via ID
+     *
+     * @param $request
+     * @return mixed
+     */
+    public function getStyleMapAction($request)
+    {
+        $styleManager = $this->container->get("mapbender.stylemap.manager");
+        $id           = isset($request["id"]) ? $request["id"] : "UNDEFINED";
+
+        $style = $styleManager->getById($id);
+        return new JsonResponse(array(
+            'stylemap' => $style
+        ));
+    }
+
+
+
+    /**
+     * Removes a Style Entity via ID
+     *
+     * @param $request
+     * @return mixed
+     */
+    public function removeStyleMapAction($request)
+    {
+        $styleManager = $this->container->get("mapbender.stylemap.manager");
+        $id           = isset($request["id"]) ? $request["id"] : "UNDEFINED";
+
+        $style = $styleManager->remove($id);
+        return new JsonResponse(array(
+            'stylemap' => $style
+        ));
+    }
+
+
+
+
+
+
 }
