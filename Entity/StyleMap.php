@@ -53,69 +53,26 @@ class StyleMap extends UniqueBaseEntity
     {
         return $this->styles;
     }
-
     /**
-     * @return string
-     */
-    public function getStyle($name = 'default')
-    {
-        return $this->styles[ $name ];
-    }
-
-
-    /**
-     * @param Style  $style
-     * @param string $name
-     * @return Style
-     */
-    public function setStyle(Style $style)
-    {
-        $this->styles[ $style->getName() ] = $style;
-        return $style;
-    }
-
-
-    /**
-     * @param Style $style
-     * @return Style|boolean
-     */
-    public function removeStyle(Style $style)
-    {
-        $result = false;
-        foreach ($this->styles as $key => $value) {
-            if ($value->getId() == $style->getId()) {
-                $result = $this->styles[ $key ];
-                unset($this->styles[ $key ]);
-                return $result;
-            }
-        }
-        return $result;
-    }
-
-    /**
-     * @param string $name
+     * @param string $id
      * @return string|boolean
      */
-    public function removeStyleByName($name)
+    public function removeStyleById($id)
     {
-        $result = false;
-        foreach ($this->styles as $key => $value) {
-            if ($value->getName() == $name) {
-                $result = $this->styles[ $key ];
-                unset($this->styles[ $key ]);
-                return $result;
-            }
+        $hasStyle = isset($this->styles[ $id ]);
+        if ($hasStyle) {
+            unset($this->styles[ $id ]);
         }
-        return $result;
+        return $hasStyle;
     }
 
     /**
      * @param string $map
      * @return string
      */
-    public function addStyle($map)
+    public function addStyle($id)
     {
-        $this->styles[ $map->getName() ] = $map;
+        $this->styles[ $id ] = $id;
         return $this;
     }
 
