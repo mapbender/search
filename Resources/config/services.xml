@@ -14,6 +14,10 @@
             <argument type="service" id="service_container"/>
         </service>
 
+        <service class="Mapbender\SearchBundle\Component\StyleMapManager" id="mapbender.stylemap.manager">
+            <argument type="service" id="service_container"/>
+        </service>
+
         <service class="Mapbender\DataSourceBundle\Component\FeatureType" id="mapbender.featuretype.manager">
             <argument type="service" id="service_container"/>
         </service>
