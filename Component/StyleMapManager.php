@@ -98,7 +98,7 @@ class StyleMapManager extends BaseManager
      * @param int $id
      * @return StyleMap|null
      */
-    public function getById($id,$fetchData=false)
+    public function getById($id, $fetchData = false)
     {
         $styleMaps = $this->listStyleMaps($fetchData);
         return isset($styleMaps[ $id ]) ? $styleMaps[ $id ] : null;
@@ -157,8 +157,10 @@ class StyleMapManager extends BaseManager
 
 
     /**
-     * @param string $styleMapId
-     * @param string $styleId
+     * @param StyleManager $styleManager
+     * @param string       $styleMapId
+     * @param string       $styleId
+     * @return bool
      */
     public function addStyle($styleMapId, $styleId)
     {
@@ -181,10 +183,12 @@ class StyleMapManager extends BaseManager
         return false;
     }
 
+
     /**
-     * @param string $styleMapId
-     * @param string $styleId
-     * @return bool|StyleMap
+     * @param StyleManager $styleManager
+     * @param string       $styleMapId
+     * @param string       $styleId
+     * @return bool
      */
     public function removeStyle($styleMapId, $styleId)
     {

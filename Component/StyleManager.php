@@ -102,8 +102,9 @@ class StyleManager extends BaseManager
      */
     public function getById($id)
     {
-        $styleMaps = $this->listStyles();
-        return isset($styleMaps[ $id ]) ? $styleMaps[ $id ] : null;
+        $styles = $this->listStyles();
+
+        return isset($styles[ $id ]) ? $styles[ $id ] : null;
 
     } /**
      * Get StyleMap by ids
