@@ -64,18 +64,25 @@ class QueryManager extends BaseManager
      */
     public function save($query, $scope = null, $parentId = null)
     {
-        $id             = $query->getId();
-        $queries        = $this->listQueries();
-        $queries[ $id ] = $query;
-        $result         = $this->db->saveData(
-            $this->tableName,
-            $queries,
-            $scope,
-            $parentId,
-            $this->getUserId()
-        );
+        $queries = $this->listQueries();
+        $id      = $query->getId();
 
-        return $query;
+        if ($queries == null) {
+            $queries = array();
+        }
+
+        $queries[ $id ] = $query;
+        $result         = $this->db->saveData($this->tableName, $queries, $scope, $parentId, $this->getUserId());
+
+        $children = $result->getChildren();
+
+        foreach ($children as $key => $child) {
+            if ($child->getKey() == $id) {
+                return $child;
+            }
+        }
+
+        return isset($result[ $id ]) ? $result[ $query->getId() ] : null;
 
     }
 
@@ -97,7 +104,7 @@ class QueryManager extends BaseManager
     /**
      * List all queries
      *
-     * @return \Mapbender\SearchBundle\Entity\Query[]
+     * @return Query[]
      * @internal param int $id
      */
     public function listQueries()
@@ -155,7 +162,7 @@ class QueryManager extends BaseManager
                 throw new Exception("You have to define the feature type in the corresponding config yml!");
             }
             $queryConditions = $query->getConditions();
-            $criteria = $this->buildCriteria($queryConditions, $featureType);
+            $criteria        = $this->buildCriteria($queryConditions, $featureType);
             array_merge($results, $featureType->search($criteria));
 
         }
@@ -187,7 +194,9 @@ class QueryManager extends BaseManager
     public function create($args)
     {
         $query = new Query($args);
-        $query->setId($this->generateUUID());
+        if (!isset($args["id"])) {
+            $query->setId($this->generateUUID());
+        }
         $query->setUserId($this->getUserId());
         return $query;
     }
