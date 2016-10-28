@@ -3,6 +3,7 @@
 namespace Mapbender\SearchBundle\Element;
 
 use Doctrine\DBAL\DBALException;
+use Eslider\Driver\HKVStorage;
 use FOM\CoreBundle\Component\ExportResponse;
 use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Element\BaseElement;
@@ -255,13 +256,6 @@ class Search extends BaseElement
                 $results                    = array_merge($uploadHandler->get_response(), $urlParameters);
 
                 break;
-            case 'style/get':
-                $styleRequestHandler = $this->container->get("mapbender.style.controller");
-                return $styleRequestHandler->{$this->getMethod($action)}($requestService->get("id"));
-
-            case 'query/get':
-                $queryRequestHandler = $this->container->get("mapbender.query.controller");
-                return $queryRequestHandler->{$this->getMethod($action)}($requestService->get("id"));
 
             case 'datastore/get':
                 // TODO: get request ID and check
@@ -415,7 +409,7 @@ class Search extends BaseElement
         $requestData  = $request['query'];
         $query        = $queryManager->saveArray($requestData);
 
-        return new JsonResponse($query->toArray());
+        return new JsonResponse(HKVStorage::encodeValue($query->toArray()));
     }
 
     /**
@@ -429,7 +423,7 @@ class Search extends BaseElement
         $styleManager = $this->container->get("mapbender.style.manager");
         $style        = $styleManager->saveArray($request["style"]);
         return new JsonResponse(array(
-            'style' => $style
+            'style' => $style != null ? HKVStorage::encodeValue($style->toArray()) : null
         ));
     }
 
@@ -445,7 +439,7 @@ class Search extends BaseElement
         $styleManager = $this->container->get("mapbender.style.manager");
         $style        = $styleManager->listStyles();
         return new JsonResponse(array(
-            'style' => $style
+            'style' => HKVStorage::encodeValue($style)
         ));
     }
 
@@ -463,10 +457,9 @@ class Search extends BaseElement
 
         $style = $styleManager->getById($id);
         return new JsonResponse(array(
-            'style' => $style
+            'style' => HKVStorage::encodeValue($style)
         ));
     }
-
 
 
     /**
@@ -482,7 +475,7 @@ class Search extends BaseElement
 
         $style = $styleManager->remove($id);
         return new JsonResponse(array(
-            'style' => $style
+            'style' => HKVStorage::encodeValue($style)
         ));
     }
 
@@ -493,13 +486,13 @@ class Search extends BaseElement
      * @param $request
      * @return mixed
      */
-    public function saveStyleMapAction($request)
+    public function saveStylemapAction($request)
     {
-        $styleManager = $this->container->get("mapbender.stylemap.manager");
-        $style        = $styleManager->saveArray($request);
+        $styleMapManager = $this->container->get("mapbender.stylemap.manager");
+        $styleMap        = $styleMapManager->ray($request);
 
         return new JsonResponse(array(
-            'stylemap' => $style
+            'stylemap' => HKVStorage::encodeValue($styleMap)
         ));
     }
 
@@ -510,13 +503,13 @@ class Search extends BaseElement
      * @param $request
      * @return mixed
      */
-    public function listStyleMapAction($request)
+    public function listStylemapAction($request)
     {
-        $styleManager = $this->container->get("mapbender.stylemap.manager");
-        $style        = $styleManager->listStyles();
+        $styleMapManager = $this->container->get("mapbender.stylemap.manager");
+        $styleMap        = $styleMapManager->listStyles();
 
         return new JsonResponse(array(
-            'stylemap' => $style
+            'stylemap' => HKVStorage::encodeValue($styleMap)
         ));
     }
 
@@ -527,17 +520,16 @@ class Search extends BaseElement
      * @param $request
      * @return mixed
      */
-    public function getStyleMapAction($request)
+    public function getStylemapAction($request)
     {
-        $styleManager = $this->container->get("mapbender.stylemap.manager");
-        $id           = isset($request["id"]) ? $request["id"] : "UNDEFINED";
+        $styleMapManager = $this->container->get("mapbender.stylemap.manager");
+        $id              = isset($request["id"]) ? $request["id"] : "UNDEFINED";
 
-        $style = $styleManager->getById($id);
+        $styleMap = $styleMapManager->getById($id);
         return new JsonResponse(array(
-            'stylemap' => $style
+            'stylemap' => HKVStorage::encodeValue($styleMap)
         ));
     }
-
 
 
     /**
@@ -546,20 +538,54 @@ class Search extends BaseElement
      * @param $request
      * @return mixed
      */
-    public function removeStyleMapAction($request)
+    public function removeStylemapAction($request)
+    {
+        $styleMapManager = $this->container->get("mapbender.stylemap.manager");
+        $id              = isset($request["id"]) ? $request["id"] : "UNDEFINED";
+
+        $styleMapWasRemoved = $styleMapManager->remove($id);
+        return new JsonResponse(array(
+            'stylemap' => $styleMapWasRemoved
+        ));
+    }
+
+
+    /**
+     * Removes a Style Entity ID from StyleMap Entity
+     *
+     * @param $request
+     * @return mixed
+     */
+    public function removeStyleFromStylemapAction($request)
     {
         $styleManager = $this->container->get("mapbender.stylemap.manager");
-        $id           = isset($request["id"]) ? $request["id"] : "UNDEFINED";
+        $styleMapId   = isset($request["stylemapid"]) ? $request["stylemapid"] : "UNDEFINED";
+        $styleId      = isset($request["styleid"]) ? $request["styleid"] : "UNDEFINED";
 
-        $style = $styleManager->remove($id);
+        $style = $styleManager->removeStyle($styleMapId, $styleId);
         return new JsonResponse(array(
             'stylemap' => $style
         ));
     }
 
 
+    /**
+     * Add a Style Entity ID to StyleMap Entity
+     *
+     * @param $request
+     * @return mixed
+     */
+    public function addStyleToStylemapAction($request)
+    {
+        $styleMapManager = $this->container->get("mapbender.stylemap.manager");
+        $styleMapId   = isset($request["stylemapid"]) ? $request["stylemapid"] : "UNDEFINED";
+        $styleId      = isset($request["styleid"]) ? $request["styleid"] : "UNDEFINED";
 
-
+        $style         = $styleMapManager->addStyle($styleMapId, $styleId);
+        return new JsonResponse(array(
+            'stylemap' => HKVStorage::encodeValue($style)
+        ));
+    }
 
 
 }

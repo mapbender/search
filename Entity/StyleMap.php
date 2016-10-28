@@ -67,7 +67,7 @@ class StyleMap extends UniqueBaseEntity
     }
 
     /**
-     * @param string $map
+     * @param $id
      * @return string
      */
     public function addStyle($id)
