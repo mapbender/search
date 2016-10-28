@@ -2,6 +2,7 @@
 namespace Mapbender\SearchBundle\Component;
 
 use Eslider\Entity\HKV;
+use Eslider\Entity\UniqueBaseEntity;
 use Mapbender\SearchBundle\Entity\Style;
 use Mapbender\SearchBundle\Entity\StyleMap;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -47,30 +48,32 @@ class StyleManager extends BaseManager
     /**
      * Save style.
      *
-     * @param      $styleMap
+     * @param      $style
      * @param int  $scope
      * @param int  $parentId
-     * @return Style
+     * @return UniqueBaseEntity|Style|null
      */
-    public function save($styleMap, $scope = null, $parentId = null)
+    public function save($style, $scope = null, $parentId = null)
     {
-        $styleMaps = $this->listStyles();
+        $styles = $this->listStyles();
 
-        if ($styleMaps == null) {
-            $styleMaps = array();
+        if ($styles == null) {
+            $styles = array();
         }
 
-        $styleMaps[ $styleMap->getId() ] = $styleMap;
-        $result                          = $this->db->saveData($this->tableName, $styleMaps, $scope, $parentId, $this->getUserId());
+        $styles[ $style->getId() ] = $style;
+        $result                    = $this->db->saveData($this->tableName, $styles, $scope, $parentId, $this->getUserId());
+
 
         $children = $result->getChildren();
 
+        $found=null;
         foreach ($children as $key => $child) {
-            if ($child->getKey() == $styleMap->getId()) {
-                return $child;
+            if ($child->getKey() == $style->getId()) {
+                return $style;
+
             }
         }
-
         return null;
     }
 
