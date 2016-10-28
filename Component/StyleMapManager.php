@@ -48,12 +48,12 @@ class StyleMapManager extends BaseManager
     /**
      * Save style.
      *
-     * @param      $styleMap
+     * @param      $style
      * @param int  $scope
      * @param int  $parentId
      * @return StyleMap
      */
-    public function save($styleMap, $scope = null, $parentId = null)
+    public function save($style, $scope = null, $parentId = null)
     {
         $styleMaps = $this->listStyleMaps(false);
 
@@ -61,13 +61,13 @@ class StyleMapManager extends BaseManager
             $styleMaps = array();
         }
 
-        $styleMaps[ $styleMap->getId() ] = $styleMap;
-        $result                          = $this->db->saveData($this->tableName, $styleMaps, $scope, $parentId, $this->getUserId());
+        $styleMaps[ $style->getId() ] = $style;
+        $result                       = $this->db->saveData($this->tableName, $styleMaps, $scope, $parentId, $this->getUserId());
 
         $children = $result->getChildren();
 
         foreach ($children as $key => $child) {
-            if ($child->getKey() == $styleMap->getId()) {
+            if ($child->getKey() == $style->getId()) {
                 return $child;
             }
         }
@@ -98,9 +98,9 @@ class StyleMapManager extends BaseManager
      * @param int $id
      * @return StyleMap|null
      */
-    public function getById($id)
+    public function getById($id,$fetchData=false)
     {
-        $styleMaps = $this->listStyleMaps();
+        $styleMaps = $this->listStyleMaps($fetchData);
         return isset($styleMaps[ $id ]) ? $styleMaps[ $id ] : null;
 
     }
@@ -163,14 +163,22 @@ class StyleMapManager extends BaseManager
     public function addStyle($styleMapId, $styleId)
     {
         $styleMap = $this->getById($styleMapId);
-        if ($styleMap != null) {
-            $styleMap->addStyle($styleId);
+        if ($styleMap) {
+
             $style = $this->styleManager->getById($styleId);
-            if($style==null) throw new Exception("Der Style kann nicht hinzugefügt werden. Er existiert nicht mehr.");
+
+            if (!$style) {
+                throw new Exception("Der Style kann nicht hinzugefügt werden. Er existiert nicht mehr.");
+            }
+
+            $styleMap->addStyle($styleId);
             $style->addStyleMap($styleMapId);
+
             $this->styleManager->save($style);
+            return $this->save($styleMap) ? true : false;
         }
-        $this->save($styleMap);
+
+        return false;
     }
 
     /**
@@ -181,18 +189,21 @@ class StyleMapManager extends BaseManager
     public function removeStyle($styleMapId, $styleId)
     {
         $styleMap = $this->getById($styleMapId);
-        if ($styleMap != null) {
+        if ($styleMap) {
+
             $style = $this->styleManager->getById($styleId);
 
             if (!$style) {
                 throw new Exception("Der Style kann nicht gelöscht werden. Er gehört nicht zu der Stylemap.");
             }
+
             $style->removeStyleMapById($styleMapId);
             $styleMap->removeStyleById($styleId);
 
             $this->styleManager->save($style);
-            $this->save($styleMap);
+            return $this->save($styleMap) ? true : false;
         }
+
         return false;
     }
 

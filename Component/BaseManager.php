@@ -48,7 +48,7 @@ abstract class BaseManager extends BaseComponent implements ManagerInterface
         $kernel          = $this->container->get('kernel');
         $this->path      = $kernel->getRootDir() . "/config/" . $tableName . ".sqlite";
         $this->tableName = $tableName;
-        $this->db        = new HKVStorage($this->path, $tableName);
+        $this->createDB();
         $this->logger    = $this->container->get('logger');
 
         parent::__construct($container);
@@ -109,6 +109,14 @@ abstract class BaseManager extends BaseComponent implements ManagerInterface
     public function getUserId()
     {
         return $this->userId;
+    }
+
+    /**
+     * @param $tableName
+     */
+    public function createDB()
+    {
+        $this->db = new HKVStorage($this->path, $this->tableName);
     }
 
 }
