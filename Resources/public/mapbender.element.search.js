@@ -226,7 +226,7 @@
          * @param onComplete
          */
         load: function(uri, onComplete) {
-            var assetUrl = Mapbender.configuration.application.urls.asset + "/bundles/mapbendersearch/";
+            var assetUrl = Mapbender.configuration.application.urls.asset + "bundles/mapbendersearch/";
             $.getScript(assetUrl + uri, function(data, statusCode, xhr) {
                 onComplete && typeof onComplete == "function" && onComplete(eval(data), data, statusCode, xhr, uri);
             });
@@ -261,6 +261,22 @@
                             $.notify("Erfolgreich gespeichert!", "info");
                         });
                     }
+                });
+
+                queryManager.bind('querymanagerstylelist', function(event, context) {
+                    widget.query("style/list", {}).done(function(list) {
+                        var styles = list && list["style"] ? list["style"] : [];
+                        //TODO: change to something like _.pluck(styles,"name")
+                        var ids = _.keys(styles);
+                        var $selectFields = $(context, "select");
+
+                        //TODO: uncomment if $selectFields contains correct value
+                        //_.each(ids,function(name, index, list){
+                        //    $('<option></option>').val(i).text(name).appendTo($selectFields);
+                        //});
+
+                    });
+
                 });
 
                 queryManager.bind('querymanagerdatavalid', function(event, context) {
@@ -303,6 +319,13 @@
                 children: [{
                     type:     'button',
                     title:    'Add query',
+                    cssClass: 'btn new-query',
+                    click:    function() {
+                        widget.openCreateDialog();
+                    }
+                },{
+                    type:     'button',
+                    title:    'Add style map',
                     cssClass: 'btn new-query',
                     click:    function() {
                         widget.openCreateDialog();
