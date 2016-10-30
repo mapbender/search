@@ -7,6 +7,7 @@
         options: {
             asPopup: true,
             data:    {
+                'id':         null,
                 'borderSize': 1
             }
         },
@@ -50,8 +51,6 @@
                             title:         "Durchsichtigkeit",
                             name:          "fillOpacity",
                             type:          "slider",
-                            mandatory:     "/^\\d+$/",
-                            mandatoryText: "Bitte nur Zahlen verwenden",
                             range:         "max",
                             min:           0.1,
                             max:           1,
@@ -94,7 +93,6 @@
                             title:     "X-Offset", // infoText:  "The x offset (in pixels) for the background graphic.",
                             name:      "backgroundXOffset",
                             type:      "slider",
-                            mandatory: "/^\\d+$/",
                             range:     "max",
                             min:       0,
                             max:       100,
@@ -107,7 +105,6 @@
                             title:     "Y-Offset",
                             type:      "slider",
                             name:      "backgroundYOffset",
-                            mandatory: "/^\\d+$/",
                             range:     "max",
                             min:       0,
                             max:       100,
@@ -120,7 +117,6 @@
                             title:     "Z-Index",
                             type:      "slider",
                             name:      "backgroundGraphicZIndex", // infoText:  "The integer z-index value to use in rendering the background graphic.",
-                            mandatory: "/^\\d+$/",
                             range:     "max",
                             min:       0,
                             max:       100,
@@ -157,8 +153,6 @@
                             title:         "Durchsichtigkeit",
                             name:          "strokeOpacity",
                             type:          "slider",
-                            mandatory:     "/^\\d+$/",
-                            mandatoryText: "Bitte nur Zahlen verwenden",
                             range:         "max",
                             min:           0.1,
                             max:           1,
@@ -224,7 +218,7 @@
                         title: "Name",
                         type:  "input",
                         name:  "graphicName",
-                        value: ""
+                        infoText: "Named graphic to use when rendering points.  Supported values include “circle” (default), “square”, “star”, “x”, “cross”, “triangle”."
                     }, {
                         type:     'fieldSet',
                         children: [{
@@ -246,7 +240,6 @@
                             title:         "X-Offset",
                             name:          "graphicXOffset",
                             type:          "slider",
-                            mandatory:     "/^\\d+$/",
                             mandatoryText: "Bitte nur Zahlen verwenden",
                             range:         "max",
                             min:           0,
@@ -260,7 +253,6 @@
                             title:         "Y-Offset",
                             type:          "slider",
                             name:          "graphicYOffset",
-                            mandatory:     "/^\\d+$/",
                             mandatoryText: "Bitte nur Zahlen verwenden",
                             range:         "max",
                             min:           0,
@@ -274,8 +266,6 @@
                             title:         "Durchsichtigkeit",
                             name:          "graphicOpacity",
                             type:          "slider",
-                            mandatory:     "/^\\d+$/",
-                            mandatoryText: "Bitte nur Zahlen verwenden",
                             range:         "max",
                             min:           0,
                             max:           1,
@@ -327,14 +317,14 @@
                             }, {
                                 title:    'Grösse',
                                 name:     'fontSize',
-                                type:     'select',
-                                options:  {
-                                    9:  9,
-                                    10: 10,
-                                    11: 11,
-                                    12: 12,
-                                    13: 13,
-                                    14: 14
+                                type:    'select',
+                                options: {
+                                    "9":  9,
+                                    "10": 10,
+                                    "11": 11,
+                                    "12": 12,
+                                    "13": 13,
+                                    "14": 14
                                 },
                                 css:      {width: "20%"},
                                 infoText: 'The font size for the label, to be provided like in CSS'
@@ -366,8 +356,6 @@
                                     title:         "Durchsichtigkeit",
                                     name:          "fontOpacity",
                                     type:          "slider",
-                                    mandatory:     "/^\\d+$/",
-                                    mandatoryText: "Bitte nur Zahlen verwenden",
                                     range:         "max",
                                     min:           0,
                                     max:           1,
@@ -451,7 +439,10 @@
                 }]
             });
 
-            element.formData(options.data);
+            window.setTimeout(function() {
+                element.formData(options.data);
+            }, 500);
+
 
             if(options.asPopup) {
                 widget.popup();
@@ -490,7 +481,7 @@
          *
          * @private
          */
-        kill: function() {
+        close: function() {
             var widget = this;
             var element = $(widget.element);
             var options = widget.options;
