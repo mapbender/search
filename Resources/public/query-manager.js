@@ -43,136 +43,6 @@ var constraintsTableDataGen = function(options) {
 
 var constraintsOperators = [">", "<", ">=", "<=", "==", "!=", "LIKE", "NOT LIKE"];
 
-/**
- * Style map manager widget
- */
-$.widget("wheregroup.styleMapManager", {
-
-    options: {
-        styles:     ['Style #1', 'Style #2'],
-        styleNames: ["Default", 'Hover', 'Select'],
-        onSave:     null,
-        messages:   {
-            save: {
-                error:       'Speichern nicht möglich',
-                successfull: 'Speichern erfolgreich'
-            }
-        },
-        onCancel:   null
-    },
-
-    openStyleManager: function() {
-        var styleManagerContainer = $("<div/>");
-        styleManagerContainer.featureStyleManager();
-        styleManagerContainer.bind('featurestylemanagersubmit', function(e, fsm) {
-            widget._trigger('styleChange', null, fsm);
-        });
-    },
-
-    _create: function() {
-        var widget = this;
-        var options = widget.options;
-        var styleMapPopup = $(widget.element);
-        var styles = options.styles;
-        var styleSelectors = [];
-        var styleNames = options.styleNames;
-
-        var saveMessage =  "StyleMap gespeichert";
-
-        styleSelectors.push({
-            type:        'input',
-            title:       'Name',
-            placeholder: 'Stylemap name',
-            name:        'name'
-        });
-
-        _.each(styleNames, function(name) {
-            styleSelectors.push({
-                type:     'fieldSet',
-                children: [{
-                    type:    'select',
-                    title:   name,
-                    options: styles,
-                    name:    name,
-                    change:  function(e) {
-                        var selectElement = $(this).find('select');
-                        var currentValue = selectElement.val();
-                        var selectElements = selectElement.closest("form").find("select");
-                        _.each(selectElements, function(element) {
-                            element = $(element);
-                            if(element.val() == null) {
-                                element.val(currentValue);
-                            }
-                        });
-                    },
-                    css:     {width: '80%'}
-                }, {
-                    type:  'button',
-                    title: 'Edit',
-                    css:   {width: '20%'},
-                    click: function() {
-                        var button = $(this);
-                        var fieldSet = button.parent();
-                        var styleId = fieldSet.find("[name]").val();
-                        console.log('Edit style #' + styles[styleId]);
-                        widget.(styleId);
-                        return false;
-                    }
-                }]
-            })
-        });
-
-        styleMapPopup.generateElements({
-            type:     'popup',
-            title:    'Style map',
-            children: [{
-                type:     'form',
-                children: styleSelectors
-            }],
-            buttons:  [{
-                text:  'Style erstellen',
-                click: function() {
-                    openStyleEditor();
-                    return false;
-                }
-            }, {
-                text:  'Abbrechen',
-                click: function() {
-                    styleMapPopup.popupDialog('close');
-                    return false;
-                }
-            }, {
-                text:  'Speichern',
-                click: function() {
-                    widget.save();
-
-                    $.notify(saveMessage, 'notice');
-                    return false;
-                }
-            }]
-        });
-    },
-
-    save: function() {
-        var widget = this;
-        var options = widget.options;
-        var element = $(widget.element);
-
-        if(options.onSave && typeof options.onSave == "function") {
-            var result = options.onSave(element.formData());
-            if(result) {
-                widget.close();
-            }
-        }
-    },
-
-    close: function() {
-        var widget = this;
-        var element = $(widget.element);
-        element.popupDialog('close');
-    }
-});
-
 $.widget("rw.querymanager", {
 
     version: "1.0.1",
@@ -295,9 +165,9 @@ $.widget("rw.querymanager", {
                         currentSource = widget.changeSource(featureTypeId)
                     }
                 }, {
-                    type: "fieldSet",
+                    type:     "fieldSet",
                     children: [{
-                        type: "select",
+                        type:    "select",
                         name:    "styleMap",
                         title:   "Style",
                         value:   0,
@@ -325,8 +195,7 @@ $.widget("rw.querymanager", {
                     checked:     true
 
                 }]
-            }, true),
-                widget._getForm({
+            }, true), widget._getForm({
                 title:    "Felder",
                 children: [{
                     html: $('<div/>').resultTable({
@@ -398,95 +267,95 @@ $.widget("rw.querymanager", {
                     }
                 }]
             }), widget._getForm({
-                    title:    "Bedingungen",
-                    children: [ {
-                        html: $('<div/>').resultTable({
-                            lengthChange: false,
-                            searching:    false,
-                            info:         false,
-                            paging:       false,
-                            columns:      [{
-                                data:  'fieldName',
-                                title: 'Feldname'
+                title:    "Bedingungen",
+                children: [{
+                    html: $('<div/>').resultTable({
+                        lengthChange: false,
+                        searching:    false,
+                        info:         false,
+                        paging:       false,
+                        columns:      [{
+                            data:  'fieldName',
+                            title: 'Feldname'
+                        }, {
+                            data:  'operator',
+                            title: 'Operator'
+                        }, {
+                            data:  'value',
+                            title: 'Wert'
+                        }, {
+                            data:  'action',
+                            title: 'Aktion'
+                        }],
+                        data:         [constraintsTableDataGen({
+                            placeholder:   "mustermann",
+                            fieldName:     "name",
+                            selectOptions: constraintsOperators
+                        }), constraintsTableDataGen({
+                            placeholder:   "about",
+                            fieldName:     "description",
+                            selectOptions: constraintsOperators
+                        }), constraintsTableDataGen({
+                            placeholder:   20,
+                            fieldName:     "km",
+                            selectOptions: constraintsOperators
+                        })]
+                    })
+                }, {
+                    type:     "button",
+                    name:     "buttonAddCondition",
+                    cssClass: "plus",
+                    title:    "Neue Bedingung",
+                    click:    function(e) {
+                        var el = $(e.currentTarget);
+                        var form = el.closest('.popup-dialog');
+                        var conditionForm = $("<div/>");
+                        conditionForm.generateElements({
+                            type:     'fieldSet',
+                            children: [{
+                                title:     "Field",
+                                type:      "select",
+                                name:      "fieldName",
+                                options:   currentSource.fieldNames,
+                                mandatory: true,
+                                css:       {width: "40%"}
                             }, {
-                                data:  'operator',
-                                title: 'Operator'
+                                title:     "Operator",
+                                type:      "select",
+                                name:      "operator",
+                                options:   currentSource.operators,
+                                mandatory: true,
+                                css:       {width: "20%"}
                             }, {
-                                data:  'value',
-                                title: 'Wert'
-                            }, {
-                                data:  'action',
-                                title: 'Aktion'
-                            }],
-                            data:         [constraintsTableDataGen({
-                                placeholder:   "mustermann",
-                                fieldName:     "name",
-                                selectOptions: constraintsOperators
-                            }), constraintsTableDataGen({
-                                placeholder:   "about",
-                                fieldName:     "description",
-                                selectOptions: constraintsOperators
-                            }), constraintsTableDataGen({
-                                placeholder:   20,
-                                fieldName:     "km",
-                                selectOptions: constraintsOperators
-                            })]
-                        })
-                    }, {
-                        type:     "button",
-                        name:     "buttonAddCondition",
-                        cssClass: "plus",
-                        title:    "Neue Bedingung",
-                        click: function(e) {
-                            var el = $(e.currentTarget);
-                            var form = el.closest('.popup-dialog');
-                            var conditionForm = $("<div/>");
-                            conditionForm.generateElements({
-                                type:     'fieldSet',
-                                children: [{
-                                    title:     "Field",
-                                    type:      "select",
-                                    name:      "fieldName",
-                                    options:   currentSource.fieldNames,
-                                    mandatory: true,
-                                    css:       {width: "40%"}
-                                }, {
-                                    title:     "Operator",
-                                    type:      "select",
-                                    name:      "operator",
-                                    options:   currentSource.operators,
-                                    mandatory: true,
-                                    css:       {width: "20%"}
-                                }, {
-                                    title:     "Value",
-                                    type:      "input",
-                                    name:      "value",
-                                    mandatory: true,
-                                    css:       {width: "40%"}
-                                }]
-                            });
-                            conditionForm.popupDialog({
-                                title:   'Bedingung',
-                                width:   500,
-                                buttons: [{
-                                    text:  "Speichern",
-                                    click: function() {
-                                        widget.addFieldAlias(conditionForm.formData());
-                                        return false;
-                                    }
-                                }]
-                            });
+                                title:     "Value",
+                                type:      "input",
+                                name:      "value",
+                                mandatory: true,
+                                css:       {width: "40%"}
+                            }]
+                        });
+                        conditionForm.popupDialog({
+                            title:   'Bedingung',
+                            width:   500,
+                            buttons: [{
+                                text:  "Speichern",
+                                click: function() {
+                                    widget.addFieldAlias(conditionForm.formData());
+                                    return false;
+                                }
+                            }]
+                        });
 
-                            e.preventDefault();
+                        e.preventDefault();
 
-                            return false;
-                        }
-                    }]
-                })]
+                        return false;
+                    }
+                }]
+            })]
         });
     },
 
-    showPopup: function() {
+    showPopup:      function() {
         var widget = this;
         var dialog = widget.getForm().popupDialog({
             title:       "Edit query",
@@ -530,6 +399,10 @@ $.widget("rw.querymanager", {
         };
     },
 
+    fill: function(data) {
+        this.el.formData(data);
+    },
+
     _getForm: function(obj, active) {
         return {
             type:     "form",
@@ -537,10 +410,6 @@ $.widget("rw.querymanager", {
             children: obj.children,
             active:   !!active
         }
-    },
-
-    fill: function(data) {
-        this.el.formData(data);
     },
 
     check: function(data) {
