@@ -326,7 +326,7 @@
                             inline:         "inline",
                             "inline-block": "inline-block",
                             block: "block",
-                            none:  "none",
+                            none:  "none"
                         },
                         value:   "block"
                     }]
@@ -366,6 +366,22 @@
                     }
                 }]
             });
+        },
+
+        /**
+         *
+         * @private
+         */
+        kill: function() {
+            var widget = this;
+            var element = $(widget.element);
+            var options = widget.options;
+
+            if(options.asPopup) {
+                element.popupDialog("close");
+            } else {
+                this.element.remove();
+            }
         }
     });
 
