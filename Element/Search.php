@@ -14,6 +14,8 @@ use Mapbender\SearchBundle\Entity\Style;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Zumba\Util\JsonSerializer;
 
 /**
  *
@@ -37,9 +39,10 @@ class Search extends BaseElement
                              '../../vendor/blueimp/jquery-file-upload/js/jquery.fileupload.js',
                              '../../vendor/blueimp/jquery-file-upload/js/jquery.iframe-transport.js',
                              "/components/jquery-context-menu/jquery-context-menu-built.js",
-                             //'querymanager.js',
                              '/components/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js',
-                             '../../vendor/mapbender/style-manager/Resources/public/feature-style-manager.js',
+                             'feature-style-editor.js',
+                             'style-map-manager.js',
+                             'query-manager.js',
                              'mapbender.element.search.js'
                          ),
                      'css'   => array('sass/element/search.scss'),
@@ -126,6 +129,8 @@ class Search extends BaseElement
         return $feature;
     }
 
+
+
     private function getMethod($text)
     {
         $text = substr($text, strrpos($text, "/") + 1);
@@ -144,19 +149,18 @@ class Search extends BaseElement
 
     /**
      * @inheritdoc
+     * @throws \InvalidArgumentException
      */
     public function httpAction($action)
     {
         /** @var $requestService Request */
-        $configuration   = $this->getConfiguration();
-        $requestService  = $this->container->get('request');
-        $request         = $this->getRequestData();
-        $schemas         = $configuration["schemes"];
-        $featureType     = null;
-        $debugMode       = $configuration['debug'] || $this->container->get('kernel')->getEnvironment() == "dev";
-        $schemaName      = isset($request["schema"]) ? $request["schema"] : $requestService->get("schema");
-        $defaultCriteria = array('returnType' => 'FeatureCollection',
-                                 'maxResults' => 2500);
+        $configuration  = $this->getConfiguration();
+        $requestService = $this->container->get('request');
+        $request        = $this->getRequestData();
+        $schemas        = $configuration["schemes"];
+        $featureType    = null;
+        $debugMode      = $configuration['debug'] || $this->container->get('kernel')->getEnvironment() == "dev";
+        $schemaName     = isset($request["schema"]) ? $request["schema"] : $requestService->get("schema");
         if (!empty($schemaName)) {
             //throw new Exception('For initialization there is no name of the declared scheme');
             $schema = $schemas[ $schemaName ];
@@ -171,17 +175,6 @@ class Search extends BaseElement
         $results = array();
 
         switch ($action) {
-            case 'select':
-                $results = $featureType->search(array_merge($defaultCriteria, $request));
-                break;
-
-            case 'queries/list':
-                $queryManager   = $this->container->get("mapbender.query.manager");
-                $featureService = $this->container->get("features");
-                $featureTypes   = isset($request['features']) ? $request['features'] : array();
-                $results        = $queryManager->listQueriesByFeatureTypes($featureService, $featureTypes);
-                break;
-
             case 'save':
                 // save once
                 if (isset($request['feature'])) {
@@ -306,7 +299,14 @@ class Search extends BaseElement
                 }
                 $action     = implode($names);
                 $methodName = preg_replace('/[^a-z]+/si', null, $action) . 'Action';
-                return $this->{$methodName}($request);
+                $result     = $this->{$methodName}($request);
+
+                if (is_array($result)) {
+                    $serializer = new JsonSerializer();
+                    $result     = new Response($serializer->serialize($result));
+                }
+
+                return $result;
         }
 
         return new JsonResponse($results);
@@ -355,7 +355,7 @@ class Search extends BaseElement
      * @param $request
      * @return mixed
      */
-    public function listFeatureTypeAction($request)
+    public function listlistFeatureTypeAction($request)
     {
         $result = array();
         foreach ($this->container->get('features')->getFeatureTypeDeclarations() as $key => $declaration) {
@@ -433,14 +433,14 @@ class Search extends BaseElement
      *
      * @param $request
      * @return mixed
+     * @throws \InvalidArgumentException
      */
     public function listStyleAction($request)
     {
         $styleManager = $this->container->get("mapbender.style.manager");
-        $style        = $styleManager->listStyles();
-        return new JsonResponse(array(
-            'style' => HKVStorage::encodeValue($style)
-        ));
+        return array(
+            'styles' => $styleManager->listStyles()
+        );
     }
 
 
@@ -467,10 +467,11 @@ class Search extends BaseElement
      *
      * @param $request
      * @return mixed
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      */
     public function removeStyleAction($request)
     {
-        $styleManager = $this->container->get("mapbender.style.manager");
+        $styleManager = $this->container->get('mapbender.style.manager');
         $id           = isset($request["id"]) ? $request["id"] : "UNDEFINED";
 
         $style = $styleManager->remove($id);
@@ -578,14 +579,47 @@ class Search extends BaseElement
     public function addStyleToStylemapAction($request)
     {
         $styleMapManager = $this->container->get("mapbender.stylemap.manager");
-        $styleMapId   = isset($request["stylemapid"]) ? $request["stylemapid"] : "UNDEFINED";
-        $styleId      = isset($request["styleid"]) ? $request["styleid"] : "UNDEFINED";
+        $styleMapId      = isset($request["stylemapid"]) ? $request["stylemapid"] : "UNDEFINED";
+        $styleId         = isset($request["styleid"]) ? $request["styleid"] : "UNDEFINED";
+        $style           = $styleMapManager->addStyle($styleMapId, $styleId);
 
-        $style         = $styleMapManager->addStyle($styleMapId, $styleId);
         return new JsonResponse(array(
             'stylemap' => HKVStorage::encodeValue($style)
         ));
     }
 
+    /**
+     * Select features
+     *
+     * @param $request
+     * @return \Mapbender\DataSourceBundle\Entity\Feature[]
+     */
+    public function selectFeaturesAction($request)
+    {
+        return $this->getFeatureType()->search(
+            array_merge(
+                array(
+                    'returnType' => 'FeatureCollection',
+                    'maxResults' => 2500
+                ),
+                $request));
+    }
 
+    /**
+     * List queries
+     *
+     * @param $request
+     * @return \Mapbender\DataSourceBundle\Entity\Feature[]
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
+     */
+    public function listQueriesAction($request)
+    {
+        $container      = $this->container;
+        $queryManager   = $container->get('mapbender.query.manager');
+        $featureService = $container->get('features');
+        $featureTypes   = isset($request['features']) ? $request['features'] : array();
+        $results        = $queryManager->listQueriesByFeatureTypes($featureService, $featureTypes);
+
+        return $results;
+    }
 }

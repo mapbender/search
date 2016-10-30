@@ -213,9 +213,29 @@
             widget.elementUrl = Mapbender.configuration.application.urls.element + '/' + element.attr('id') + '/';
             Mapbender.elementRegistry.onElementReady(target, $.proxy(widget._setup, widget));
 
-            // For test only
-            widget.load("querymanager.js", function() {
-                widget.openQueryManager();
+            widget.openStyleMapManager();
+            widget.openStyleEditor();
+
+
+
+            // // For test only
+            // widget.load("querymanager.js", function() {
+            //     widget.openQueryManager();
+            // });
+        },
+
+        openStyleEditor: function() {
+            var feautureStyleContainer = $("<div/>");
+            feautureStyleContainer.featureStyleEditor();
+            feautureStyleContainer.bind('featurestyleeditorsubmit', function(e, data) {
+                feautureStyleContainer.formData();
+                var incompleteFields = feautureStyleContainer.has(".has-error");
+                if(incompleteFields.size()) {
+                    $.notify("Bitte vervollständigen sie die Daten.");
+                } else {
+                    $.notify("Query wurde gespeichert!",'notice');
+                    feautureStyleContainer.featureStyleEditor('kill');
+                }
             });
         },
 
@@ -227,9 +247,12 @@
          */
         load: function(uri, onComplete) {
             var assetUrl = Mapbender.configuration.application.urls.asset + "bundles/mapbendersearch/";
-            $.getScript(assetUrl + uri, function(data, statusCode, xhr) {
-                onComplete && typeof onComplete == "function" && onComplete(eval(data), data, statusCode, xhr, uri);
-            });
+            var asset = assetUrl + uri;
+            // console.log("Load: "+asset);
+            // $.getScript(asset, function(data, statusCode, xhr) {
+            //     console.log("Loaded");
+            //     onComplete && typeof onComplete == "function" && onComplete(eval(data), data, statusCode, xhr, uri);
+            // });
         },
 
         /**
@@ -302,6 +325,20 @@
         },
 
         /**
+         * Open style map manager
+         */
+        openStyleMapManager: function(query) {
+
+            var widget = this;
+            widget.query('style/list').done(function(r) {
+                $("<div/>").styleMapManager({
+                    styles: r.styles
+                })
+            });
+
+        },
+
+        /**
          * Setup widget
          *
          * @private
@@ -318,17 +355,24 @@
                 type:     'fieldSet',
                 children: [{
                     type:     'button',
-                    title:    'Add query',
+                    title:    'Neue query',
                     cssClass: 'btn new-query',
                     click:    function() {
                         widget.openCreateDialog();
                     }
                 },{
                     type:     'button',
-                    title:    'Add style map',
+                    title:    'Neu Style Map',
                     cssClass: 'btn new-query',
                     click:    function() {
-                        widget.openCreateDialog();
+                        widget.openStyleMapManager();
+                    }
+                },{
+                    type:     'button',
+                    title:    'Neu Style ',
+                    cssClass: 'btn new-query',
+                    click:    function() {
+                        widget.openStyleEditor();
                     }
                 }]
             });
@@ -1191,7 +1235,7 @@
                     fillOpacity:   0.1
                 });
             }
-            return widget.query('select', _request).done(function(featureCollection) {
+            return widget.query('features/select', _request).done(function(featureCollection) {
                 var schema = widget.options.schemes[_request["schema"]];
                 widget._onFeatureCollectionLoaded(featureCollection, schema, this);
             });
@@ -1262,7 +1306,7 @@
 
                     if(!schema.allFeaturesQueued) {
                         schema.allFeaturesQueued = true;
-                        widget.query('select', request).done(function(featureCollection) {
+                        widget.query('features/select', request).done(function(featureCollection) {
                             widget._onFeatureCollectionLoaded(featureCollection, schema, this);
                         });
                     }
