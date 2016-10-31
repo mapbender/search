@@ -16,10 +16,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 abstract class BaseManager extends BaseComponent implements ManagerInterface
 {
-
     /** @var HKVStorage */
     protected $db;
-
 
     /* @var Configuration configuration */
     protected $configuration;
@@ -112,11 +110,9 @@ abstract class BaseManager extends BaseComponent implements ManagerInterface
     }
 
     /**
-     * @param $tableName
      */
     public function createDB()
     {
         $this->db = new HKVStorage($this->path, $this->tableName);
     }
-
 }
