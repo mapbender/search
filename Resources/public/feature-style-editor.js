@@ -19,7 +19,6 @@
             var widget = this;
             var element = $(widget.element);
             var options = widget.options;
-            var name = 'Style #' + Math.round(Math.random() * 10000);
 
             element.generateElements({
                 type:     "tabs",
@@ -27,11 +26,11 @@
                     title:    "Allgemein",
                     type:     "form",
                     children: [{
-                        type:     'input',
-                        name:     'name',
-                        title:    'Name',
-                        infoText: 'Die Name erscheint in der Auswahlliste.',
-                        value:    name
+                        type:      'input',
+                        name:      'name',
+                        title:     'Name',
+                        infoText:  'Die Name erscheint in der Auswahlliste.',
+                        mandatory: true
                     }]
                 }, {
                     title:    "Füllung",
@@ -48,15 +47,15 @@
                             css:           {width: "50%"}
 
                         }, {
-                            title:         "Durchsichtigkeit",
-                            name:          "fillOpacity",
-                            type:          "slider",
-                            range:         "max",
-                            min:           0.1,
-                            max:           1,
-                            value:         1,
-                            step:          0.1,
-                            css:           {width: "50%"}
+                            title: "Durchsichtigkeit",
+                            name:  "fillOpacity",
+                            type:  "slider",
+                            range: "max",
+                            min:   0.1,
+                            max:   1,
+                            value: 1,
+                            step:  0.1,
+                            css:   {width: "50%"}
 
                         }, {
                             title:   "Aktivieren",
@@ -90,39 +89,39 @@
                     }, {
                         type:     'fieldSet',
                         children: [{
-                            title:     "X-Offset", // infoText:  "The x offset (in pixels) for the background graphic.",
-                            name:      "backgroundXOffset",
-                            type:      "slider",
-                            range:     "max",
-                            min:       0,
-                            max:       100,
-                            value:     0,
-                            step:      1,
-                            css:       {
+                            title: "X-Offset", // infoText:  "The x offset (in pixels) for the background graphic.",
+                            name:  "backgroundXOffset",
+                            type:  "slider",
+                            range: "max",
+                            min:   0,
+                            max:   100,
+                            value: 0,
+                            step:  1,
+                            css:   {
                                 width: '33%'
                             }
                         }, {
-                            title:     "Y-Offset",
-                            type:      "slider",
-                            name:      "backgroundYOffset",
-                            range:     "max",
-                            min:       0,
-                            max:       100,
-                            value:     0,
-                            step:      1,
-                            css:       {
+                            title: "Y-Offset",
+                            type:  "slider",
+                            name:  "backgroundYOffset",
+                            range: "max",
+                            min:   0,
+                            max:   100,
+                            value: 0,
+                            step:  1,
+                            css:   {
                                 width: '33%'
                             }
                         }, {
-                            title:     "Z-Index",
-                            type:      "slider",
-                            name:      "backgroundGraphicZIndex", // infoText:  "The integer z-index value to use in rendering the background graphic.",
-                            range:     "max",
-                            min:       0,
-                            max:       100,
-                            value:     0,
-                            step:      1,
-                            css:       {
+                            title: "Z-Index",
+                            type:  "slider",
+                            name:  "backgroundGraphicZIndex", // infoText:  "The integer z-index value to use in rendering the background graphic.",
+                            range: "max",
+                            min:   0,
+                            max:   100,
+                            value: 0,
+                            step:  1,
+                            css:   {
                                 width: '34%'
                             }
                         }]
@@ -150,15 +149,15 @@
                             css:           {width: "30%"}
 
                         }, {
-                            title:         "Durchsichtigkeit",
-                            name:          "strokeOpacity",
-                            type:          "slider",
-                            range:         "max",
-                            min:           0.1,
-                            max:           1,
-                            value:         1,
-                            step:          0.1,
-                            css:           {width: "35%"}
+                            title: "Durchsichtigkeit",
+                            name:  "strokeOpacity",
+                            type:  "slider",
+                            range: "max",
+                            min:   0.1,
+                            max:   1,
+                            value: 1,
+                            step:  0.1,
+                            css:   {width: "35%"}
 
                         }, {
                             title: "Breite",
@@ -215,9 +214,9 @@
                     title:    "Bild",
                     type:     "form",
                     children: [{
-                        title: "Name",
-                        type:  "input",
-                        name:  "graphicName",
+                        title:    "Name",
+                        type:     "input",
+                        name:     "graphicName",
                         infoText: "Named graphic to use when rendering points.  Supported values include “circle” (default), “square”, “star”, “x”, “cross”, “triangle”."
                     }, {
                         type:     'fieldSet',
@@ -263,15 +262,15 @@
                                 width: '33%'
                             }
                         }, {
-                            title:         "Durchsichtigkeit",
-                            name:          "graphicOpacity",
-                            type:          "slider",
-                            range:         "max",
-                            min:           0,
-                            max:           1,
-                            value:         1,
-                            step:          0.01,
-                            css:           {
+                            title: "Durchsichtigkeit",
+                            name:  "graphicOpacity",
+                            type:  "slider",
+                            range: "max",
+                            min:   0,
+                            max:   1,
+                            value: 1,
+                            step:  0.01,
+                            css:   {
                                 width: '34%'
                             }
                         }]
@@ -300,10 +299,10 @@
                         }, {
                             type:     'fieldSet',
                             children: [{
-                                title:   'Fontname',
-                                type:    'select',
-                                options: {
-                                    "Open Sans": "Open Sans",
+                                title:    'Fontname',
+                                type:     'select',
+                                options:  {
+                                    "Open Sans":    "Open Sans",
                                     "Calluna Sans": "Calluna Sans",
                                     "Gill Sans MT": "Gill Sans MT",
                                     'Calibri':      'Calibri',
@@ -317,8 +316,8 @@
                             }, {
                                 title:    'Grösse',
                                 name:     'fontSize',
-                                type:    'select',
-                                options: {
+                                type:     'select',
+                                options:  {
                                     "9":  9,
                                     "10": 10,
                                     "11": 11,
@@ -353,26 +352,25 @@
                                     infoText: 'The font color for the label, to be provided like CSS.',
                                     css:      {width: "50%"}
                                 }, {
-                                    title:         "Durchsichtigkeit",
-                                    name:          "fontOpacity",
-                                    type:          "slider",
-                                    range:         "max",
-                                    min:           0,
-                                    max:           1,
-                                    value:         1,
-                                    step:          0.01,
-                                    css:           {
+                                    title: "Durchsichtigkeit",
+                                    name:  "fontOpacity",
+                                    type:  "slider",
+                                    range: "max",
+                                    min:   0,
+                                    max:   1,
+                                    value: 1,
+                                    step:  0.01,
+                                    css:   {
                                         width: '50%'
                                     }
-                                },
-                                {
-                                    title:   "Selektierbar?",
-                                    type:    "checkbox",
-                                    checked: false,
-                                    name:    "labelEnabled",
-                                    infoText : 'If set to true, labels will be selectable using SelectFeature or similar controls.  Default is false.',
-                                    value:   '1',
-                                    css:           {
+                                }, {
+                                    title:    "Selektierbar?",
+                                    type:     "checkbox",
+                                    checked:  false,
+                                    name:     "labelEnabled",
+                                    infoText: 'If set to true, labels will be selectable using SelectFeature or similar controls.  Default is false.',
+                                    value:    '1',
+                                    css:      {
                                         width: '30%'
                                     }
                                 }]
@@ -441,8 +439,7 @@
 
             window.setTimeout(function() {
                 element.formData(options.data);
-            }, 500);
-
+            }, 200);
 
             if(options.asPopup) {
                 widget.popup();
@@ -459,10 +456,10 @@
                 modal:   true,
                 width:   '500px',
                 buttons: [{
-                    text:  "Reset",
+                    text:  "Abbrechen",
                     click: function(e) {
-                        var form = $(e.currentTarget).closest(".ui-dialog").find("form");
-                        form.trigger("reset");
+                        widget.close();
+                        return false;
                     }
                 }, {
                     text:  "Speichern",
@@ -489,7 +486,7 @@
             if(options.asPopup) {
                 element.popupDialog("close");
             } else {
-                this.element.remove();
+                widget.element.remove();
             }
         }
     });
