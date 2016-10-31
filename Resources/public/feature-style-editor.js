@@ -134,7 +134,7 @@
                         placeholder: "URL"
                     }]
                 }, {
-                    title:    "Strich",
+                    title:    "Rand",
                     type:     "form",
                     children: [{
                         type:     'fieldSet',
@@ -390,7 +390,7 @@
                         max:           10,
                         value:         0
                     }, {
-                        title:   "Kursor",
+                        title:   "Zeiger",
                         name:    "cursor",
                         type:    "select",
                         options: {
@@ -452,7 +452,7 @@
             var widget = this;
             var element = $(widget.element);
             element.popupDialog({
-                title:   "Style manager",
+                title:   "Stylemanager",
                 modal:   true,
                 width:   '500px',
                 buttons: [{
