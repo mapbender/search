@@ -39,8 +39,8 @@ $.widget("wheregroup.styleMapManager", {
         var styleNames = _.object(_.pluck(styles, 'id'), _.pluck(styles, 'name'));
         var editButton = {
             type:  'button',
-            title: 'Ändern',
-            css:   {width: '20%'},
+            title: 'Editieren',
+            css:   {width: '25%'},
             click: function() {
                 var button = $(this);
                 var fieldSet = button.parent();
@@ -85,17 +85,17 @@ $.widget("wheregroup.styleMapManager", {
                     options: styleNames,
                     name:    'styles[default]',
                     change:  onStyleChange,
-                    css:     {width: '80%'}
+                    css:     {width: '75%'}
                 }, editButton]
             }, {
                 type:     'fieldSet',
                 children: [{
                     type:    'select',
-                    title:   'Drüber',
+                    title:   'Mouseover',
                     options: styleNames,
                     name:    'styles[hover]',
                     change:  onStyleChange,
-                    css:     {width: '80%'}
+                    css:     {width: '75%'}
                 }, editButton]
             }, {
                 type:     'fieldSet',
@@ -105,7 +105,7 @@ $.widget("wheregroup.styleMapManager", {
                     options: styleNames,
                     name:    'styles[select]',
                     change:  onStyleChange,
-                    css:     {width: '80%'}
+                    css:     {width: '75%'}
                 }, editButton]
             }]
         });
