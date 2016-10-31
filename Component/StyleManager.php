@@ -40,7 +40,6 @@ class StyleManager extends BaseManager
         if (!isset($args["id"])) {
             $style->setId($this->generateUUID());
         }
-        $style->setUserId($this->getUserId());
         return $style;
     }
 
@@ -55,26 +54,11 @@ class StyleManager extends BaseManager
      */
     public function save($style, $scope = null, $parentId = null)
     {
-        $styles = $this->listStyles();
-
-        if ($styles == null) {
-            $styles = array();
-        }
-
-        $styles[ $style->getId() ] = $style;
-        $result                    = $this->db->saveData($this->tableName, $styles, $scope, $parentId, $this->getUserId());
-
-
-        $children = $result->getChildren();
-
-        $found=null;
-        foreach ($children as $key => $child) {
-            if ($child->getKey() == $style->getId()) {
-                return $style;
-
-            }
-        }
-        return null;
+        $styles        = $this->listStyles();
+        $id            = $style->getId();
+        $styles[ $id ] = $style;
+        $this->db->saveData($this->tableName, $styles, $scope, $parentId, $this->getUserId());
+        return $style;
     }
 
     /**
@@ -106,33 +90,37 @@ class StyleManager extends BaseManager
 
         return isset($styles[ $id ]) ? $styles[ $id ] : null;
 
-    } /**
+    }
+
+    /**
      * Get StyleMap by ids
      *
-     * @param string[] $id
-     * @return Style[]
+     * @param $ids
+     * @return \Mapbender\SearchBundle\Entity\Style[]
      */
     public function getByIds($ids)
     {
         $styles    = array();
         $styleMaps = $this->listStyles();
 
-        foreach($styleMaps as $key =>$value){
+        foreach ($styleMaps as $key => $value) {
 
-            if(in_array($key,$ids)) $styles[$key]=$value;
+            if (in_array($key, $ids)) {
+                $styles[ $key ] = $value;
+            }
         }
         return $styles;
-
     }
 
     /**
      * List all StyleMaps
      *
-     * @return Style[]|null
+     * @return Style[]
      */
     public function listStyles()
     {
-        return $this->db->getData($this->tableName, null, null, $this->getUserId());
+        $styles = $this->db->getData($this->tableName, null, null, $this->getUserId());
+        return $styles ? $styles : array();
     }
 
     /**
