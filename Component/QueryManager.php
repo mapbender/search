@@ -24,6 +24,9 @@ class QueryManager extends BaseManager
     /** @var Configuration $configuration */
     protected $configuration;
 
+    /** @var string Scope */
+    protected $scope;
+
     /**
      * QueryManager constructor.
      *
@@ -217,4 +220,28 @@ class QueryManager extends BaseManager
     }
 
 
+    /**
+     * @param Query $query
+     */
+    public function check(Query $query)
+    {
+        $container    = $this->container;
+        $featureType  = $container->get('features')->get($query->getFeatureType());
+        $queryBuilder = $featureType->getSelectQueryBuilder();
+        var_dump($query);
+        die();
+    }
+
+    /**
+     * @param $id
+     * @return \Eslider\Entity\HKV
+     */
+    public function removeById($id)
+    {
+        $queries = $this->listQueries();
+        if (isset($queries[ $id ])) {
+            unset($queries[ $id ]);
+        }
+        return $this->db->saveData($this->tableName, $queries, null, $this->scope, $this->getUserId());
+    }
 }

@@ -597,7 +597,7 @@ class Search extends BaseElement
     public function getStyleMapAction($request)
     {
         $styleMapManager = $this->container->get('mapbender.stylemap.manager');
-        $id              = (int)$request['id'];
+        $id              = $request['id'];
         $styleMap        = $styleMapManager->getById($id);
 
         return array(
@@ -616,7 +616,7 @@ class Search extends BaseElement
      */
     public function removeStyleMapAction($request)
     {
-        $id              = (int)$request['id'];
+        $id              = request['id'];
         $styleMapManager = $this->container->get('mapbender.stylemap.manager');
         return array(
             'result' => $styleMapManager->remove($id)
@@ -636,8 +636,8 @@ class Search extends BaseElement
     public function removeStyleFromStyleMapAction($request)
     {
         $styleManager = $this->container->get('mapbender.stylemap.manager');
-        $styleMapId   = (int)$request['styleMapId'];
-        $styleId      = (int)$request['styleId'];
+        $styleMapId   = $request['styleMapId'];
+        $styleId      = $request['styleId'];
         return array(
             'result' => $styleManager->removeStyle($styleMapId, $styleId)
         );
@@ -690,12 +690,45 @@ class Search extends BaseElement
     {
         $container    = $this->container;
         $queryManager = $container->get('mapbender.query.manager');
-        //$featureService = $container->get('features');
-        //$featureTypes   = isset($request['features']) ? $request['features'] : array();
-        ////$results        = $queryManager->listQueriesByFeatureTypes($featureService, $featureTypes);
 
         return array(
             'list' => $queryManager->listQueries()
+        );
+    }
+
+    /**
+     * List queries
+     *
+     * @param $request
+     * @return \Mapbender\DataSourceBundle\Entity\Feature[]
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
+     */
+    public function checkQueryAction($request)
+    {
+        $container    = $this->container;
+        $queryManager = $container->get('mapbender.query.manager');
+        $query        = $queryManager->create($request['query']);
+        $queryManager->check($query);
+
+        return array(
+            'result' => $queryManager->check($query)
+        );
+    }
+
+    /**
+     * List queries
+     *
+     * @param $request
+     * @return \Mapbender\DataSourceBundle\Entity\Feature[]
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
+     */
+    public function removeQueryAction($request)
+    {
+        $container    = $this->container;
+        $queryManager = $container->get('mapbender.query.manager');
+        $id           = $request['id'];
+        return array(
+            'result' => $queryManager->removeById($id)
         );
     }
 }
