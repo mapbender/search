@@ -616,7 +616,7 @@ class Search extends BaseElement
      */
     public function removeStyleMapAction($request)
     {
-        $id              = request['id'];
+        $id              = $request['id'];
         $styleMapManager = $this->container->get('mapbender.stylemap.manager');
         return array(
             'result' => $styleMapManager->remove($id)
