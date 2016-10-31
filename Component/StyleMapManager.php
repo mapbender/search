@@ -93,11 +93,14 @@ class StyleMapManager extends BaseManager
      */
     public function listStyleMaps($fetchData = false)
     {
+        /**@var StyleMap[] $styleMaps*/
         $styleMaps = $this->db->getData($this->tableName, null, null, $this->getUserId());
 
         if ($fetchData) {
-            $ids = array_keys($styleMaps);
-            $this->styleManager->getByIds($styleMaps);
+            foreach ($styleMaps as $key => $styleMap) {
+                $ids = array_keys($styleMap->getStyles());
+                $styleMap->setStyles($this->styleManager->getByIds($ids));
+            }
         }
 
         return $styleMaps ? $styleMaps : array();

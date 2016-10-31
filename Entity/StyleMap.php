@@ -67,4 +67,14 @@ class StyleMap extends UniqueBaseEntity
         $this->styles[ $id ] = $id;
         return $this;
     }
+
+    /**
+     * @param Style[] $styles
+     * @return StyleMap
+     */
+    public function setStyles($styles)
+    {
+        $this->styles = $styles;
+        return $this;
+    }
 }
