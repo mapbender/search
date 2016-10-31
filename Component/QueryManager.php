@@ -21,13 +21,8 @@ class QueryManager extends BaseManager
     /** @var HKVStorage $db */
     protected $db;
 
-
     /** @var Configuration $configuration */
     protected $configuration;
-
-
-    const SERVICE_NAME = "mapbender.query.manager";
-
 
     /**
      * QueryManager constructor.
@@ -39,53 +34,17 @@ class QueryManager extends BaseManager
         parent::__construct($container, "queries");
     }
 
-
     /**
      * Save query
      *
      * @param array $array
-     * @param null  $scope
-     * @param null  $parentId
      * @return Query
      */
-    public function saveArray($array, $scope = null, $parentId = null)
+    public function saveArray($array)
     {
         $query = $this->create($array);
-        return $this->save($query, $scope, $parentId);
+        return $this->save($query);
     }
-
-    /**
-     * Save query
-     *
-     * @param Query $query
-     * @param null  $scope
-     * @param null  $parentId
-     * @return Query
-     */
-    public function save($query, $scope = null, $parentId = null)
-    {
-        $queries = $this->listQueries();
-        $id      = $query->getId();
-
-        if ($queries == null) {
-            $queries = array();
-        }
-
-        $queries[ $id ] = $query;
-        $result         = $this->db->saveData($this->tableName, $queries, $scope, $parentId, $this->getUserId());
-
-        $children = $result->getChildren();
-
-        foreach ($children as $key => $child) {
-            if ($child->getKey() == $id) {
-                return $child;
-            }
-        }
-
-        return isset($result[ $id ]) ? $result[ $query->getId() ] : null;
-
-    }
-
 
     /**
      * Get query by id
@@ -98,6 +57,26 @@ class QueryManager extends BaseManager
     {
         $queries = $this->listQueries();
         return isset($queries[ $id ]) ? $queries[ $id ] : null;
+    }
+
+
+    /**
+     * Save query
+     *
+     * @param Query $query
+     * @param null  $scope
+     * @param null  $parentId
+     * @return Query
+     */
+    public function save($query, $scope = null, $parentId = null)
+    {
+        $queries        = $this->listQueries();
+        $id             = $query->getId();
+        $queries[ $id ] = $query;
+        $result         = $this->db->saveData($this->tableName, $queries, $scope, $parentId, $this->getUserId());
+
+        return $query; //isset($result[ $id ]) ? $result[ $query->getId() ] : null;
+
     }
 
 
