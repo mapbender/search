@@ -3,7 +3,7 @@ mb:
     # Buttons
     Edit: Bearbeiten
     Create: Erstellen
-    Cancel: Abbrechen
+    Cancel: Cancel
     Save: Speichern
     Remove: Löschen
     Execute: Ausführen
@@ -22,9 +22,9 @@ mb:
       connection:
         name: Verbindungsname
       publish: Veröffentlichen
-
     # Feature
+
     feature:
       bookmark: Lesezeichnen
       zoomTo: Einzoomen
-      save: Speichern
+      save: Save
