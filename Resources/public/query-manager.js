@@ -3,38 +3,19 @@
  * Released under the MIT license.
  */
 $.widget("rw.queryManager", {
-
-    version: "1.0.1",
-
     options: {
-        query:                   null,
+        data:                    {
+            id: null
+        },
         featureTypeDescriptions: [],
         styleMaps:               [],
         asPopup:                 true
     },
 
-    onFormError: null,
-    onOpen:      null,
-    onClose:     null,
-
-    callBackMapping: {
-        "open":      "onOpen",
-        "close":     "onClose",
-        "formError": "onFormError",
-        "ready":     "onReady"
-    },
-
-    eventMap: {},
-
     /**
      * Current source (Feature type description)
      */
     currentSource: null,
-
-    /**
-     * Contstrants operators
-     */
-    constraintsOperators: [">", "<", ">=", "<=", "==", "!=", "LIKE", "NOT LIKE"],
 
     /**
      * Constructor
@@ -76,7 +57,6 @@ $.widget("rw.queryManager", {
         var featureTypeDescriptions = options.featureTypeDescriptions;
         var featureTypeId = _.keys(featureTypeDescriptions)[0];
         var currentSource = widget.changeSource(featureTypeId);
-        var constraintsOperators = widget.constraintsOperators;
         var featureTypeNames = _.object(_.keys(featureTypeDescriptions), _.pluck(featureTypeDescriptions, 'title'));
         var styleMapNames = _.object(_.pluck(styleMaps, 'id'), _.pluck(styleMaps, 'name'));
 
@@ -94,7 +74,7 @@ $.widget("rw.queryManager", {
                 }, {
                     type:    "select",
                     name:    "featureType",
-                    title:   "Feature type",
+                    title:   "Featuretyp",
                     value:   featureTypeId,
                     options: featureTypeNames,
                     change:  function(e) {
@@ -115,9 +95,9 @@ $.widget("rw.queryManager", {
                     }, {
                         type:     "button",
                         cssClass: "bars",
-                        title:    "Ändern",
-                        click:    function(e) {
-                            var styleMapId = element.formData().styleMap;
+                        title: "Ändern",
+                        click: function(e) {
+                            var styleMapId = element.find('[name=styleMap]').val();
                             var styleMap = _.findWhere(styleMaps, {id: styleMapId});
                             widget._trigger('styleMapChange', null, {
                                 widget:   widget,
@@ -126,7 +106,7 @@ $.widget("rw.queryManager", {
                             });
                             return false;
                         },
-                        css:      {
+                        css:   {
                             width: "20%"
                         }
                     }]
@@ -314,10 +294,10 @@ $.widget("rw.queryManager", {
                                     title:     "Value",
                                     type:      "input",
                                     name:      "value",
-                                    mandatory: true,
                                     css:       {width: "40%"}
                                 }]
                             });
+
                             conditionForm.popupDialog({
                                 title:   'Bedingung',
                                 width:   500,
@@ -368,20 +348,47 @@ $.widget("rw.queryManager", {
             modal:       true,
             width:       "500px",
             buttons:     [{
-                name:  "cancelSave",
+                text:  "Prüfen",
+                click: function() {
+                    var form = $(this).closest('.popup-dialog');
+                    var conditions = form.find('[name=conditions]').resultTable('getApi').rows().data().toArray();
+                    var fields = form.find('[name=fi    elds]').resultTable('getApi').rows().data().toArray();
+
+                    widget._trigger('check', null, {
+                        dialog: element,
+                        widget: widget,
+                        data:   $.extend({
+                            id:         widget.options.data.id,
+                            conditions: conditions,
+                            fields:     fields
+                        }, form.formData())
+                    });
+
+                    return false;
+                }
+            },{
                 text:  "Abbrechen",
                 click: function() {
                     widget.close();
                     return false;
                 }
             }, {
-                name:  "buttonSave",
                 text:  "Speichern",
                 click: function() {
+                    var form = $(this).closest('.popup-dialog');
+                    var conditions = form.find('[name=conditions]').resultTable('getApi').rows().data().toArray();
+                    var fields = form.find('[name=fields]').resultTable('getApi').rows().data().toArray();
+
                     widget._trigger('submit', null, {
-                        form:   element,
-                        widget: widget
+                        dialog: element,
+                        widget: widget,
+                        data:   $.extend({
+                            id:         widget.options.data.id,
+                            conditions: conditions,
+                            fields:     fields
+                        }, form.formData())
                     });
+
                     return false;
                 }
             }]

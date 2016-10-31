@@ -199,6 +199,7 @@
         _styles:       null,
         _featureTypes: null,
         _styleMaps:    null,
+        bookMarks: [],
 
         /**
          * Constructor.
@@ -294,52 +295,26 @@
             queryManager.bind('querymanagerstylemapchange', function(event, context) {
                 widget.openStyleMapManager(context.styleMap, widget._styles);
             });
+            queryManager.bind('querymanagersubmit', function(event, context) {
+                var errorInputs = $(".has-error", context.form);
+                var hasErrors = errorInputs.size() > 0;
 
-            queryManager.bind('querymanagerstylechange', function(event, context) {
-                var errorInputs = $('.error', $(context.form));
-                var styleDefinition = $(context.form).formData();
-                var query = null; // TODO
-
-                if(errorInputs.size()) {
-                    $.notify("Style Eingaben vervollständigen");
-                } else {
-                    widget.query('style/save', {
-                        style: styleDefinition,
-                        query: query
-                    }).done(function(query) {
-                        context.dialog.data('query', query);
-                        $.notify("Erfolgreich gespeichert!", "info");
-                    });
+                if(hasErrors) {
+                    return false;
                 }
-            });
 
-            queryManager.bind('querymanagerstylelist', function(event, context) {
-                widget.query("style/list", {}).done(function(list) {
-                    var styles = list && list["style"] ? list["style"] : [];
-                    //TODO: change to something like _.pluck(styles,"name")
-                    var ids = _.keys(styles);
-                    var $selectFields = $(context, "select");
-
-                    debugger;
-                    //TODO: uncomment if $selectFields contains correct value
-                    //_.each(ids,function(name, index, list){
-                    //    $('<option></option>').val(i).text(name).appendTo($selectFields);
-                    //});
-
-                });
-
-            });
-
-            queryManager.bind('querymanagerdatavalid', function(event, context) {
-                widget.query('query/save', {query: context.data}).done(function(query) {
-                    context.dialog.data('query', query);
+                widget.query('query/save', {query: context.data}).done(function(r) {
+                    var queryManagerWidget = context.widget;
+                    $.extend(queryManagerWidget.options.data, r.entity);
+                    queryManagerWidget.close();
                     $.notify("Erfolgreich gespeichert!", "info");
-                    // context.dialog.popupDialog("close");
                 });
             });
-            queryManager.bind('querymanagerdatainvalid', function(event, context) {
-                $.notify(JSON.stringify(context.data));
-                $.notify("Die Daten sind nicht vollständig", "notice");
+
+            queryManager.bind('querymanagercheck', function(event, context) {
+                widget.query('query/check', {query: context.data}).done(function(r) {
+                    console.log(r);
+                });
             });
         },
 
@@ -433,45 +408,13 @@
         },
 
         /**
-         * Setup widget
-         *
-         * @private
+         * Activate context menu
          */
-        _setup: function() {
-            var frames = [];
+        activateContextMenu: function() {
             var widget = this;
             var element = $(widget.element);
-            var selector = widget.selector = $('<select class="selector" />', element);
             var options = widget.options;
             var map = widget.map = $('#' + options.target).data('mapbenderMbMap').map.olMap;
-
-            element.generateElements({
-                type:     'fieldSet',
-                children: [{
-                    type:     'button',
-                    title:    'Neue Abfrage',
-                    cssClass: 'btn new-query',
-                    click:    function() {
-                        widget.openCreateDialog();
-                    }
-                }, {
-                    type:     'button',
-                    title:    'Neu Style Map',
-                    cssClass: 'btn new-query',
-                    click:    function() {
-                        widget.openStyleMapManager({id: null}, widget._styles);
-                    }
-                }, {
-                    type:     'button',
-                    title:    'Neu Style',
-                    cssClass: 'btn new-query',
-                    click:    function() {
-                        widget.openStyleEditor();
-                    }
-                }]
-            });
-
-            element.append(selector);
 
             function createSubMenu(olFeature) {
                 var layer = olFeature.layer;
@@ -502,6 +445,13 @@
                     }
                 }
 
+                subItems['changeStyle'] = {
+                    name:   'Style editieren',
+                    action: function(key, options, parameters) {
+                        widget.openStyleMapManager({id: null}, widget._styles);
+                    }
+                };
+
                 return {
                     name:      "Feature #" + olFeature.fid,
                     olFeature: olFeature,
@@ -514,7 +464,7 @@
              */
             $(map.div).contextMenu({
                 selector: 'div',
-                events: {
+                events:   {
                     show: function(options) {
                         var schema = widget.currentSettings;
                         return schema.useContextMenu;
@@ -527,7 +477,7 @@
                     var features;
 
                     if(!feature) {
-                        items['no-items'] = {name: "Nothing selected!"}
+                        items['no-items'] = {name: "Es wurde nichts ausgewählt!"}
                     } else {
                         features = feature.cluster ? feature.cluster : [feature];
                         //features = widget._getFeaturesFromEvent(e.clientX, e.clientY);
@@ -556,9 +506,9 @@
                 }
             });
 
-            $.contextMenu({
+            $(element).contextMenu({
                 selector: '.mapbender-element-result-table > div > table > tbody > tr',
-                events: {
+                events:   {
                     show: function(options) {
                         var tr = $(options.$trigger);
                         var resultTable = tr.closest('.mapbender-element-result-table');
@@ -609,6 +559,140 @@
                     };
                 }
             });
+        },
+
+        /**
+         * Setup widget
+         *
+         * @private
+         */
+        _setup: function() {
+            var frames = [];
+            var widget = this;
+            var element = $(widget.element);
+            var selector = widget.selector = $('<select class="selector" />', element);
+            var options = widget.options;
+            var map = widget.map = $('#' + options.target).data('mapbenderMbMap').map.olMap;
+
+            element.generateElements({
+                type:     'fieldSet',
+                children: [{
+                    type:     'button',
+                    title:    'Neue Suche',
+                    cssClass: 'btn new-query',
+                    css: {width: '33%'},
+                    click:    function() {
+                        widget.openCreateDialog();
+                    }
+                }, {
+                    type:     'button',
+                    title:    'Neue Styleset',
+                    cssClass: 'btn new-query',
+                    css: {width: '33%'},
+                    click:    function() {
+                        widget.openStyleMapManager({id: null}, widget._styles);
+                    }
+                }, {
+                    type:     'button',
+                    title:    'Neuer Style',
+                    cssClass: 'btn new-query',
+                    css: {width: '30%'},
+                    click:    function() {
+                        widget.openStyleEditor();
+                    }
+                }]
+            });
+
+            element.generateElements({type: 'html', html:'<div class="queries"></div>'})
+
+            widget.query('queries/list').done(function(r) {
+                var queries = r.list;
+                var queryNames = _.object(_.pluck(queries, 'id'), _.pluck(queries, 'name'));
+                var children = _.each(queries, function(query) {
+                    return {
+                        head:    {
+                            type:  'input',
+                            title: query.name + " (" + query.id + ")"
+                        },
+                        content: {
+                            type:  'input',
+                            value: query.id
+                        }
+                    }
+                });
+                var queriesContainer = element.find('> .html-element-container');
+                queriesContainer.generateElements({
+                    type:     'fieldSet',
+                    children: [{
+                        type:    'select',
+                        name:    'queryId',
+                        title:   'Suchen',
+                        options: queryNames,
+                        css:     {width: '40%'}
+
+                    }, {
+
+                        type:     'button',
+                        title:    "Bearbeiten",
+                        cssClass: 'fa fa-edit',
+                        click:    function() {
+                            var id = queriesContainer.formData().queryId;
+                            if(!id) {
+                                $.notify("Die Suche kann nicht geändert werden!", 'notice');
+                                return false;
+                            }
+                            var query = queries[id];
+                            widget.openQueryManager(query);
+                            return false;
+                        },
+
+                        css:   {width: '30%'},
+                    }, {
+                        type:     'button',
+                        title:    'Löschen',
+                        css:      {width: '30%'},
+                        cssClass: 'fa fa-remove',
+                        click:    function() {
+                            var button = $(this);
+                            var id = queriesContainer.formData().queryId;
+                            var query = queries[id];
+
+                            Mapbender.confirmDialog({
+                                title:     'Suche löschen?',
+                                html:      'Die Suche "' + query.name + '" löschen?',
+                                onSuccess: function() {
+                                    if(!id) {
+                                        $.notify("Die Suche kann nicht gelöscht werden!", 'notice');
+                                        return false;
+                                    }
+
+                                    widget.query('query/remove', {id: id}).done(function(r) {
+                                        $.notify("Die Suche wurde gelöscht!", 'notice');
+                                        queriesContainer.find("select[name='queryId'] option[value='" + id + "']").remove();
+                                        console.log(r);
+                                        button.blur();
+                                    })
+                                }
+                            });
+                            return false;
+                        }
+                    }]
+
+                });
+                queriesContainer.generateElements({
+                    type:     'accordion',
+                    children: children
+                });
+            });
+
+
+
+            element.append(selector);
+
+
+
+
+            widget.activateContextMenu();
 
             if(options.tableTranslation) {
                 translateObject(options.tableTranslation);
@@ -624,13 +708,13 @@
                 //translateObject(options.tableTranslation);
             }
 
+
+
             // build select options
             $.each(options.schemes, function(schemaName){
                 var schema = this;
                 var option = $("<option/>");
                 var layer = schema.layer = widget.createSchemaFeatureLayer(schema);
-                //schema.clusterStrategy = layer.strategies[0];
-
 
                 // Merge settings with default values from options
                 for (var k in options) {
@@ -642,20 +726,12 @@
 
                 var buttons = [];
 
-                // buttons.push({
-                //     title:     translate('feature.edit'),
-                //     className: 'edit',
-                //     onClick:   function(olFeature, ui) {
-                //         // widget._openFeatureEditDialog(olFeature);
-                //         var queyManagerContainer = $("<div/>");
-                //         queyManagerContainer.querymanager();
-                //     }
-                // });
                 buttons.push({
                     title:     translate('feature.bookmark'),
                     className: 'bookmark',
                     onClick:   function(olFeature, ui) {
-                       $.notify("Bookmarked");
+                        widget.bookMarks.push(olFeature);
+                        $.notify("Bookmarked " + widget.bookMarks.length);
                     }
                 });
                 buttons.push({
@@ -727,32 +803,7 @@
 
                             return false;
                         }
-                    }, {
-                        type:  'button',
-                        title: "Bearbeiten",
-                        css:   {'margin-left': "10px"},
-                        cssClass: 'fa fa-edit',
-                        click: function() {
-                            widget.openQueryManager();
-                            return false;
-                        }
-                    }, {
-                        type:  'button',
-                        title: "Löschen",
-                        cssClass: 'fa fa-remove',
-                        click: function() {
-                            var button = $(this);
-                            Mapbender.confirmDialog({
-                                title:     'Abfrage löschen?',
-                                html:      'Die Abfrage löschen?',
-                                onSuccess: function() {
-                                    button.blur();
-                                    $.notify("Die Abfrage wurde gelöscht!", 'notice');
-                                }
-                            });
-                            return false;
-                        }
-                    }]
+                    } ]
                 });
 
                 $.each(schema.tableFields, function(fieldName, fieldSettings) {
@@ -1218,10 +1269,8 @@
                                 id:         dataStoreId,
                                 dataItemId: dataItemId
                             }).done(function(data) {
-
                                 widget._openEditDialog(data, item.dataStore.popupItems, item, selectRef);
                                 console.log(data)
-
                             });
 
                             return false;
