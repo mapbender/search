@@ -1,7 +1,6 @@
 <?php
 namespace Mapbender\SearchBundle\Component;
 
-use Eslider\Entity\HKV;
 use Eslider\Entity\UniqueBaseEntity;
 use Mapbender\SearchBundle\Entity\Style;
 use Mapbender\SearchBundle\Entity\StyleMap;
@@ -15,9 +14,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class StyleManager extends BaseManager
 {
-    const SERVICE_NAME = "mapbender.style.manager";
-    const TABLE_NAME   = "styles";
-
     /**
      * StyleManager constructor.
      *
@@ -25,7 +21,7 @@ class StyleManager extends BaseManager
      */
     public function __construct(ContainerInterface $container = null)
     {
-        parent::__construct($container, self::TABLE_NAME);
+        parent::__construct($container, 'styles');
     }
 
     /**
@@ -37,7 +33,7 @@ class StyleManager extends BaseManager
     public function createStyle($args)
     {
         $style = new Style($args);
-        if (!isset($args["id"])) {
+        if (!isset($args['id'])) {
             $style->setId($this->generateUUID());
         }
         return $style;
@@ -89,7 +85,6 @@ class StyleManager extends BaseManager
         $styles = $this->listStyles();
 
         return isset($styles[ $id ]) ? $styles[ $id ] : null;
-
     }
 
     /**
@@ -104,11 +99,11 @@ class StyleManager extends BaseManager
         $styleMaps = $this->listStyles();
 
         foreach ($styleMaps as $key => $value) {
-
             if (in_array($key, $ids)) {
                 $styles[ $key ] = $value;
             }
         }
+
         return $styles;
     }
 
