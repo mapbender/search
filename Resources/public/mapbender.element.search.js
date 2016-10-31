@@ -291,6 +291,10 @@
                 styleMaps:               styleMaps
             });
 
+            queryManager.bind('querymanagerstylemapchange', function(event, context) {
+                widget.openStyleMapManager(context.styleMap, widget._styles);
+            });
+
             queryManager.bind('querymanagerstylechange', function(event, context) {
                 var errorInputs = $('.error', $(context.form));
                 var styleDefinition = $(context.form).formData();
@@ -350,7 +354,7 @@
         /**
          * Open style map manager
          */
-        openStyleMapManager: function(styles) {
+        openStyleMapManager: function(data, styles) {
             var widget = this;
             var element = widget.element;
             var styleMapManager = $("<div/>");
@@ -390,7 +394,8 @@
             });
 
             return styleMapManager.styleMapManager({
-                styles: styles
+                styles: styles,
+                data:   data
             })
         },
 
@@ -400,8 +405,8 @@
         refreshStyles: function() {
             var widget = this;
             widget.query('style/list').done(function(r) {
-                widget._styles = r.styles;
-                widget._trigger('stylesUpdated', null, r.styles);
+                widget._styles = r.list;
+                widget._trigger('stylesUpdated', null, r.list);
             });
         },
 
@@ -411,8 +416,8 @@
         refreshStyleMaps: function() {
             var widget = this;
             widget.query('styleMap/list').done(function(r) {
-                widget._stleMaps = r.list;
-                widget._trigger('stylesMapsUpdated', null, r.styles);
+                widget._styleMaps = r.list;
+                widget._trigger('stylesMapsUpdated', null, r.list);
             });
         },
 
@@ -423,7 +428,7 @@
             var widget = this;
             widget.query('featureType/list').done(function(r) {
                 widget._featureTypes = r.list;
-                widget._trigger('featureTypesUpdated', null, r.styles);
+                widget._trigger('featureTypesUpdated', null, r.list);
             });
         },
 
@@ -449,14 +454,14 @@
                     click:    function() {
                         widget.openCreateDialog();
                     }
-                },{
+                }, {
                     type:     'button',
                     title:    'Neu Style Map',
                     cssClass: 'btn new-query',
                     click:    function() {
-                        widget.openStyleMapManager(widget._styles);
+                        widget.openStyleMapManager({id: null}, widget._styles);
                     }
-                },{
+                }, {
                     type:     'button',
                     title:    'Neu Style',
                     cssClass: 'btn new-query',
@@ -726,6 +731,7 @@
                         type:  'button',
                         title: "Bearbeiten",
                         css:   {'margin-left': "10px"},
+                        cssClass: 'fa fa-edit',
                         click: function() {
                             widget.openQueryManager();
                             return false;
@@ -733,6 +739,7 @@
                     }, {
                         type:  'button',
                         title: "Löschen",
+                        cssClass: 'fa fa-remove',
                         click: function() {
                             var button = $(this);
                             Mapbender.confirmDialog({

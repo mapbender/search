@@ -498,7 +498,7 @@ class Search extends BaseElement
     {
         $styleManager = $this->container->get('mapbender.style.manager');
         return array(
-            'styles' => $styleManager->listStyles()
+            'list' => $styleManager->listStyles()
         );
     }
 

@@ -17,9 +17,7 @@ $.widget("wheregroup.styleMapManager", {
             name: null,
             id:   null
         },
-        asPopup:  true,
-        onSave:   null,
-        onCancel: null
+        asPopup:  true
     },
 
     _create: function() {
@@ -38,7 +36,7 @@ $.widget("wheregroup.styleMapManager", {
         var element = widget.element;
         var options = widget.options;
         var styles = options.styles;
-        var styleNames = _.object(_.pluck(styles,'id'),_.pluck(styles,'name'));
+        var styleNames = _.object(_.pluck(styles, 'id'), _.pluck(styles, 'name'));
         var editButton = {
             type:  'button',
             title: 'Ändern',
@@ -78,7 +76,7 @@ $.widget("wheregroup.styleMapManager", {
                 type:        'input',
                 title:       'Name',
                 placeholder: 'Name',
-                name:        'name',
+                name:        'name'
             }, {
                 type:     'fieldSet',
                 children: [{
@@ -113,9 +111,11 @@ $.widget("wheregroup.styleMapManager", {
         });
 
         window.setTimeout(function() {
-
             if(!data.name) {
-                data.name = 'Style map #' + Math.round(Math.random() * 10000)
+                data.name = 'Style map #' + Math.round(Math.random() * 10000);
+            }
+            for (var k in data.styles) {
+                data['styles[' + k + ']'] = data.styles[k];
             }
             element.formData(data)
         }, 200);

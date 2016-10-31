@@ -12,23 +12,14 @@ use Eslider\Entity\UniqueBaseEntity;
  */
 class StyleMap extends UniqueBaseEntity
 {
+    /** @var string Name * */
+    protected $name;
 
-    /* @var string[] Stylesids */
-    protected $styles;
+    /* @var Style[] Style list */
+    protected $styles = array();
 
     /** @var string userId * */
     protected $userId;
-
-    /**
-     * StyleMap constructor.
-     *
-     * @param array|null $data
-     */
-    public function __construct(array &$data = null)
-    {
-        $this->styles = array();
-        parent::__construct($data);
-    }
 
     /**
      * @return string
@@ -47,12 +38,13 @@ class StyleMap extends UniqueBaseEntity
     }
 
     /**
-     * @return string[]
+     * @return Style[]
      */
     public function getStyles()
     {
         return $this->styles;
     }
+
     /**
      * @param string $id
      * @return string|boolean
@@ -75,17 +67,4 @@ class StyleMap extends UniqueBaseEntity
         $this->styles[ $id ] = $id;
         return $this;
     }
-
-
-    /**
-     * @return string|null
-     */
-    public function pop()
-    {
-        foreach ($this->styles as $key => $value) {
-            return $value;
-        }
-        return null;
-    }
-
 }
