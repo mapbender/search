@@ -2,48 +2,7 @@
  * Created by ransomware on 27/09/16.
  * Released under the MIT license.
  */
-var getIcon = function(name) {
-    return 'fa fa-' + name;
-};
-
-var fieldsTableDataGen = function(options) {
-    return {
-        title:     "<input type='text' placeholder='" + options.placeholder + "'>",
-        fieldName: options.fieldName
-    };
-};
-
-var getIconButton = function(options) {
-    return {
-        type:     "button",
-        name:     options.name,
-        title:    options.title,
-        cssClass: options.icon ? getIcon(options.icon) : undefined,
-        click:    options.click
-    };
-};
-
-var constraintsTableDataGen = function(options) {
-
-    var selectOptions = "";
-
-    if(options.selectOptions) {
-        options.selectOptions.forEach(function(val, i) {
-            selectOptions += '<option value="' + i + '">' + val + '</option>';
-        })
-    }
-
-    return {
-        fieldName: options.fieldName,
-        operator:  "<select>" + selectOptions + "</select>",
-        value:     "<input type='text' placeholder='" + options.placeholder + "'>",
-        action:    "<button class='button' title='" + options.fieldName + "'><i class='fa fa-bars'></i></button>"
-    };
-};
-
-var constraintsOperators = [">", "<", ">=", "<=", "==", "!=", "LIKE", "NOT LIKE"];
-
-$.widget("rw.querymanager", {
+$.widget("rw.queryManager", {
 
     version: "1.0.1",
 
@@ -61,7 +20,6 @@ $.widget("rw.querymanager", {
         "close":     "onClose",
         "formError": "onFormError",
         "ready":     "onReady"
-
     },
 
     eventMap: {},
@@ -70,6 +28,11 @@ $.widget("rw.querymanager", {
      * Current source (Feature type description)
      */
     currentSource: null,
+
+    /**
+     * Contstrants operators
+     */
+    constraintsOperators: [">", "<", ">=", "<=", "==", "!=", "LIKE", "NOT LIKE"],
 
     /**
      * Constructor
@@ -86,7 +49,13 @@ $.widget("rw.querymanager", {
         widget.showPopup();
     },
 
-    // Private Methods
+    /**
+     * Capitalize
+     *
+     * @param string
+     * @returns {string}
+     * @private
+     */
     _capitalizeFirstCharacter: function(string) {
         return string && string.length > 0 ? string.charAt(0).toUpperCase() + string.slice(1) : string;
     },
@@ -108,21 +77,8 @@ $.widget("rw.querymanager", {
         this._super(key, value);
     },
 
-    _setOptions: function(options) {
-        this._super(options);
-        this.refresh();
-    },
-
-    _initEventHandler: function() {
-
-    },
-
     _has: function(obj, prop) {
         return obj && obj[prop] !== undefined;
-    },
-
-    addFieldAlias: function(formData) {
-        console.log(formData);
     },
 
     changeSource: function(featureTypeId) {
@@ -143,6 +99,31 @@ $.widget("rw.querymanager", {
         var featureTypeDescriptions = widget.option('featureTypeDescriptions');
         var featureTypeId = _.keys(featureTypeDescriptions)[0];
         var currentSource = widget.changeSource(featureTypeId);
+        var constraintsOperators = widget.constraintsOperators;
+
+        var fieldsTableDataGen = function(options) {
+            return {
+                title:     "<input type='text' placeholder='" + options.placeholder + "'>",
+                fieldName: options.fieldName
+            };
+        };
+
+        function constraintsTableDataGen(options) {
+            var selectOptions = "";
+
+            if(options.selectOptions) {
+                options.selectOptions.forEach(function(val, i) {
+                    selectOptions += '<option value="' + i + '">' + val + '</option>';
+                })
+            }
+
+            return {
+                fieldName: options.fieldName,
+                operator:  "<select>" + selectOptions + "</select>",
+                value:     "<input type='text' placeholder='" + options.placeholder + "'>",
+                action:    "<button class='button' title='" + options.fieldName + "'><i class='fa fa-bars'></i></button>"
+            };
+        }
 
         return widget.el.generateElements({
             type:     "tabs",
@@ -198,6 +179,7 @@ $.widget("rw.querymanager", {
             }, true), widget._getForm({
                 title:    "Felder",
                 children: [{
+
                     html: $('<div/>').resultTable({
                         lengthChange: false,
                         searching:    false,
@@ -259,7 +241,7 @@ $.widget("rw.querymanager", {
                             buttons: [{
                                 text:  "Add",
                                 click: function(e) {
-                                    widget.addFieldAlias(addFieldDialog.formData());
+                                    console.log(addFieldDialog.formData());
                                 }
                             }]
                         });
@@ -340,7 +322,7 @@ $.widget("rw.querymanager", {
                             buttons: [{
                                 text:  "Speichern",
                                 click: function() {
-                                    widget.addFieldAlias(conditionForm.formData());
+                                    console.log(conditionForm.formData());
                                     return false;
                                 }
                             }]
@@ -358,7 +340,7 @@ $.widget("rw.querymanager", {
     showPopup:      function() {
         var widget = this;
         var dialog = widget.getForm().popupDialog({
-            title:       "Edit query",
+            title:       "Abfrage",
             maximizable: true,
             width:       "500px",
             buttons:     [{

@@ -10,7 +10,6 @@ use Mapbender\DataSourceBundle\Element\BaseElement;
 use Mapbender\DataSourceBundle\Entity\Feature;
 use Mapbender\DigitizerBundle\Component\Uploader;
 use Mapbender\SearchBundle\Entity\ExportRequest;
-use Mapbender\SearchBundle\Entity\Style;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,44 +17,46 @@ use Symfony\Component\HttpFoundation\Response;
 use Zumba\Util\JsonSerializer;
 
 /**
+ * Class Search
  *
+ * @package Mapbender\SearchBundle\Element
+ * @author  Andriy Oblivantsev <eslider@gmail.com>
  */
 class Search extends BaseElement
 {
-    protected static $title       = "Search";
-    protected static $description = "Object search element";
+    /** @var string Element title */
+    protected static $title       = 'Search';
 
-    /** @var FeatureType */
+    /** @var string Element description */
+    protected static $description = 'Object search element';
+
+    /** @var FeatureType Current feature type */
     protected $featureType;
 
-    /**
-     *
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     static public function listAssets()
     {
-        return array('js'    =>
-                         array(
-                             '../../vendor/blueimp/jquery-file-upload/js/jquery.fileupload.js',
-                             '../../vendor/blueimp/jquery-file-upload/js/jquery.iframe-transport.js',
-                             "/components/jquery-context-menu/jquery-context-menu-built.js",
-                             '/components/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js',
-                             'feature-style-editor.js',
-                             'style-map-manager.js',
-                             'query-manager.js',
-                             'mapbender.element.search.js'
-                         ),
-                     'css'   => array('sass/element/search.scss'),
-                     'trans' => array('MapbenderSearchBundle:Element:search.json.twig'));
+        return array(
+            'js'    =>
+                array(
+                    '../../vendor/blueimp/jquery-file-upload/js/jquery.fileupload.js',
+                    '../../vendor/blueimp/jquery-file-upload/js/jquery.iframe-transport.js',
+                    '/components/jquery-context-menu/jquery-context-menu-built.js',
+                    '/components/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js',
+                    'feature-style-editor.js',
+                    'style-map-manager.js',
+                    'query-manager.js',
+                    'mapbender.element.search.js'
+                ),
+            'css'   => array('sass/element/search.scss'),
+            'trans' => array('MapbenderSearchBundle:Element:search.json.twig'));
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public static function getDefaultConfiguration()
     {
         return array(
-            "target" => null
+            'target' => null
         );
     }
 
@@ -64,15 +65,16 @@ class Search extends BaseElement
      * Optional: get featureType by name from global context.
      *
      * @inheritdoc
+     * @throws \Symfony\Component\DependencyInjection\Exception\InvalidArgumentException
      */
     public function getConfiguration()
     {
         $configuration            = parent::getConfiguration();
         $configuration['debug']   = isset($configuration['debug']) ? $configuration['debug'] : false;
-        $configuration['fileUri'] = $this->container->getParameter("mapbender.uploads_dir") . "/" . FeatureType::UPLOAD_DIR_NAME;
+        $configuration['fileUri'] = $this->container->getParameter('mapbender.uploads_dir') . "/" . FeatureType::UPLOAD_DIR_NAME;
 
-        if ($configuration["schemes"] && is_array($configuration["schemes"])) {
-            foreach ($configuration["schemes"] as $key => &$scheme) {
+        if ($configuration['schemes'] && is_array($configuration['schemes'])) {
+            foreach ($configuration['schemes'] as $key => &$scheme) {
                 if (is_string($scheme['featureType'])) {
                     $featureTypes          = $this->container->getParameter('featureTypes');
                     $scheme['featureType'] = $featureTypes[ $scheme['featureType'] ];
@@ -83,22 +85,6 @@ class Search extends BaseElement
             }
         }
         return $configuration;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getType()
-    {
-        return 'Mapbender\DigitizerBundle\Element\Type\DigitizerAdminType';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getFormTemplate()
-    {
-        return 'MapbenderSearchBundle:ElementAdmin:digitizeradmin.html.twig';
     }
 
     /**
@@ -129,27 +115,58 @@ class Search extends BaseElement
         return $feature;
     }
 
-
-
-    private function getMethod($text)
+    /**
+     * Remove given fields
+     *
+     * @param $data
+     * @return mixed
+     */
+    protected function filterFields($data, $fields)
     {
-        $text = substr($text, strrpos($text, "/") + 1);
-        return $text;
+        foreach ($fields as $deniedFieldName) {
+            if (isset($data[ $deniedFieldName ])) {
+                unset($data[ $deniedFieldName ]);
+            }
+        }
+        return $data;
     }
 
+    /**
+     * @return int
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
+     */
+    protected function getUserId()
+    {
+        return $this->container->get('security.context')->getUser()->getId();
+    }
+
+    /**
+     * @return array|mixed
+     * @throws \LogicException
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
+     */
     protected function getRequestData()
     {
         $content = $this->container->get('request')->getContent();
         $request = array_merge($_POST, $_GET);
+
         if (!empty($content)) {
             $request = array_merge($request, json_decode($content, true));
         }
-        return $request;
+
+        return $this->decodeRequest($request);
     }
 
     /**
      * @inheritdoc
      * @throws \InvalidArgumentException
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
+     * @throws \LogicException
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
+     * @throws \Symfony\Component\DependencyInjection\Exception\InvalidArgumentException
+     * @throws \Symfony\Component\Config\Definition\Exception\Exception
      */
     public function httpAction($action)
     {
@@ -157,10 +174,10 @@ class Search extends BaseElement
         $configuration  = $this->getConfiguration();
         $requestService = $this->container->get('request');
         $request        = $this->getRequestData();
-        $schemas        = $configuration["schemes"];
+        $schemas        = $configuration['schemes'];
         $featureType    = null;
-        $debugMode      = $configuration['debug'] || $this->container->get('kernel')->getEnvironment() == "dev";
-        $schemaName     = isset($request["schema"]) ? $request["schema"] : $requestService->get("schema");
+        $debugMode      = $configuration['debug'] || $this->container->get('kernel')->getEnvironment() == 'dev';
+        $schemaName     = isset($request['schema']) ? $request['schema'] : $requestService->get('schema');
         if (!empty($schemaName)) {
             //throw new Exception('For initialization there is no name of the declared scheme');
             $schema = $schemas[ $schemaName ];
@@ -168,7 +185,7 @@ class Search extends BaseElement
                 $featureType = new FeatureType($this->container, $schema['featureType']);
                 $this->setFeatureType($featureType);
             } else {
-                throw new Exception("FeatureType settings not correct");
+                throw new Exception('FeatureType settings not correct');
             }
         }
 
@@ -292,9 +309,10 @@ class Search extends BaseElement
                 break;
 
             default:
-                $names = explode('/', $action);
-                $names = array_reverse($names);
-                for ($i = 1; $i < count($names); $i++) {
+                $names       = explode('/', $action);
+                $names       = array_reverse($names);
+                $namesLength = count($names);
+                for ($i = 1; $i < $namesLength; $i++) {
                     $names[ $i ][0] = strtoupper($names[ $i ][0]);
                 }
                 $action     = implode($names);
@@ -310,6 +328,32 @@ class Search extends BaseElement
         }
 
         return new JsonResponse($results);
+    }
+
+    /**
+     * Decode request array variables
+     *
+     * @param array $request
+     * @return mixed
+     */
+    public function decodeRequest(array $request)
+    {
+        foreach ($request as $key => $value) {
+            if (is_array($value)) {
+                $request[ $key ] = $this->decodeRequest($value);
+            } elseif (strpos($key, '[')) {
+                preg_match('/(.+?)\[(.+?)\]/', $key, $matches);
+                list($match, $name, $subKey) = $matches;
+
+                if (!isset($request[ $name ])) {
+                    $request[ $name ] = array();
+                }
+
+                $request[ $name ][ $subKey ] = $value;
+                unset($request[ $key ]);
+            }
+        }
+        return $request;
     }
 
     /**
@@ -354,13 +398,17 @@ class Search extends BaseElement
      *
      * @param $request
      * @return mixed
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      */
-    public function listlistFeatureTypeAction($request)
+    public function listFeatureTypeAction($request)
     {
-        $result = array();
-        foreach ($this->container->get('features')->getFeatureTypeDeclarations() as $key => $declaration) {
+        $result             = array();
+        $featureTypeManager = $this->container->get('features');
+
+        foreach ($featureTypeManager->getFeatureTypeDeclarations() as $key => $declaration) {
             $title       = isset($declaration['title']) ? $declaration['title'] . " ($key)" : ucfirst($key);
-            $featureType = $this->container->get('features')->get($key);
+            $featureType = $featureTypeManager->get($key);
             $fieldNames  = $featureType->getFields();
             $operators   = $featureType->getOperators();
             $print       = $featureType->getConfiguration('print');
@@ -375,7 +423,9 @@ class Search extends BaseElement
 
         ksort($result);
 
-        return new JsonResponse($result);
+        return array(
+            'list' => $result
+        );
     }
 
     /**
@@ -402,6 +452,8 @@ class Search extends BaseElement
      *
      * @param $request
      * @return mixed
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      */
     public function saveQueryAction($request)
     {
@@ -417,14 +469,19 @@ class Search extends BaseElement
      *
      * @param $request
      * @return mixed
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      */
     public function saveStyleAction($request)
     {
+        $data         = $this->filterFields($request['style'], array('userId', 'styleMaps', 'pointerEvents'));
         $styleManager = $this->container->get("mapbender.style.manager");
-        $style        = $styleManager->saveArray($request["style"]);
-        return new JsonResponse(array(
-            'style' => $style != null ? HKVStorage::encodeValue($style->toArray()) : null
-        ));
+        $style        = $styleManager->createStyle($data);
+        $style->setUserId($this->getUserId());
+        $style = $styleManager->save($style);
+        return array(
+            'style' => $style
+        );
     }
 
 
@@ -433,11 +490,13 @@ class Search extends BaseElement
      *
      * @param $request
      * @return mixed
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      * @throws \InvalidArgumentException
      */
     public function listStyleAction($request)
     {
-        $styleManager = $this->container->get("mapbender.style.manager");
+        $styleManager = $this->container->get('mapbender.style.manager');
         return array(
             'styles' => $styleManager->listStyles()
         );
@@ -467,6 +526,7 @@ class Search extends BaseElement
      *
      * @param $request
      * @return mixed
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      */
     public function removeStyleAction($request)
@@ -485,33 +545,40 @@ class Search extends BaseElement
      * Saves a StyleMap Entity
      *
      * @param $request
-     * @return mixed
+     * @return array
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      */
-    public function saveStylemapAction($request)
+    public function saveStyleMapAction($request)
     {
+        $data            = $this->filterFields($request["styleMap"], array('userId'));
         $styleMapManager = $this->container->get("mapbender.stylemap.manager");
-        $styleMap        = $styleMapManager->ray($request);
+        $styleMap        = $styleMapManager->create($data);
+        $styleMap->setUserId($this->getUserId());
 
-        return new JsonResponse(array(
-            'stylemap' => HKVStorage::encodeValue($styleMap)
-        ));
+        $styleMapManager->save($styleMap);
+
+        return array(
+            'styleMap' => $styleMap
+        );
     }
 
 
     /**
      * Lists all StyleMap Entities
      *
-     * @param $request
+     * @param array $request
      * @return mixed
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      */
-    public function listStylemapAction($request)
+    public function listStyleMapAction($request)
     {
-        $styleMapManager = $this->container->get("mapbender.stylemap.manager");
-        $styleMap        = $styleMapManager->listStyles();
-
-        return new JsonResponse(array(
-            'stylemap' => HKVStorage::encodeValue($styleMap)
-        ));
+        $styleMapManager = $this->container->get('mapbender.stylemap.manager');
+        $styleMap        = $styleMapManager->listStyleMaps();
+        return array(
+            'list' => $styleMap
+        );
     }
 
 
@@ -520,16 +587,18 @@ class Search extends BaseElement
      *
      * @param $request
      * @return mixed
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      */
-    public function getStylemapAction($request)
+    public function getStyleMapAction($request)
     {
-        $styleMapManager = $this->container->get("mapbender.stylemap.manager");
-        $id              = isset($request["id"]) ? $request["id"] : "UNDEFINED";
+        $styleMapManager = $this->container->get('mapbender.stylemap.manager');
+        $id              = (int)$request['id'];
+        $styleMap        = $styleMapManager->getById($id);
 
-        $styleMap = $styleMapManager->getById($id);
-        return new JsonResponse(array(
-            'stylemap' => HKVStorage::encodeValue($styleMap)
-        ));
+        return array(
+            'entity' => $styleMap
+        );
     }
 
 
@@ -537,17 +606,17 @@ class Search extends BaseElement
      * Removes a Style Entity via ID
      *
      * @param $request
-     * @return mixed
+     * @return array
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      */
-    public function removeStylemapAction($request)
+    public function removeStyleMapAction($request)
     {
-        $styleMapManager = $this->container->get("mapbender.stylemap.manager");
-        $id              = isset($request["id"]) ? $request["id"] : "UNDEFINED";
-
-        $styleMapWasRemoved = $styleMapManager->remove($id);
-        return new JsonResponse(array(
-            'stylemap' => $styleMapWasRemoved
-        ));
+        $id              = (int)$request['id'];
+        $styleMapManager = $this->container->get('mapbender.stylemap.manager');
+        return array(
+            'result' => $styleMapManager->remove($id)
+        );
     }
 
 
@@ -555,18 +624,19 @@ class Search extends BaseElement
      * Removes a Style Entity ID from StyleMap Entity
      *
      * @param $request
-     * @return mixed
+     * @return array
+     * @throws \Symfony\Component\Config\Definition\Exception\Exception
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      */
-    public function removeStyleFromStylemapAction($request)
+    public function removeStyleFromStyleMapAction($request)
     {
-        $styleManager = $this->container->get("mapbender.stylemap.manager");
-        $styleMapId   = isset($request["stylemapid"]) ? $request["stylemapid"] : "UNDEFINED";
-        $styleId      = isset($request["styleid"]) ? $request["styleid"] : "UNDEFINED";
-
-        $style = $styleManager->removeStyle($styleMapId, $styleId);
-        return new JsonResponse(array(
-            'stylemap' => $style
-        ));
+        $styleManager = $this->container->get('mapbender.stylemap.manager');
+        $styleMapId   = (int)$request['styleMapId'];
+        $styleId      = (int)$request['styleId'];
+        return array(
+            'result' => $styleManager->removeStyle($styleMapId, $styleId)
+        );
     }
 
 

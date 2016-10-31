@@ -194,6 +194,13 @@
         },
 
         /**
+         * Dynamic loaded styles
+         */
+        _styles:       null,
+        _featureTypes: null,
+        _styleMaps:    null,
+
+        /**
          * Constructor.
          *
          * At this moment not all elements (like a OpenLayers) are avaible.
@@ -213,30 +220,43 @@
             widget.elementUrl = Mapbender.configuration.application.urls.element + '/' + element.attr('id') + '/';
             Mapbender.elementRegistry.onElementReady(target, $.proxy(widget._setup, widget));
 
-            widget.openStyleMapManager();
-            widget.openStyleEditor();
-
-
-
-            // // For test only
-            // widget.load("querymanager.js", function() {
-            //     widget.openQueryManager();
-            // });
+            widget.refreshStyles();
+            widget.refreshStyleMaps();
+            widget.refreshFeatureTypes();
         },
 
-        openStyleEditor: function() {
-            var feautureStyleContainer = $("<div/>");
-            feautureStyleContainer.featureStyleEditor();
-            feautureStyleContainer.bind('featurestyleeditorsubmit', function(e, data) {
-                feautureStyleContainer.formData();
-                var incompleteFields = feautureStyleContainer.has(".has-error");
+        /**
+         * Open style editor dialog
+         *
+         * @param options
+         * @todo: Check inputs
+         */
+        openStyleEditor: function(options) {
+            var widget = this;
+            var styleEditor = $("<div/>").featureStyleEditor(options);
+
+            styleEditor.bind('featurestyleeditorsubmit', function(e, context) {
+                var formData = styleEditor.formData();
+                var incompleteFields = styleEditor.has(".has-error");
+                var styleId = styleEditor.featureStyleEditor('option', 'data').id;
+                var isNew = !!styleId;
+
                 if(incompleteFields.size()) {
                     $.notify("Bitte vervollständigen sie die Daten.");
                 } else {
-                    $.notify("Query wurde gespeichert!",'notice');
-                    feautureStyleContainer.featureStyleEditor('kill');
+                    widget.query('style/save', {
+                        style: _.extend(formData, {id: styleId})
+                    }).done(function(r) {
+                        var style = r.style;
+                        styleEditor.formData(style);
+                        $.notify("Style erfolgreich gespeichert!", "info");
+                        styleEditor.featureStyleEditor('close');
+                        widget.refreshStyles();
+                    });
                 }
             });
+
+            return styleEditor;
         },
 
         /**
@@ -248,71 +268,74 @@
         load: function(uri, onComplete) {
             var assetUrl = Mapbender.configuration.application.urls.asset + "bundles/mapbendersearch/";
             var asset = assetUrl + uri;
-            // console.log("Load: "+asset);
-            // $.getScript(asset, function(data, statusCode, xhr) {
-            //     console.log("Loaded");
-            //     onComplete && typeof onComplete == "function" && onComplete(eval(data), data, statusCode, xhr, uri);
-            // });
+            console.log("Load: "+asset);
+            $.getScript(asset, function(data, statusCode, xhr) {
+                console.log("Loaded");
+                onComplete && typeof onComplete == "function" && onComplete(eval(data), data, statusCode, xhr, uri);
+            });
         },
+
 
         /**
          * Open query manager
          */
         openQueryManager: function(query) {
             var widget = this;
+            var styleMaps = widget._styleMaps;
+            var featureTypes = widget._featureTypes;
+            var queryManager = $("<div/>");
 
-            widget.query('featureType/list').done(function(featureTypeList) {
-                var queryManager = $("<div/>");
-                queryManager.querymanager({
-                    query:                   query,
-                    featureTypeDescriptions: featureTypeList
-                });
+            queryManager.queryManager({
+                query:                   query,
+                featureTypeDescriptions: featureTypes,
+                styleMaps:               styleMaps
+            });
 
-                queryManager.bind('querymanagerstylechange', function(event, context) {
-                    var errorInputs = $('.error', $(context.form));
-                    var styleDefinition = $(context.form).formData();
-                    var query = null; // TODO
+            queryManager.bind('querymanagerstylechange', function(event, context) {
+                var errorInputs = $('.error', $(context.form));
+                var styleDefinition = $(context.form).formData();
+                var query = null; // TODO
 
-                    if(errorInputs.size()) {
-                        $.notify("Style Eingaben vervollständigen");
-                    } else {
-                        widget.query('style/save', {
-                            style: styleDefinition,
-                            query: query
-                        }).done(function(query) {
-                            context.dialog.data('query', query);
-                            $.notify("Erfolgreich gespeichert!", "info");
-                        });
-                    }
-                });
-
-                queryManager.bind('querymanagerstylelist', function(event, context) {
-                    widget.query("style/list", {}).done(function(list) {
-                        var styles = list && list["style"] ? list["style"] : [];
-                        //TODO: change to something like _.pluck(styles,"name")
-                        var ids = _.keys(styles);
-                        var $selectFields = $(context, "select");
-
-                        //TODO: uncomment if $selectFields contains correct value
-                        //_.each(ids,function(name, index, list){
-                        //    $('<option></option>').val(i).text(name).appendTo($selectFields);
-                        //});
-
-                    });
-
-                });
-
-                queryManager.bind('querymanagerdatavalid', function(event, context) {
-                    widget.query('query/save', {query: context.data}).done(function(query) {
+                if(errorInputs.size()) {
+                    $.notify("Style Eingaben vervollständigen");
+                } else {
+                    widget.query('style/save', {
+                        style: styleDefinition,
+                        query: query
+                    }).done(function(query) {
                         context.dialog.data('query', query);
                         $.notify("Erfolgreich gespeichert!", "info");
-                        // context.dialog.popupDialog("close");
                     });
+                }
+            });
+
+            queryManager.bind('querymanagerstylelist', function(event, context) {
+                widget.query("style/list", {}).done(function(list) {
+                    var styles = list && list["style"] ? list["style"] : [];
+                    //TODO: change to something like _.pluck(styles,"name")
+                    var ids = _.keys(styles);
+                    var $selectFields = $(context, "select");
+
+                    debugger;
+                    //TODO: uncomment if $selectFields contains correct value
+                    //_.each(ids,function(name, index, list){
+                    //    $('<option></option>').val(i).text(name).appendTo($selectFields);
+                    //});
+
                 });
-                queryManager.bind('querymanagerdatainvalid', function(event, context) {
-                    $.notify(JSON.stringify(context.data));
-                    $.notify("Die Daten sind nicht vollständig", "notice");
+
+            });
+
+            queryManager.bind('querymanagerdatavalid', function(event, context) {
+                widget.query('query/save', {query: context.data}).done(function(query) {
+                    context.dialog.data('query', query);
+                    $.notify("Erfolgreich gespeichert!", "info");
+                    // context.dialog.popupDialog("close");
                 });
+            });
+            queryManager.bind('querymanagerdatainvalid', function(event, context) {
+                $.notify(JSON.stringify(context.data));
+                $.notify("Die Daten sind nicht vollständig", "notice");
             });
         },
 
@@ -327,15 +350,81 @@
         /**
          * Open style map manager
          */
-        openStyleMapManager: function(query) {
-
+        openStyleMapManager: function(styles) {
             var widget = this;
-            widget.query('style/list').done(function(r) {
-                $("<div/>").styleMapManager({
-                    styles: r.styles
-                })
+            var element = widget.element;
+            var styleMapManager = $("<div/>");
+
+            styleMapManager.bind('stylemapmanagereditstyle', function(event, context) {
+                var style = context.style;
+                if(style) {
+                    widget.openStyleEditor({data: style});
+                } else {
+                    $.notify("Bitte Style wählen!");
+                }
             });
 
+            styleMapManager.bind('stylemapmanagersubmit', function(event, context) {
+                var formData = styleMapManager.formData();
+                var incompleteFields = styleMapManager.has(".has-error");
+                var styleMapId = styleMapManager.styleMapManager('option', 'data').id;
+                var isNew = !!styleMapId;
+
+                if(incompleteFields.size()) {
+                    $.notify("Bitte vervollständigen sie die Daten.");
+                } else {
+                    widget.query('styleMap/save', {
+                        styleMap: _.extend(formData, {id: styleMapId})
+                    }).done(function(r) {
+                        var styleMap = r.styleMap;
+                        styleMapManager.formData(styleMap);
+                        $.notify("Stylemap erfolgreich gespeichert!", "info");
+                        styleMapManager.styleMapManager('close');
+                        // widget.refreshStyles();
+                    });
+                }
+            });
+
+            element.bind('mbsearchstylesupdated', function(e, styles) {
+                styleMapManager.styleMapManager('updateStyleList', styles);
+            });
+
+            return styleMapManager.styleMapManager({
+                styles: styles
+            })
+        },
+
+        /**
+         * Refresh styles
+         */
+        refreshStyles: function() {
+            var widget = this;
+            widget.query('style/list').done(function(r) {
+                widget._styles = r.styles;
+                widget._trigger('stylesUpdated', null, r.styles);
+            });
+        },
+
+        /**
+         * Refresh style maps
+         */
+        refreshStyleMaps: function() {
+            var widget = this;
+            widget.query('styleMap/list').done(function(r) {
+                widget._stleMaps = r.list;
+                widget._trigger('stylesMapsUpdated', null, r.styles);
+            });
+        },
+
+        /**
+         * Refresh feature types
+         */
+        refreshFeatureTypes: function() {
+            var widget = this;
+            widget.query('featureType/list').done(function(r) {
+                widget._featureTypes = r.list;
+                widget._trigger('featureTypesUpdated', null, r.styles);
+            });
         },
 
         /**
@@ -355,7 +444,7 @@
                 type:     'fieldSet',
                 children: [{
                     type:     'button',
-                    title:    'Neue query',
+                    title:    'Neue Abfrage',
                     cssClass: 'btn new-query',
                     click:    function() {
                         widget.openCreateDialog();
@@ -365,11 +454,11 @@
                     title:    'Neu Style Map',
                     cssClass: 'btn new-query',
                     click:    function() {
-                        widget.openStyleMapManager();
+                        widget.openStyleMapManager(widget._styles);
                     }
                 },{
                     type:     'button',
-                    title:    'Neu Style ',
+                    title:    'Neu Style',
                     cssClass: 'btn new-query',
                     click:    function() {
                         widget.openStyleEditor();

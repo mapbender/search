@@ -1,8 +1,6 @@
 <?php
 namespace Mapbender\SearchBundle\Component;
 
-use Eslider\Entity\HKV;
-use Mapbender\SearchBundle\Entity\Style;
 use Mapbender\SearchBundle\Entity\StyleMap;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -15,29 +13,30 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class StyleMapManager extends BaseManager
 {
-    const SERVICE_NAME = "mapbender.stylemap.manager";
-    const TABLE_NAME   = "stylemaps";
+    /** @var StyleManager */
     protected $styleManager;
 
     /**
      * StyleManager constructor.
      *
      * @param ContainerInterface|null $container
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
      */
     public function __construct(ContainerInterface $container = null)
     {
-        parent::__construct($container, self::TABLE_NAME);
-        $this->styleManager = $this->container->get(StyleManager::SERVICE_NAME);
+        parent::__construct($container, 'stylemaps');
+        $this->styleManager = $this->container->get('mapbender.style.manager');
     }
 
     /**
      * @param array $args
      * @return StyleMap
      */
-    public function createStyleMap($args)
+    public function create($args)
     {
         $styleMap = new StyleMap($args);
-        if (!isset($args["id"])) {
+        if (!isset($args['id'])) {
             $styleMap->setId($this->generateUUID());
         }
         $styleMap->setUserId($this->getUserId());
@@ -48,54 +47,35 @@ class StyleMapManager extends BaseManager
     /**
      * Save style.
      *
-     * @param      $style
-     * @param int  $scope
-     * @param int  $parentId
+     * @param StyleMap $styleMap
+     * @param int      $scope
+     * @param int      $parentId
      * @return StyleMap
      */
-    public function save($style, $scope = null, $parentId = null)
+    public function save($styleMap, $scope = null, $parentId = null)
     {
-        $styleMaps = $this->listStyleMaps(false);
-
-        if ($styleMaps == null) {
-            $styleMaps = array();
-        }
-
-        $styleMaps[ $style->getId() ] = $style;
-        $result                       = $this->db->saveData($this->tableName, $styleMaps, $scope, $parentId, $this->getUserId());
-
-        $children = $result->getChildren();
-
-        foreach ($children as $key => $child) {
-            if ($child->getKey() == $style->getId()) {
-                return $child;
-            }
-        }
-
-        return null;
+        $styleMaps                       = $this->listStyleMaps(false);
+        $styleMaps[ $styleMap->getId() ] = $styleMap;
+        $this->db->saveData($this->tableName, $styleMaps, $scope, $parentId, $this->getUserId());
+        return $styleMap;
     }
 
     /**
      * Save query
      *
      * @param array $args
-     * @param null  $scope
-     * @param null  $parentId
      * @return StyleMap
      */
-    public function saveArray($args, $scope = null, $parentId = null)
+    public function saveArray($args)
     {
-        return $this->save(
-            $this->createStyleMap($args),
-            $scope,
-            $parentId
-        );
+        return $this->save($this->create($args));
     }
 
     /**
      * Get StyleMap by id
      *
-     * @param int $id
+     * @param int  $id
+     * @param bool $fetchData
      * @return StyleMap|null
      */
     public function getById($id, $fetchData = false)
@@ -108,9 +88,10 @@ class StyleMapManager extends BaseManager
     /**
      * List all StyleMaps
      *
-     * @return StyleMap[]|null
+     * @param bool $fetchData Default = false
+     * @return \Mapbender\SearchBundle\Entity\StyleMap[]|null
      */
-    public function listStyleMaps($fetchData)
+    public function listStyleMaps($fetchData = false)
     {
         $styleMaps = $this->db->getData($this->tableName, null, null, $this->getUserId());
 
@@ -119,23 +100,8 @@ class StyleMapManager extends BaseManager
             $this->styleManager->getByIds($styleMaps);
         }
 
-        return $styleMaps;
+        return $styleMaps ? $styleMaps : array();
     }
-
-    /**
-     * @param $args
-     * @return StyleMap
-     */
-    public function create($args)
-    {
-        if ($args == null) {
-            return null;
-        }
-
-        $style = $this->createStyleMap($args);
-        return $style;
-    }
-
 
     /**
      * @param string $id
@@ -157,10 +123,10 @@ class StyleMapManager extends BaseManager
 
 
     /**
-     * @param StyleManager $styleManager
-     * @param string       $styleMapId
-     * @param string       $styleId
+     * @param string $styleMapId
+     * @param string $styleId
      * @return bool
+     * @throws \Symfony\Component\Config\Definition\Exception\Exception
      */
     public function addStyle($styleMapId, $styleId)
     {
@@ -170,7 +136,7 @@ class StyleMapManager extends BaseManager
             $style = $this->styleManager->getById($styleId);
 
             if (!$style) {
-                throw new Exception("Der Style kann nicht hinzugefügt werden. Er existiert nicht mehr.");
+                throw new Exception('Der Style kann nicht hinzugefügt werden. Er existiert nicht mehr.');
             }
 
             $styleMap->addStyle($styleId);
@@ -185,10 +151,10 @@ class StyleMapManager extends BaseManager
 
 
     /**
-     * @param StyleManager $styleManager
-     * @param string       $styleMapId
-     * @param string       $styleId
+     * @param string $styleMapId
+     * @param string $styleId
      * @return bool
+     * @throws \Symfony\Component\Config\Definition\Exception\Exception
      */
     public function removeStyle($styleMapId, $styleId)
     {
@@ -198,7 +164,7 @@ class StyleMapManager extends BaseManager
             $style = $this->styleManager->getById($styleId);
 
             if (!$style) {
-                throw new Exception("Der Style kann nicht gelöscht werden. Er gehört nicht zu der Stylemap.");
+                throw new Exception('Der Style kann nicht gelöscht werden. Er gehört nicht zu der Stylemap.');
             }
 
             $style->removeStyleMapById($styleMapId);
@@ -210,5 +176,4 @@ class StyleMapManager extends BaseManager
 
         return false;
     }
-
 }
