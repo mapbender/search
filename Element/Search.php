@@ -198,6 +198,8 @@ class Search extends BaseElement
                     $request['features'] = array($request['feature']);
                 }
 
+                $connection = $featureType->getDriver()->getConnection();
+
                 try {
                     // save collection
                     if (isset($request['features']) && is_array($request['features'])) {
@@ -208,25 +210,25 @@ class Search extends BaseElement
                             $featureData = $this->prepareQueriedFeatureData($feature, $schema['formItems']);
 
                             foreach ($featureType->getFileInfo() as $fileConfig) {
-                                if (!isset($fileConfig['field']) || !isset($featureData["properties"][ $fileConfig['field'] ])) {
+                                if (!isset($fileConfig['field']) || !isset($featureData["properties"][$fileConfig['field']])) {
                                     continue;
                                 }
-                                $url                                               = $featureType->getFileUrl($fileConfig['field']);
-                                $requestUrl                                        = $featureData["properties"][ $fileConfig['field'] ];
-                                $newUrl                                            = str_replace($url . "/", "", $requestUrl);
-                                $featureData["properties"][ $fileConfig['field'] ] = $newUrl;
+                                $url                                             = $featureType->getFileUrl($fileConfig['field']);
+                                $requestUrl                                      = $featureData["properties"][$fileConfig['field']];
+                                $newUrl                                          = str_replace($url . "/", "", $requestUrl);
+                                $featureData["properties"][$fileConfig['field']] = $newUrl;
                             }
 
                             $feature = $featureType->save($featureData);
                             $results = array_merge($featureType->search(array(
                                 'srid'  => $feature->getSrid(),
-                                'where' => $featureType->getUniqueId() . '=' . $feature->getId())));
+                                'where' => $connection->quoteIdentifier($featureType->getUniqueId()) . '=' . $connection->quote($feature->getId()))));
                         }
                     }
                     $results = $featureType->toFeatureCollection($results);
                 } catch (DBALException $e) {
                     $message = $debugMode ? $e->getMessage() : "Feature can't be saved. Maybe something is wrong configured or your database isn't available?\n" .
-                        "For more information have a look at the webserver log file. \n Error code: " . $e->getCode();
+                        "For more information have a look at the webserver log file. \n Error code: " .$e->getCode();
                     $results = array('errors' => array(
                         array('message' => $message, 'code' => $e->getCode())
                     ));
@@ -457,11 +459,13 @@ class Search extends BaseElement
      */
     public function saveQueryAction($request)
     {
+        $data         = $this->filterFields($request['query'], array('userId'));
         $queryManager = $this->container->get('mapbender.query.manager');
-        $requestData  = $request['query'];
-        $query        = $queryManager->saveArray($requestData);
+        $query        = $queryManager->saveArray($data);
 
-        return new JsonResponse(HKVStorage::encodeValue($query->toArray()));
+        return array(
+            'entity' => $query
+        );
     }
 
     /**
@@ -684,12 +688,14 @@ class Search extends BaseElement
      */
     public function listQueriesAction($request)
     {
-        $container      = $this->container;
-        $queryManager   = $container->get('mapbender.query.manager');
-        $featureService = $container->get('features');
-        $featureTypes   = isset($request['features']) ? $request['features'] : array();
-        $results        = $queryManager->listQueriesByFeatureTypes($featureService, $featureTypes);
+        $container    = $this->container;
+        $queryManager = $container->get('mapbender.query.manager');
+        //$featureService = $container->get('features');
+        //$featureTypes   = isset($request['features']) ? $request['features'] : array();
+        ////$results        = $queryManager->listQueriesByFeatureTypes($featureService, $featureTypes);
 
-        return $results;
+        return array(
+            'list' => $queryManager->listQueries()
+        );
     }
 }
