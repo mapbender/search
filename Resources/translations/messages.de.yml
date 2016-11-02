@@ -9,7 +9,7 @@ mb:
     Execute: Ausführen
     OK: OK
     Results: Ergebnisse
-    Export: Export
+    Export: Exportieren
     HTML-Export: HTML Export
 
     # Status
@@ -28,3 +28,8 @@ mb:
       bookmark: Lesezeichnen
       zoomTo: Einzoomen
       save: Speichern
+
+    search:
+      table:
+        info:
+          status: _START_ to _END_ from _TOTAL_
