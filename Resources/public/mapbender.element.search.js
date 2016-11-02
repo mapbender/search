@@ -606,7 +606,7 @@
             element.generateElements({type: 'html', html:'<div class="queries"></div>'})
 
             widget.query('queries/list').done(function(r) {
-                var queries = r.list;
+                var queries = _.chain(r.list).reverse()._wrapped ;
                 var queryNames = _.object(_.pluck(queries, 'id'), _.pluck(queries, 'name'));
                 var children = _.each(queries, function(query) {
                     return {
