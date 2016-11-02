@@ -11,6 +11,57 @@ mb:
     Results: Ergebnisse
     Export: Exportieren
     HTML-Export: HTML Export
+    Check: Prüfen
+
+    # Need to have plus icon ("\f067") .new-query class
+
+    Add-Query: Suche
+    Add-Stylemap: Styleset
+    Add-Style: Style
+    Add-Field: Feld
+    Add-Condition: Bedingung
+
+    #Generic
+    name: Name
+    value: Wert
+    general: Allgemein
+    width: Breite
+    height: Höhe
+    style: Style
+
+
+    #Query Manager
+    feature-type: Featuretyp
+    extent-only: Nicht Aktivieren
+    fieldname: Feldname
+    operator: Operator
+
+    #Style Map Manager
+    default: Standard
+    hover: Mouseover
+    selected: Selektiert
+
+
+    #Style  Manager
+    color: Farbe
+    transparency: Durchsichtigkeit
+    fill: Füllung
+    background: Hintergrund
+    border: Rand
+    x-offset: X-Offset
+    y-offset: Y-Offset
+    z-index: Z-Index
+    corner-style: Glättung
+    url: URL
+    fontname: Fontname
+    size: Größe
+    type: Art
+    selectable: Selektierbar
+    point-radius: Punkt Radius
+    cursor: Zeiger
+    display: Anzeige
+    rotation: Rotation
+
 
     # Status
     saved: Gespeichert
@@ -25,7 +76,7 @@ mb:
 
     # Feature
     feature:
-      bookmark: Lesezeichnen
+      bookmark: Merken
       zoomTo: Einzoomen
       save: Speichern
 
