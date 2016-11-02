@@ -26,7 +26,7 @@ $.widget("rw.queryManager", {
         var widget = this;
         var options = this.options;
 
-        widget.render(options.query);
+        widget.render(options.data);
 
         if(options.asPopup) {
             widget.popup();
@@ -59,8 +59,7 @@ $.widget("rw.queryManager", {
         var currentSource = widget.changeSource(featureTypeId);
         var featureTypeNames = _.object(_.keys(featureTypeDescriptions), _.pluck(featureTypeDescriptions, 'title'));
         var styleMapNames = _.object(_.pluck(styleMaps, 'id'), _.pluck(styleMaps, 'name'));
-
-        return element.generateElements({
+        var formContainer = element.empty().generateElements({
             type:     "tabs",
             children: [{
                 title:    "Allgemein",
@@ -95,8 +94,8 @@ $.widget("rw.queryManager", {
                     }, {
                         type:     "button",
                         cssClass: "bars",
-                        title: "Ändern",
-                        click: function(e) {
+                        title:    "Ändern",
+                        click:    function(e) {
                             var styleMapId = element.find('[name=styleMap]').val();
                             var styleMap = _.findWhere(styleMaps, {id: styleMapId});
                             widget._trigger('styleMapChange', null, {
@@ -106,7 +105,7 @@ $.widget("rw.queryManager", {
                             });
                             return false;
                         },
-                        css:   {
+                        css:      {
                             width: "20%"
                         }
                     }]
@@ -137,14 +136,14 @@ $.widget("rw.queryManager", {
                         data:  'title',
                         title: 'Operator'
                     }],
-                    data:         [],
+                    data:         query && query.fields ? query.fields : [],
                     buttons:      [{
                         title:     "Löschen",
                         className: 'remove',
                         cssClass:  'critical',
                         onClick:   function(field, ui) {
                             var form = ui.closest('.popup-dialog');
-                            var resultTable = form.find('[name="conditions"]');
+                            var resultTable = form.find('[name="fields"]');
                             var tableWidget = resultTable.data('visUiJsResultTable');
                             var tableApi = resultTable.resultTable('getApi');
 
@@ -244,7 +243,7 @@ $.widget("rw.queryManager", {
                         data:  'value',
                         title: 'Wert'
                     }],
-                    data:         [],
+                    data:         query && query.conditions ? query.conditions : [],
                     buttons:      [{
                         title:     "Löschen",
                         className: 'remove',
@@ -291,10 +290,10 @@ $.widget("rw.queryManager", {
                                     mandatory: true,
                                     css:       {width: "20%"}
                                 }, {
-                                    title:     "Value",
-                                    type:      "input",
-                                    name:      "value",
-                                    css:       {width: "40%"}
+                                    title: "Value",
+                                    type:  "input",
+                                    name:  "value",
+                                    css:   {width: "40%"}
                                 }]
                             });
 
@@ -337,6 +336,9 @@ $.widget("rw.queryManager", {
                 }]
             }]
         });
+
+        formContainer.formData(query);
+        return formContainer;
     },
 
     popup: function() {
@@ -352,7 +354,7 @@ $.widget("rw.queryManager", {
                 click: function() {
                     var form = $(this).closest('.popup-dialog');
                     var conditions = form.find('[name=conditions]').resultTable('getApi').rows().data().toArray();
-                    var fields = form.find('[name=fi    elds]').resultTable('getApi').rows().data().toArray();
+                    var fields = form.find('[name=fields]').resultTable('getApi').rows().data().toArray();
 
                     widget._trigger('check', null, {
                         dialog: element,
@@ -366,7 +368,7 @@ $.widget("rw.queryManager", {
 
                     return false;
                 }
-            },{
+            }, {
                 text:  "Abbrechen",
                 click: function() {
                     widget.close();

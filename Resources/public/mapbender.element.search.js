@@ -98,7 +98,7 @@
                     return false;
                 }
             }, {
-                text:    "Abbrechen",
+                text:    translate('Cancel'),
                 'class': 'critical',
                 click:   function(e) {
                     if(!options.hasOwnProperty('onCancel') || options.onCancel(e) !== false) {
@@ -287,7 +287,7 @@
             var queryManager = $("<div/>");
 
             queryManager.queryManager({
-                query:                   query,
+                data:                    query,
                 featureTypeDescriptions: featureTypes,
                 styleMaps:               styleMaps
             });
@@ -578,7 +578,7 @@
                 type:     'fieldSet',
                 children: [{
                     type:     'button',
-                    title:    'Neue Suche',
+                    title:    'Neue Abfrage',
                     cssClass: 'btn new-query',
                     css: {width: '33%'},
                     click:    function() {
@@ -656,6 +656,11 @@
                             var button = $(this);
                             var id = queriesContainer.formData().queryId;
                             var query = queries[id];
+
+                            if(!query){
+                                $.notify("Suche ist nicht ausgewählt",'warn');
+                                return false;
+                            }
 
                             Mapbender.confirmDialog({
                                 title:     'Suche löschen?',
