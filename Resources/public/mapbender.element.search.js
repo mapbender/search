@@ -370,7 +370,7 @@
                         styleMapManager.formData(styleMap);
                         $.notify("Stylemap erfolgreich gespeichert!", "info");
                         styleMapManager.styleMapManager('close');
-                        // widget.refreshStyles();
+                        widget.refreshStyleMaps();
                     });
                 }
             });
