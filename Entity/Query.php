@@ -39,6 +39,8 @@ class Query extends UniqueBaseEntity
     /** @var bool Look for extend only? */
     protected $extendOnly = true;
 
+    /** @var bool Only for Export? */
+    protected $exportOnly = false;
 
     /**
      * @return string
