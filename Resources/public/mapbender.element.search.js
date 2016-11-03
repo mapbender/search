@@ -723,24 +723,33 @@
                 };
                 //translateObject(options.tableTranslation);
             }
+            var deniedKeyWords = ['schemes', 'target', 'create', 'jsSrc', 'disabled'];
 
-
-
-            // build select options
-            $.each(options.schemes, function(schemaName){
-                var schema = this;
-                var option = $("<option/>");
-                var layer = schema.layer = widget.createSchemaFeatureLayer(schema);
-
-                // Merge settings with default values from options
-                for (var k in options) {
-                    if(k == "schemes" || k == "target" || k == "create" || k == 'jsSrc' || k == 'disabled') {
+            /**
+             * Merge settings with default values from options
+             *
+             * @param Object obj
+             * @param Object defaults
+             * @param Array deniedKeyWords
+             * @returns {*}
+             */
+            function setPropertiesDefault(obj, defaults, deniedKeyWords){
+                for (var k in defaults) {
+                    if(deniedKeyWords.indexOf(k) > -1 || obj.hasOwnProperty(k)) {
                         continue;
                     }
-                    schema[k] = schema.hasOwnProperty(k) ? schema[k] : options[k];
+                    obj[k] = defaults[k];
                 }
+                return obj;
+            }
 
+            // build select options
+            _.each(options.schemes, function(schema, schemaName) {
+                var option = $("<option/>");
+                var layer = schema.layer = widget.createSchemaFeatureLayer(schema);
                 var buttons = [];
+
+                schema = setPropertiesDefault(schema, options, deniedKeyWords);
 
                 buttons.push({
                     title:     translate('feature.bookmark'),
