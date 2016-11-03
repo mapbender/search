@@ -144,7 +144,7 @@ class QueryManager extends BaseManager
                 throw new Exception("You have to define the feature type in the corresponding config yml!");
             }
             $queryConditions = $query->getConditions();
-            $criteria        = $this->buildCriteria($queryConditions, $featureType);
+            $criteria        = array('where' => $this->buildCriteria($queryConditions, $featureType));
             array_merge($results, $featureType->search($criteria));
 
         }
@@ -153,20 +153,21 @@ class QueryManager extends BaseManager
     /**
      * @param QueryCondition[] $queryConditions
      * @param FeatureType      $featureType
-     * @return array
+     * @return string SQL
      */
-    private function buildCriteria($queryConditions, $featureType)
+    private function buildCriteria(array $queryConditions, FeatureType $featureType)
     {
-        $queryParts = array();
-        $escaper    = $featureType->getConnection();
-        foreach ($queryConditions as $k => $condition) {
-            $queryParts[] = $escaper->quoteIdentifier($condition->getFieldName())
-                . " " . $condition->getOperator()
-                . " " . $escaper->quote($condition->getValue())
-                . " ";
-
+        $connection      = $featureType->getConnection();
+        $whereConditions = array();
+        foreach ($queryConditions as $condition) {
+            if (is_array($condition)) {
+                $condition = new QueryCondition($condition);
+            }
+            $whereConditions[] = $connection->quoteIdentifier($condition->getFieldName())
+                . $condition->getOperator()
+                . $connection->quote($condition->getValue());
         }
-        return array("where" => implode(" AND ", $queryParts));
+        return implode(' AND ', $whereConditions);
     }
 
     /**
@@ -222,14 +223,30 @@ class QueryManager extends BaseManager
 
     /**
      * @param Query $query
+     * @return array
      */
     public function check(Query $query)
     {
-        $container    = $this->container;
-        $featureType  = $container->get('features')->get($query->getFeatureType());
-        $queryBuilder = $featureType->getSelectQueryBuilder();
-        var_dump($query);
-        die();
+        $container   = $this->container;
+        $featureType = $container->get('features')->get($query->getFeatureType());
+        $connection  = $featureType->getConnection();
+        $sql         = $this->buildSql($query, true);
+        $runningTime = (microtime(true) * 1000);
+        $count       = $connection->fetchColumn($sql);
+        $runningTime = (microtime(true) * 1000) - $runningTime;
+        $explainInfo = array();
+
+        foreach ($connection->fetchAll("EXPLAIN " . $sql) as $info) {
+            $explainInfo[] = current($info);
+        }
+
+        $result = array(
+            'count'         => $count,
+            'explainInfo'   => $explainInfo,
+            'executionTime' => round($runningTime) . 'ms',
+        );
+
+        return $result;
     }
 
     /**
@@ -243,5 +260,52 @@ class QueryManager extends BaseManager
             unset($queries[ $id ]);
         }
         return $this->db->saveData($this->tableName, $queries, null, $this->scope, $this->getUserId());
+    }
+
+    /**
+     * @param Query  $query
+     * @param bool   $count Count queries
+     * @param string $tableAliasName
+     * @return array
+     */
+    public function buildSql(Query $query, $count = false, $tableAliasName = 't')
+    {
+        $featureTypeService = $this->container->get('features');
+        $featureType        = $featureTypeService->get($query->getFeatureType());
+        $connection         = $featureType->getConnection();
+        $fields             = array();
+
+        if ($count) {
+            $fields[] = 'count(*)';
+        } else {
+            foreach ($featureType->getFields() as $fieldName) {
+                $fields[] = $connection->quoteIdentifier($fieldName);
+            }
+        }
+
+        $sql = 'SELECT ' . implode(', ', $fields) . ' FROM ' . $connection->quoteIdentifier($featureType->getTableName()) . ' ' .$tableAliasName;
+
+        if ($query->hasConditions()) {
+            $sql .= " WHERE " . $this->buildCriteria($query->getConditions(), $featureType);
+        }
+
+        return $sql;
+    }
+
+    /**
+     * Execute and fetch query results
+     *
+     * @param Query $query
+     * @param array $args
+     * @return array
+     */
+    public function fetchQuery(Query $query, array $args = array())
+    {
+        $featureTypeService = $this->container->get('features');
+        $featureType        = $featureTypeService->get($query->getFeatureType());
+        return $featureType->search(array_merge(array(
+            'where'      => $this->buildCriteria($query->getConditions(), $featureType),
+            'returnType' => 'FeatureCollection'
+        ), $args));
     }
 }

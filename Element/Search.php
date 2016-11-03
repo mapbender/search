@@ -239,19 +239,18 @@ class Search extends BaseElement
      * Describe feature type
      *
      * @param $request
-     * @return mixed
+     * @return array
      */
     public function describeFeatureTypeAction($request)
     {
-        $featureType = $this->getFeatureType();
         $fields      = $this->getFeatureType()->getFields();
-        $operators   = $featureType->getOperators();
+        $operators   = $this->getFeatureType()->getOperators();
 
-        return new JsonResponse(array(
+        return array(
             'operators'  => array_combine($operators, $operators),
-            'print'      => $featureType->getConfiguration('print'),
+            'print'      => $this->getFeatureType()->getConfiguration('print'),
             'fieldNames' => array_combine($fields, $fields)
-        ));
+        );
     }
 
     /**
@@ -341,12 +340,9 @@ class Search extends BaseElement
     public function removeStyleAction($request)
     {
         $styleManager = $this->container->get('mapbender.style.manager');
-        $id           = isset($request["id"]) ? $request["id"] : "UNDEFINED";
-
-        $style = $styleManager->remove($id);
-        return new JsonResponse(array(
-            'style' => HKVStorage::encodeValue($style)
-        ));
+        return array(
+            'removed' => $styleManager->remove($request["id"])
+        );
     }
 
 
@@ -363,8 +359,8 @@ class Search extends BaseElement
         $data            = $this->filterFields($request["styleMap"], array('userId'));
         $styleMapManager = $this->container->get("mapbender.stylemap.manager");
         $styleMap        = $styleMapManager->create($data);
-        $styleMap->setUserId($this->getUserId());
 
+        $styleMap->setUserId($this->getUserId());
         $styleMapManager->save($styleMap);
 
         return array(
@@ -513,8 +509,22 @@ class Search extends BaseElement
         $container    = $this->container;
         $queryManager = $container->get('mapbender.query.manager');
         $query        = $queryManager->create($request['query']);
+        $check        = null;
 
-        return $queryManager->check($query);
+        try {
+            $check = $queryManager->check($query);
+        } catch (DBALException $e) {
+            $message = $e->getMessage();
+            if (strpos($message, 'ERROR:')) {
+                preg_match("/\\s+ERROR:\\s+(.+)/", $message, $found);
+                $message = ucfirst($found[1]).".";
+            }
+            $check = array(
+                'errorMessage' => $message,
+            );
+        }
+
+        return $check;
     }
 
     /**
