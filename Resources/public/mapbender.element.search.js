@@ -64,7 +64,7 @@
      */
     function escapeHtml(text) {
         'use strict';
-        return text.replace(/[\"&'\/<>]/g, function (a) {
+        return text.replace(/["&'\/<>]/g, function (a) {
             return {
                 '"': '&quot;', '&': '&amp;', "'": '&#39;',
                 '/': '&#47;',  '<': '&lt;',  '>': '&gt;'
@@ -110,7 +110,6 @@
         });
         return dialog;
     };
-
 
     /**
      * Digitizing tool set
@@ -312,8 +311,20 @@
             });
 
             queryManager.bind('querymanagercheck', function(event, context) {
+                var queryDialog = context.dialog;
+                queryDialog.disableForm();
                 widget.query('query/check', {query: context.data}).done(function(r) {
-                    console.log(r);
+                    queryDialog.enableForm();
+
+                    if(r.errorMessage){
+                        $.notify("Fehler beim Ausführen:\n" + r.errorMessage, 'error');
+                        return;
+                    }
+
+                    $.notify("Anzahl der Ergebnisse : " + r.count, 'info');
+                    $.notify("Ausführungsdauer: " + r.executionTime, 'info');
+                    $.notify(_.toArray(r.explainInfo).join("\n"), 'info');
+                    queryDialog.enableForm();
                 });
             });
         },
@@ -1293,7 +1304,7 @@
                 }
 
                 if(item.type == "file") {
-                    item.uploadHanderUrl = widget.elementUrl + "file-upload?schema=" + schema.schemaName + "&fid=" + olFeature.fid + "&field=" + item.name;
+                    item.uploadHanderUrl = widget.elementUrl + "file/upload?schema=" + schema.schemaName + "&fid=" + olFeature.fid + "&field=" + item.name;
                     if(item.hasOwnProperty("name") && olFeature.data.hasOwnProperty(item.name) && olFeature.data[item.name]) {
                         item.dbSrc = olFeature.data[item.name];
                         if(schema.featureType.files) {
@@ -1549,14 +1560,60 @@
          * @param {OpenLayers.Feature} feature
          */
         zoomToJsonFeature: function(feature) {
+            debugger;
             var widget = this;
             var olMap = widget.getMap();
             var schema = widget.findFeatureSchema(feature);
+            var bounds = feature.geometry.getBounds();
+            olMap.zoomToExtent(bounds);
+            var mapBounds = olMap.getExtent();
 
-            olMap.zoomToExtent(feature.geometry.getBounds());
             if(schema.hasOwnProperty('zoomScaleDenominator')) {
                 olMap.zoomToScale(schema.zoomScaleDenominator);
+            } else {
+                if(!widget.isContainedInBounds(bounds, mapBounds)) {
+                    var niceBounds = widget.getNiceBounds(bounds, mapBounds, 10);
+                    olMap.zoomToExtent(niceBounds);
+                }
             }
+        },
+        isContainedInBounds: function(bounds, mapBounds) {
+            return bounds.left >= mapBounds.left && bounds.bottom >= mapBounds.bottom && bounds.right <= mapBounds.right &&bounds.top <= mapBounds.top;
+        },
+        /**
+         * Get Bounds with padding
+         *
+         * @param {Object} bounds
+         * @param {Object} mapBounds
+         * @param {int} padding
+         */
+        getNiceBounds: function(bounds, mapBounds, padding) {
+            var widget = this;
+
+            var getBiggerBounds = function(bounds) {
+                bounds.left -= padding;
+                bounds.right += padding;
+                bounds.top += padding;
+                bounds.bottom -= padding;
+                return bounds;
+            };
+
+            var cloneBounds = function(bounds) {
+                return {
+                    left:   bounds.left,
+                    right:  bounds.right,
+                    top:    bounds.top,
+                    bottom: bounds.bottom
+                };
+            };
+
+            var scaledMapBounds = cloneBounds(mapBounds);
+
+            while (!widget.isContainedInBounds(bounds, scaledMapBounds)) {
+                scaledMapBounds = getBiggerBounds(bounds, scaledMapBounds);
+            }
+
+            return scaledMapBounds;
         },
 
         /**
