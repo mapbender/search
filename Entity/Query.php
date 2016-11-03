@@ -3,7 +3,6 @@
 namespace Mapbender\SearchBundle\Entity;
 
 use Eslider\Entity\UniqueBaseEntity;
-use Mapbender\CoreBundle\Component\SecurityContext;
 
 /**
  * Class SearchQuery
@@ -155,7 +154,8 @@ class Query extends UniqueBaseEntity
      */
     public function getConditions()
     {
-        return $this->conditions;
+        $queryConditions = $this->conditions;
+        return $queryConditions;
     }
 
     /**
@@ -213,5 +213,11 @@ class Query extends UniqueBaseEntity
         $this->extendOnly = $extendOnly;
     }
 
-
+    /**
+     * @return bool
+     */
+    public function hasConditions()
+    {
+        return count($this->conditions) > 0;
+    }
 }
