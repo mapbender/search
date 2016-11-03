@@ -1560,7 +1560,6 @@
          * @param {OpenLayers.Feature} feature
          */
         zoomToJsonFeature: function(feature) {
-            debugger;
             var widget = this;
             var olMap = widget.getMap();
             var schema = widget.findFeatureSchema(feature);
