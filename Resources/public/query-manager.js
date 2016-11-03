@@ -110,12 +110,16 @@ $.widget("rw.queryManager", {
                         }
                     }]
                 }, {
-                    type:        "checkbox",
-                    name:        "extentOnly",
-                    placeholder: "Extent only",
-                    title:       "Extent only",
-                    checked:     true
+                    type:    "checkbox",
+                    name:    "extentOnly",
+                    title:   "Nur Kartenausschnitt",
+                    checked: true
 
+                }, {
+                    type:  "checkbox",
+                    name:  "exportOnly",
+                    title: "Nur Export",
+                    checked: false
                 }]
             }, {
                 type:     "form",
@@ -337,7 +341,9 @@ $.widget("rw.queryManager", {
             }]
         });
 
-        formContainer.formData(query);
+        setTimeout(function() {
+            formContainer.formData(query);
+        }, 300);
         return formContainer;
     },
 
