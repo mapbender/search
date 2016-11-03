@@ -306,7 +306,7 @@ class Search extends BaseElement
     {
         $styleManager = $this->container->get('mapbender.style.manager');
         return array(
-            'list' => $styleManager->listStyles()
+            'list' => array_reverse($styleManager->listStyles(), true)
         );
     }
 
@@ -380,9 +380,8 @@ class Search extends BaseElement
     public function listStyleMapAction($request)
     {
         $styleMapManager = $this->container->get('mapbender.stylemap.manager');
-        $styleMap        = $styleMapManager->listStyleMaps();
         return array(
-            'list' => $styleMap
+            'list' => array_reverse($styleMapManager->listStyleMaps(), true)
         );
     }
 
@@ -493,7 +492,7 @@ class Search extends BaseElement
         $queryManager = $container->get('mapbender.query.manager');
 
         return array(
-            'list' => $queryManager->listQueries()
+            'list' => array_reverse($queryManager->listQueries(), true)
         );
     }
 
