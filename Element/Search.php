@@ -196,9 +196,9 @@ class Search extends BaseElement
         $query        = $queryManager->getById($request['queryId']);
         $featureType  = $this->container->get('features')->get($query->getFeatureType());
         $config       = $featureType->getConfiguration('export');
-        $fileName     = isset($config['fileName']) ? $config['fileName'] : "export";
         $connection   = $featureType->getConnection();
-        $maxResults   = isset($config["maxResults"])?$config["maxResults"]:10000; // TODO: Set max results in export
+        $maxResults   = isset($config["maxResults"]) ? $config["maxResults"] : 10000; // TODO: Set max results in export
+        $fileName     = $query->getName() . " " . date('Y:m:d H:i:s');
 
         if (!count($ids)) {
             $fields  = $featureType->getFields();
