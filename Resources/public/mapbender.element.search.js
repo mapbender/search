@@ -281,6 +281,7 @@
          */
         openQueryManager: function(query) {
             var widget = this;
+            var element = widget.element;
             var styleMaps = widget._styleMaps;
             var featureTypes = widget._featureTypes;
             var queryManager = $("<div/>");
@@ -326,6 +327,10 @@
                     $.notify(_.toArray(r.explainInfo).join("\n"), 'info');
                     queryDialog.enableForm();
                 });
+            });
+
+            element.bind('mbsearchstylesmapsupdated', function(e, styleMaps) {
+                queryManager.queryManager('updateStyleMapList', styleMaps);
             });
         },
 

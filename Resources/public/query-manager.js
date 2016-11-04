@@ -53,12 +53,10 @@ $.widget("rw.queryManager", {
         var widget = this;
         var element = $(widget.element);
         var options = widget.options;
-        var styleMaps = options.styleMaps;
         var featureTypeDescriptions = options.featureTypeDescriptions;
         var featureTypeId = _.keys(featureTypeDescriptions)[0];
         var currentSource = widget.changeSource(featureTypeId);
         var featureTypeNames = _.object(_.keys(featureTypeDescriptions), _.pluck(featureTypeDescriptions, 'title'));
-        var styleMapNames = _.object(_.pluck(styleMaps, 'id'), _.pluck(styleMaps, 'name'));
         var formContainer = element.empty().generateElements({
             type:     "tabs",
             children: [{
@@ -87,7 +85,7 @@ $.widget("rw.queryManager", {
                         name:    "styleMap",
                         title:   "Style",
                         value:   0,
-                        options: styleMapNames,
+                        options: _.object(_.pluck(options.styleMaps, 'id'), _.pluck(options.styleMaps, 'name')),
                         css:     {
                             width: "80%"
                         }
@@ -97,7 +95,7 @@ $.widget("rw.queryManager", {
                         title:    "Ändern",
                         click:    function(e) {
                             var styleMapId = element.find('[name=styleMap]').val();
-                            var styleMap = _.findWhere(styleMaps, {id: styleMapId});
+                            var styleMap = _.findWhere(options.styleMaps, {id: styleMapId});
                             widget._trigger('styleMapChange', null, {
                                 widget:   widget,
                                 form:     element,
@@ -402,6 +400,19 @@ $.widget("rw.queryManager", {
             }]
         });
     },
+
+    updateStyleMapList: function(styleMaps) {
+        var widget = this;
+        var element = widget.element;
+        // var formData = element.formData();
+
+        element.find('select[name=styleMap]').updateSelect(styleMaps, 'id', 'name');
+
+        widget._setOption("styleMaps", styleMaps);
+        widget._trigger('stylesMapsUpdated');
+        // widget.render(formData);
+    },
+
 
     close: function() {
         var widget = this;
