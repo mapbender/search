@@ -164,8 +164,8 @@ class QueryManager extends BaseManager
                 $condition = new QueryCondition($condition);
             }
             $whereConditions[] = $connection->quoteIdentifier($condition->getFieldName())
-                . $condition->getOperator()
-                . $connection->quote($condition->getValue());
+                . ' ' . $condition->getOperator()
+                . ' ' . $connection->quote($condition->getValue());
         }
         return implode(' AND ', $whereConditions);
     }
@@ -265,10 +265,11 @@ class QueryManager extends BaseManager
     /**
      * @param Query  $query
      * @param bool   $count Count queries
+     * @param null   $fieldNames
      * @param string $tableAliasName
      * @return array
      */
-    public function buildSql(Query $query, $count = false, $tableAliasName = 't')
+    public function buildSql(Query $query, $count = false, $fieldNames = null, $tableAliasName = 't')
     {
         $featureTypeService = $this->container->get('features');
         $featureType        = $featureTypeService->get($query->getFeatureType());
@@ -278,12 +279,13 @@ class QueryManager extends BaseManager
         if ($count) {
             $fields[] = 'count(*)';
         } else {
-            foreach ($featureType->getFields() as $fieldName) {
+            $fieldNames = $fieldNames ? $fieldNames : $featureType->getFields();
+            foreach ($fieldNames as $fieldName) {
                 $fields[] = $connection->quoteIdentifier($fieldName);
             }
         }
 
-        $sql = 'SELECT ' . implode(', ', $fields) . ' FROM ' . $connection->quoteIdentifier($featureType->getTableName()) . ' ' .$tableAliasName;
+        $sql = 'SELECT ' . implode(', ', $fields) . ' FROM ' . $connection->quoteIdentifier($featureType->getTableName()) . ' ' . $tableAliasName;
 
         if ($query->hasConditions()) {
             $sql .= " WHERE " . $this->buildCriteria($query->getConditions(), $featureType);
