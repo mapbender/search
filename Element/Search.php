@@ -9,7 +9,6 @@ use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Element\BaseElement;
 use Mapbender\DataSourceBundle\Entity\Feature;
 use Mapbender\DigitizerBundle\Component\Uploader;
-use Mapbender\SearchBundle\Entity\ExportRequest;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -43,6 +42,8 @@ class Search extends BaseElement
                     '/components/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js',
                     'feature-style-editor.js',
                     'style-map-manager.js',
+                    'query-result-title-bar-view.js',
+                    'query-result-view.js',
                     'query-manager.js',
                     'mapbender.element.search.js'
                 ),
@@ -138,7 +139,6 @@ class Search extends BaseElement
         /** @var $requestService Request */
         $request = $this->getRequestData();
 
-
         if (isset($request['schema'])) {
             $this->setSchema($request);
         }
@@ -191,13 +191,26 @@ class Search extends BaseElement
      */
     public function exportAction($request)
     {
-        $exportRequest = new ExportRequest($request);
-        $ids           = $exportRequest->getIds();
-        $featureType   = $this->getFeatureType();
-        $config        = $featureType->getConfiguration('export');
-        $fileName      = isset($config['fileName']) ? $config['fileName'] : "export";
+        $ids          = isset($request['ids']) && is_array($request['ids']) ? $request['ids'] : array();
+        $queryManager = $this->container->get('mapbender.query.manager');
+        $query        = $queryManager->getById($request['queryId']);
+        $featureType  = $this->container->get('features')->get($query->getFeatureType());
+        $config       = $featureType->getConfiguration('export');
+        $fileName     = isset($config['fileName']) ? $config['fileName'] : "export";
+        $connection   = $featureType->getConnection();
+        $maxResults   = isset($config["maxResults"])?$config["maxResults"]:10000; // TODO: Set max results in export
 
-        return new ExportResponse($featureType->exportByIds($ids), $fileName, $request["type"]);
+        if (!count($ids)) {
+            $fields  = $featureType->getFields();
+            $sql     = $queryManager->buildSql($query, false, $fields);
+            $results = $connection->fetchAll($sql . " LIMIT " . $maxResults);
+            $rows    = $featureType->export($results);
+        } else {
+            $rows = $featureType->getByIds($ids, false);
+            $rows = $featureType->export($rows);
+        }
+
+        return new ExportResponse($rows, $fileName, $request["type"]);
     }
 
     /**
@@ -243,8 +256,8 @@ class Search extends BaseElement
      */
     public function describeFeatureTypeAction($request)
     {
-        $fields      = $this->getFeatureType()->getFields();
-        $operators   = $this->getFeatureType()->getOperators();
+        $fields    = $this->getFeatureType()->getFields();
+        $operators = $this->getFeatureType()->getOperators();
 
         return array(
             'operators'  => array_combine($operators, $operators),
@@ -516,7 +529,7 @@ class Search extends BaseElement
             $message = $e->getMessage();
             if (strpos($message, 'ERROR:')) {
                 preg_match("/\\s+ERROR:\\s+(.+)/", $message, $found);
-                $message = ucfirst($found[1]).".";
+                $message = ucfirst($found[1]) . ".";
             }
             $check = array(
                 'errorMessage' => $message,
