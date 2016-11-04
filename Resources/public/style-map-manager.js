@@ -72,6 +72,10 @@ $.widget("wheregroup.styleMapManager", {
 
         element.generateElements({
             type:     'form',
+            css:{
+                'margin-left': '10px',
+                'margin-right': '10px'
+            },
             children: [{
                 type:        'input',
                 title:       'Name',
