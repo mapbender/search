@@ -22,7 +22,7 @@ $.widget("wheregroup.queryResultTitleBarView", {
         var widget = this;
         var element = $(widget.element);
         var options = widget.options;
-        var title = $("<span />").html(query.name);
+        var title = $("<span class='titleText' />").html(query.name);
         var context = {
             widget: widget,
             query:  options.data

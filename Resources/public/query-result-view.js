@@ -3,6 +3,10 @@ $.widget("wheregroup.queryResultView", {
         data: {
             id: null
         }
+
+    },
+
+    preparedData:{
     },
 
     /**
@@ -23,7 +27,32 @@ $.widget("wheregroup.queryResultView", {
         var element = $(widget.element);
         var options = widget.options;
 
-        element.data('query', query).attr('data-id', query.id).html(JSON.stringify(query));
+        element
+            .data('query', query)
+            .attr('data-id', query.id)
+            .empty();
+
+        element.generateElements({
+            type:     'fieldSet',
+            children: [{
+                type:     'checkbox',
+                cssClass: 'onlyExtent',
+                title:    "Nur Kartenabschnitt",
+                checked:  query.extendOnly,
+                change:   function(e) {
+                    var input = $('input', this);
+                    widget._trigger('changeExtend', null, {
+                        query:   query,
+                        widget:  widget,
+                        element: element,
+                        checked: input.is(":checked")
+                    });
+                    //schema.searchType = $(e.originalEvent.target).prop("checked") ? "currentExtent" : "all";
+                    //widget._getData();
+                }
+            }]
+        });
+
 
         return element;
     },
