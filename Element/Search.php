@@ -539,6 +539,39 @@ class Search extends BaseElement
         return $check;
     }
 
+
+    /**
+     * List queries
+     *
+     * @param $request
+     * @return \Mapbender\DataSourceBundle\Entity\Feature[]
+     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
+     */
+    public function fetchQueryAction($request)
+    {
+        $container     = $this->container;
+        $queryManager  = $container->get('mapbender.query.manager');
+        $query         = $queryManager->create($request['query']);
+        $originalQuery = $queryManager->getById($query->getId());
+
+        try {
+            unset($request['intersectGeometry']);
+            $request['maxResults'] = 1000;
+            return $queryManager->fetchQuery($originalQuery, $request);
+        } catch (DBALException $e) {
+            $message = $e->getMessage();
+            if (strpos($message, 'ERROR:')) {
+                preg_match("/\\s+ERROR:\\s+(.+)/", $message, $found);
+                $message = ucfirst($found[1]) . ".";
+            }
+            $check = array(
+                'errorMessage' => $message,
+            );
+        }
+
+        return $check;
+    }
+
     /**
      * List queries
      *
