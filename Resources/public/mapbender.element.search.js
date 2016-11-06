@@ -198,7 +198,7 @@
         _styles:       null,
         _featureTypes: null,
         _styleMaps:    null,
-        bookMarks: [],
+        _queries:      null,
 
         /**
          * Constructor.
@@ -223,6 +223,7 @@
             widget.refreshStyles();
             widget.refreshStyleMaps();
             widget.refreshFeatureTypes();
+            widget.refreshQueries();
         },
 
         /**
@@ -308,6 +309,7 @@
                     $.extend(queryManagerWidget.options.data, r.entity);
                     queryManagerWidget.close();
                     $.notify("Erfolgreich gespeichert!", "info");
+                    widget.refreshQueries()
                 });
             });
 
@@ -395,7 +397,7 @@
          */
         refreshStyles: function() {
             var widget = this;
-            widget.query('style/list').done(function(r) {
+            return widget.query('style/list').done(function(r) {
                 widget._styles = r.list;
                 widget._trigger('stylesUpdated', null, r.list);
             });
@@ -406,7 +408,7 @@
          */
         refreshStyleMaps: function() {
             var widget = this;
-            widget.query('styleMap/list').done(function(r) {
+            return widget.query('styleMap/list').done(function(r) {
                 widget._styleMaps = r.list;
                 widget._trigger('stylesMapsUpdated', null, r.list);
             });
@@ -417,11 +419,96 @@
          */
         refreshFeatureTypes: function() {
             var widget = this;
-            widget.query('featureType/list').done(function(r) {
+            return widget.query('featureType/list').done(function(r) {
                 widget._featureTypes = r.list;
                 widget._trigger('featureTypesUpdated', null, r.list);
             });
         },
+
+        /**
+         * Refresh feature types
+         */
+        refreshQueries: function() {
+            var widget = this;
+            return widget.query('queries/list').done(function(r) {
+                widget._queries = r.list;
+                widget._trigger('queriesUpdate', null, r.list);
+                widget.renderQueries(r.list);
+            });
+        },
+
+        /**
+         * Render queries
+         */
+        renderQueries: function(queries) {
+            var widget = this;
+            var options = widget.options;
+            var element = widget.element;
+            var queriesContainer = element.find('> .html-element-container');
+
+            queriesContainer.empty();
+
+            var queriesAccordionView = $('<div class="queries-accordion"/>');
+
+            _.each(queries, function(query) {
+                var queryTitleView = $('<h3 />').queryResultTitleBarView({data: query});
+                var queryView = $('<div/>').queryResultView({data: query});
+
+                // Shows     how long queries runs and queries results can be fetched.
+                // widget.query('query/check', {query: query}).done(function(r) {
+                //     queryTitleView.find(".titleText").html(query.name + " (" + r.count + ", "+r.executionTime+")")
+                // });
+
+
+
+                queryView.bind('queryresultviewchangeextend',function(e,context) {
+                    return false;
+                });
+
+                queryTitleView.bind('queryresulttitlebarviewexport',function(e,context) {
+                    widget.exportFeatures([], query.id, 'xls');
+                    return false;
+                });
+
+                queryTitleView.bind('queryresulttitlebarviewedit', function(e, context) {
+                    widget.openQueryManager(context.query);
+                    return false;
+                });
+
+                queryTitleView.bind('queryresulttitlebarviewvisibility',function(e,context) {
+
+                });
+
+                queryTitleView.bind('queryresulttitlebarviewremove', function(e, context) {
+                    var query = context.query;
+                    Mapbender.confirmDialog({
+                        title:     'Suche löschen?',
+                        html:      'Die Suche "' + query.name + '" löschen?',
+                        onSuccess: function() {
+                            widget.query('query/remove', {id: query.id}).done(function(r) {
+                                $.notify("Die Suche wurde gelöscht!", 'notice');
+                                widget.refreshQueries();
+                            })
+                        }
+                    });
+                });
+
+                queriesAccordionView.append(queryTitleView);
+                queriesAccordionView.append(queryView);
+            });
+
+            queriesAccordionView.accordion({
+                collapsible: true,
+                heightStyle: 'fill',
+                animate: 200,
+                beforeActivate: function( event, ui ) {
+                    // debugger;
+                }
+            });
+
+            queriesContainer.append(queriesAccordionView);
+        },
+
 
         /**
          * Activate context menu
@@ -602,7 +689,7 @@
                     }
                 }, {
                     type:     'button',
-                    title:    'Neue Styleset',
+                    title:    'Neue Theme',
                     cssClass: 'btn new-query',
                     css: {width: '33%'},
                     click:    function() {
@@ -620,93 +707,6 @@
             });
 
             element.generateElements({type: 'html', html:'<div class="queries"></div>'})
-
-            widget.query('queries/list').done(function(r) {
-                var queries = _.chain(r.list).reverse()._wrapped ;
-                var queryNames = _.object(_.pluck(queries, 'id'), _.pluck(queries, 'name'));
-                var children = _.each(queries, function(query) {
-                    return {
-                        head:    {
-                            type:  'input',
-                            title: query.name + " (" + query.id + ")"
-                        },
-                        content: {
-                            type:  'input',
-                            value: query.id
-                        }
-                    }
-                });
-                var queriesContainer = element.find('> .html-element-container');
-                queriesContainer.generateElements({
-                    type:     'fieldSet',
-                    children: [{
-                        type:    'select',
-                        name:    'queryId',
-                        title:   'Suchen',
-                        options: queryNames,
-                        css:     {width: '40%'}
-
-                    }, {
-
-                        type:     'button',
-                        title:    "Bearbeiten",
-                        cssClass: 'fa fa-edit',
-                        click:    function() {
-                            var id = queriesContainer.formData().queryId;
-                            if(!id) {
-                                $.notify("Die Suche kann nicht geändert werden!", 'notice');
-                                return false;
-                            }
-                            var query = queries[id];
-                            widget.openQueryManager(query);
-                            return false;
-                        },
-
-                        css:   {width: '30%'},
-                    }, {
-                        type:     'button',
-                        title:    'Löschen',
-                        css:      {width: '30%'},
-                        cssClass: 'fa fa-remove',
-                        click:    function() {
-                            var button = $(this);
-                            var id = queriesContainer.formData().queryId;
-                            var query = queries[id];
-
-                            if(!query){
-                                $.notify("Suche ist nicht ausgewählt",'warn');
-                                return false;
-                            }
-
-                            Mapbender.confirmDialog({
-                                title:     'Suche löschen?',
-                                html:      'Die Suche "' + query.name + '" löschen?',
-                                onSuccess: function() {
-                                    if(!id) {
-                                        $.notify("Die Suche kann nicht gelöscht werden!", 'notice');
-                                        return false;
-                                    }
-
-                                    widget.query('query/remove', {id: id}).done(function(r) {
-                                        $.notify("Die Suche wurde gelöscht!", 'notice');
-                                        queriesContainer.find("select[name='queryId'] option[value='" + id + "']").remove();
-                                        console.log(r);
-                                        button.blur();
-                                    })
-                                }
-                            });
-                            return false;
-                        }
-                    }]
-
-                });
-                queriesContainer.generateElements({
-                    type:     'accordion',
-                    children: children
-                });
-            });
-
-
 
             element.append(selector);
 
@@ -794,47 +794,6 @@
                     console.error(translate("table.fields.not.defined"), schema);
                 }
 
-                frame.generateElements({
-                    type:     'fieldSet',
-                    css:      {
-                        'margin-top': "10px",
-                    },
-                    children: [{
-                        type:    'select',
-                        value:   'xls',
-                        name:    'exportType',
-                        options: {
-                            csv: 'CSV',
-                            xls: 'XLS'
-                        }
-                    }, {
-                        type:  'button',
-                        title: "Export",
-                        click: function() {
-                            var api = table.resultTable('getApi');
-                            var ids = _.pluck(api.data(), 'fid');
-
-                            var form = $('<form enctype="multipart/form-data" method="POST" style="display: none"/>');
-
-                            for (var key in ids) {
-                                form.append($('<input name="ids[]" value="' + ids[key] + '" />'));
-                            }
-                            form.append($('<input name="schema" value="' + schemaName + '" />'));
-                            form.append($('<input name="type" value="' + frame.formData().exportType + '" />'));
-                            form.attr('action', widget.elementUrl + 'export');
-
-                            $("body").append(form);
-
-                            form.submit();
-
-                            setTimeout(function() {
-                                form.remove();
-                            }, 200);
-
-                            return false;
-                        }
-                    } ]
-                });
 
                 $.each(schema.tableFields, function(fieldName, fieldSettings) {
                     newFeatureDefaultProperties[fieldName] = "";
@@ -1222,7 +1181,7 @@
                 });
             }
             buttons.push({
-                text:  translate("mb.digitizer.cancel",true),
+                text:  translate("Abbrechen",true),
                 click: function() {
                     widget.currentPopup.popupDialog('close');
                 }
@@ -2167,6 +2126,26 @@
                 });
                 console.log(errorMessage, xhr);
             });
+        },
+
+        exportFeatures: function(idList, queryId, exportType) {
+            var widget = this;
+            var form = $('<form enctype="multipart/form-data" method="POST" style="display: none"/>');
+
+            for (var key in idList) {
+                form.append($('<input name="ids[]" value="' + idList[key] + '" />'));
+            }
+            form.append($('<input name="queryId" value="' + queryId + '" />'));
+            form.append($('<input name="type" value="' + exportType + '" />'));
+            form.attr('action', widget.elementUrl + 'export');
+
+            $("body").append(form);
+
+            form.submit();
+
+            setTimeout(function() {
+                form.remove();
+            }, 200);
         }
     });
 
