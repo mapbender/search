@@ -1,18 +1,15 @@
 $.widget("wheregroup.queryResultTitleBarView", {
-    options: {
-        data: {
-            id: null
-        }
-    },
+    options: {},
 
     /**
      * Constructor
      */
     _create: function() {
         var widget = this;
-        var options = this.options;
+        var element = $(widget.element);
+        var query = element.data('query');
 
-        widget.render(options.data);
+        widget.render(query);
     },
 
     /**
@@ -25,49 +22,76 @@ $.widget("wheregroup.queryResultTitleBarView", {
         var title = $("<span class='titleText' />").html(query.name);
         var context = {
             widget: widget,
-            query:  options.data
+            query:  query
+        };
+        var buttons = [];
+
+        element
+            .empty()
+            .attr('data-id', query.id)
+            .append(title);
+
+        var editButton = {
+            type:     'button',
+            cssClass: 'fa fa-edit',
+            title:    'Edit',
+            click:    function(e) {
+                widget._trigger("edit", null, context);
+                return false;
+            }
+        };
+        var removeButton = {
+            cssClass: 'fa fa-remove',
+            type:     'button',
+            title:    'Löschen',
+            click:    function(e) {
+                widget._trigger("remove", null, context);
+                return false;
+            }
+        };
+        var exportButton = {
+            type:     'button',
+            cssClass: 'fa fa-download',
+            title:    'Export',
+            click:    function(e) {
+                widget._trigger("export", null, context);
+                return false;
+            }
+        };
+        var zoomToButton = {
+            type:     'button',
+            cssClass: 'fa fa-map-o',
+            title:    'Zoom to',
+            click:    function(e) {
+                widget._trigger("zoomToLayer", null, context);
+                return false;
+            }
+        };
+        var showButton = {
+            type:     'button',
+            cssClass: 'fa fa-eye',
+            title:    'Anzeigen',
+            click:    function(e) {
+                widget._trigger("visibility", null, context);
+                // return false;
+            }
         };
 
-        element.data('query', query).attr('data-id', query.id);
+        buttons.push(editButton);
+        buttons.push(exportButton);
 
-        element.append(title);
+        if(!query.exportOnly) {
+
+            buttons.push(zoomToButton);
+            buttons.push(showButton);
+        }
+
+        buttons.push(removeButton);
 
         element.generateElements({
             cssClass: 'buttons',
             type:     'fieldSet',
-            children: [{
-                type:     'button',
-                cssClass: 'fa fa-edit',
-                title:    'Edit',
-                click:    function(e) {
-                    widget._trigger("edit", null, context);
-                    return false;
-                }
-            }, {
-                type:     'button',
-                cssClass: 'fa fa-download',
-                title:    'Export',
-                click:    function(e) {
-                    widget._trigger("export", null, context);
-                    return false;
-                }
-            }, {
-                type:     'button',
-                cssClass: 'fa fa-eye',
-                title:    'Anzeigen',
-                click:    function(e) {
-                    widget._trigger("visibility", null, context);
-                    return false;
-                }
-            }, {
-                cssClass: 'fa fa-remove',
-                type:     'button',
-                title:    'Löschen',
-                click:    function(e) {
-                    widget._trigger("remove", null, context);
-                    return false;
-                }
-            }]
+            children: buttons
         });
 
         return element;

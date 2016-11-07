@@ -438,8 +438,9 @@
             });
 
             window.setTimeout(function() {
+                debugger;
                 element.formData(options.data);
-            }, 200);
+            }, 1000);
 
             if(options.asPopup) {
                 widget.popup();

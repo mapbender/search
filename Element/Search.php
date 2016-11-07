@@ -555,7 +555,6 @@ class Search extends BaseElement
         $originalQuery = $queryManager->getById($query->getId());
 
         try {
-            unset($request['intersectGeometry']);
             $request['maxResults'] = 1000;
             return $queryManager->fetchQuery($originalQuery, $request);
         } catch (DBALException $e) {
