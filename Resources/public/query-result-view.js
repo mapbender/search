@@ -126,7 +126,7 @@ $.widget("wheregroup.queryResultView", {
         var tableApi = table.resultTable('getApi');
 
         table.contextMenu({
-            selector: 'table > tbody > tr',
+            selector: 'table > tbody > tr[role="row"]',
             events:   {
                 // show: function(options) {
                 //     // var tr = $(options.$trigger);
@@ -151,7 +151,7 @@ $.widget("wheregroup.queryResultView", {
                         widget._trigger(key, null, {
                             feature: olFeature,
                             table: resultTable,
-                            tableApi: api,
+                            tableApi: tableApi,
                             tr: tr,
                             options: options
                         });
@@ -164,29 +164,31 @@ $.widget("wheregroup.queryResultView", {
         table.off('mouseenter', 'mouseleave', 'click');
 
         table
-            .delegate("tbody > tr", 'mouseenter', function() {
+            .delegate("tbody > tr[role='row']", 'mouseenter', function() {
                 var tr = this;
                 var row = tableApi.row(tr);
                 var olFeature = row.data();
                 widget._trigger('featureOver', null, {
-                    feature: olFeature,
-                    ui:      tr,
-                    query:   query,
-                    widget:  widget
+                    feature:  olFeature,
+                    ui:       tr,
+                    query:    query,
+                    widget:   widget,
+                    tableApi: tableApi
                 });
                 // widget._highlightFeature(row.data(), true);
                 return false;
 
             })
-            .delegate("tbody > tr", 'mouseleave', function() {
+            .delegate("tbody > tr[role='row']", 'mouseleave', function() {
                 var tr = this;
                 var row = tableApi.row(tr);
                 var olFeature = row.data();
                 widget._trigger('featureOut', null, {
-                    feature: olFeature,
-                    ui:      tr,
-                    query:   query,
-                    widget:  widget
+                    feature:  olFeature,
+                    ui:       tr,
+                    query:    query,
+                    widget:   widget,
+                    tableApi: tableApi
                 });
                 // widget._highlightFeature(row.data(), false);
                 return false;
@@ -199,7 +201,7 @@ $.widget("wheregroup.queryResultView", {
                     feature: olFeature,
                     ui:      tr,
                     query:   query,
-                    widget:  widget
+                    tableApi: tableApi
                 });
                 // widget.zoomToJsonFeature(row.data());
                 return false;

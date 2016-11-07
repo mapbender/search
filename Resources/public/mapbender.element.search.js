@@ -1,4 +1,6 @@
 (function($) {
+
+    $.notify.defaults( {  globalPosition: 'top left'} );
     /**
      * Regular Expression to get checked if string should be translated
      *
@@ -590,6 +592,9 @@
                         widget.zoomToJsonFeature(context.feature);
                         return false;
                     })
+                    .bind('queryresultviewbookmark', function(e, context) {
+                        return false;
+                    })
                     .bind('queryresultviewfeatureover', function(e, context) {
                         widget._highlightSchemaFeature(context.feature, true);
                     })
@@ -597,7 +602,48 @@
                         widget._highlightSchemaFeature(context.feature, false);
                     })
                     .bind('queryresultviewfeatureclick ', function(e, context) {
-                        widget._openFeatureEditDialog(context.feature);
+                        function format(feature) {
+
+                            if(!feature || !feature.data) {
+                                return;
+                            }
+                            var table = $("<table/>");
+                            _.each(feature.data, function(v, k) {
+
+                                if(!v) {
+                                    return;
+                                }
+
+                                var tr = $("<tr/>");
+                                var title = $('<td style="font-weight: bold; padding-right: 10px"/>').html(k + ": ");
+                                var value = $('<td/>').html(v);
+
+                                tr.append(title).append(value);
+                                table.append(tr);
+
+                            });
+                            return table;
+                        }
+
+                        var table = context.tableApi
+                        var tr = $(context.ui);
+                        var row = table.row(tr);
+
+                        if(row.child.isShown()) {
+                            // This row is already open - close it
+                            row.child.hide();
+                            tr.removeClass('shown');
+                        } else {
+                            // Open this row
+
+                            var feature = row.data();
+                            if(feature){
+                                row.child(format(feature)).show();
+                                tr.addClass('shown');
+                            }
+                        }
+
+                        // widget._openFeatureEditDialog(context.feature);
                     });
 
                 queryTitleView
@@ -962,6 +1008,13 @@
                 olMap.zoomToExtent(niceBounds);
             }
         },
+
+        /**
+         *
+         * @param bounds
+         * @param mapBounds
+         * @returns {boolean}
+         */
         isContainedInBounds: function(bounds, mapBounds) {
             return bounds.left >= mapBounds.left && bounds.bottom >= mapBounds.bottom && bounds.right <= mapBounds.right &&bounds.top <= mapBounds.top;
         },
