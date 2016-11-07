@@ -438,7 +438,6 @@
             });
 
             window.setTimeout(function() {
-                debugger;
                 element.formData(options.data);
             }, 1000);
 
