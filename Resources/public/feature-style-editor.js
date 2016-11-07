@@ -439,6 +439,15 @@
 
             window.setTimeout(function() {
                 element.formData(options.data);
+                //Set colorfields by hand
+                element.find(".colorpicker-element").each(function(i, colorPickerElement) {
+
+                    var $colorPickerElement = $(colorPickerElement);
+                    var name = $colorPickerElement.find("input").attr("name");
+                    var color = options.data[name];
+                    $colorPickerElement.colorpicker("setValue", color)
+
+                });
             }, 1000);
 
             if(options.asPopup) {
