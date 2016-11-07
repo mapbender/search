@@ -55,7 +55,13 @@ class Search extends BaseElement
     public static function getDefaultConfiguration()
     {
         return array(
-            'target' => null
+            'target'       => null,
+            'featureTypes' => array(),
+            'debug'        => false,
+            'title'        => 'Search',
+            'css'          => array(),
+            'jsSrc'        => array(),
+            'schemes'      => array()
         );
     }
 
@@ -223,17 +229,20 @@ class Search extends BaseElement
      */
     public function listFeatureTypeAction($request)
     {
-        $result             = array();
-        $featureTypeManager = $this->container->get('features');
-
-        foreach ($featureTypeManager->getFeatureTypeDeclarations() as $key => $declaration) {
-            $title       = isset($declaration['title']) ? $declaration['title'] . " ($key)" : ucfirst($key);
-            $featureType = $featureTypeManager->get($key);
+        $result                  = array();
+        $featureTypeManager      = $this->container->get('features');
+        $configuration           = $this->getConfiguration();
+        $allowedFeatureTypes     = $configuration["featureTypes"];
+        $featureTypeDeclarations = $featureTypeManager->getFeatureTypeDeclarations();
+        foreach ($allowedFeatureTypes as $featureTypeName) {
+            $declaration = $featureTypeDeclarations[ $featureTypeName ];
+            $title       = isset($declaration['title']) ? $declaration['title'] . " ($featureTypeName)" : ucfirst($featureTypeName);
+            $featureType = $featureTypeManager->get($featureTypeName);
             $fieldNames  = $featureType->getFields();
             $operators   = $featureType->getOperators();
             $print       = $featureType->getConfiguration('print');
 
-            $result[ $key ] = array(
+            $result[ $featureTypeName ] = array(
                 'title'      => $title,
                 'fieldNames' => array_combine($fieldNames, $fieldNames),
                 'operators'  => array_combine($operators, $operators),
