@@ -234,13 +234,15 @@ class Search extends BaseElement
         $configuration           = $this->getConfiguration();
         $allowedFeatureTypes     = $configuration["featureTypes"];
         $featureTypeDeclarations = $featureTypeManager->getFeatureTypeDeclarations();
-        foreach ($allowedFeatureTypes as $featureTypeName) {
-            $declaration = $featureTypeDeclarations[ $featureTypeName ];
-            $title       = isset($declaration['title']) ? $declaration['title'] . " ($featureTypeName)" : ucfirst($featureTypeName);
-            $featureType = $featureTypeManager->get($featureTypeName);
-            $fieldNames  = $featureType->getFields();
-            $operators   = $featureType->getOperators();
-            $print       = $featureType->getConfiguration('print');
+
+        foreach ($allowedFeatureTypes as $featureTypeSettings) {
+            $featureTypeName = $featureTypeSettings['name'];
+            $declaration     = $featureTypeDeclarations[ $featureTypeName ];
+            $title           = isset($declaration['title']) ? $declaration['title'] . " ($featureTypeName)" : ucfirst($featureTypeName);
+            $featureType     = $featureTypeManager->get($featureTypeName);
+            $fieldNames      = $featureType->getFields();
+            $operators       = $featureType->getOperators();
+            $print           = $featureType->getConfiguration('print');
 
             $result[ $featureTypeName ] = array(
                 'title'      => $title,
@@ -253,7 +255,7 @@ class Search extends BaseElement
         ksort($result);
 
         return array(
-            'list' => $result
+            'list' => $result // array_reverse($result, true)
         );
     }
 
