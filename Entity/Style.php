@@ -35,13 +35,13 @@ class Style extends UniqueBaseEntity
     public $strokeOpacity;
 
     /** @var Number  Pixel stroke width.  Default is 1. */
-    public $strokeWidth;
+    public $strokeSize;
 
     /** @var String  Stroke cap type.  Default is “round”.  [butt | round | square] */
-    public $strokeLinecap;
+    public $strokeLineCap;
 
     /** @var String  Stroke dash style.  Default is “solid”.  [dot | dash | dashdot | longdash | longdashdot | solid] */
-    public $strokeDashstyle;
+    public $strokeDashStyle;
 
     /** @var Boolean  Set to false if no graphic is desired. */
     public $graphic;
