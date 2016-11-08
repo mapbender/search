@@ -93,10 +93,23 @@ $.widget("wheregroup.queryResultView", {
         });
 
         buttons.push({
-            title:     "Bookmark",
+            title:     "Bookmarks",
             className: 'bookmark',
             onClick:   function(olFeature, ui) {
                 widget._trigger('bookmark', null, {
+                    feature: olFeature,
+                    ui:      ui,
+                    query:   query,
+                    widget:  widget
+                })
+            }
+        });
+
+        buttons.push({
+            title:     "Print",
+            className: 'print',
+            onClick:   function(olFeature, ui) {
+                widget._trigger('print', null, {
                     feature: olFeature,
                     ui:      ui,
                     query:   query,

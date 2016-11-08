@@ -154,7 +154,7 @@
         _styles:       null,
         _featureTypes: null,
         _styleMaps:    null,
-        _queries:      null,
+        _queries:      [],
 
         /**
          * Constructor.
@@ -590,6 +590,12 @@
                     })
                     .bind('queryresultviewzoomto', function(e, context) {
                         widget.zoomToJsonFeature(context.feature);
+                        return false;
+                    })
+                    .bind('queryresultviewprint', function(e, context) {
+                        var feature = context.feature;
+                        var printWidget = $('.mb-element-printclient').data('mapbenderMbPrintClient');
+                        printWidget.printDigitizerFeature(context.query.featureType, feature.fid);
                         return false;
                     })
                     .bind('queryresultviewbookmark', function(e, context) {

@@ -30,6 +30,13 @@
         padding-right: 3px;
       }
     }
+    .print {
+      &:before {
+        font-family: FontAwesome;
+        content: "\f02f";
+        padding-right: 3px;
+      }
+    }
     .zoomTo {
       &:before {
         font-family: FontAwesome;
