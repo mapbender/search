@@ -47,7 +47,7 @@
                             css:           {width: "50%"}
 
                         }, {
-                            title: "Durchsichtigkeit",
+                            title: "Deckkraft",
                             name:  "fillOpacity",
                             type:  "slider",
                             range: "max",
@@ -149,7 +149,7 @@
                             css:           {width: "30%"}
 
                         }, {
-                            title: "Durchsichtigkeit",
+                            title: "Deckkraft",
                             name:  "strokeOpacity",
                             type:  "slider",
                             range: "max",
@@ -262,7 +262,7 @@
                                 width: '33%'
                             }
                         }, {
-                            title: "Durchsichtigkeit",
+                            title: "Deckkraft",
                             name:  "graphicOpacity",
                             type:  "slider",
                             range: "max",
@@ -352,7 +352,7 @@
                                     infoText: 'The font color for the label, to be provided like CSS.',
                                     css:      {width: "50%"}
                                 }, {
-                                    title: "Durchsichtigkeit",
+                                    title: "Deckkraft",
                                     name:  "fontOpacity",
                                     type:  "slider",
                                     range: "max",
@@ -439,15 +439,6 @@
 
             window.setTimeout(function() {
                 element.formData(options.data);
-                //Set colorfields by hand
-                element.find(".colorpicker-element").each(function(i, colorPickerElement) {
-
-                    var $colorPickerElement = $(colorPickerElement);
-                    var name = $colorPickerElement.find("input").attr("name");
-                    var color = options.data[name];
-                    $colorPickerElement.colorpicker("setValue", color)
-
-                });
             }, 1000);
 
             if(options.asPopup) {
