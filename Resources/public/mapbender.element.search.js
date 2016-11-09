@@ -1,6 +1,6 @@
 (function($) {
 
-    $.notify.defaults( {  globalPosition: 'top left'} );
+    $.notify.defaults( { globalPosition: 'top left', style: 'bootstrap'} );
     /**
      * Regular Expression to get checked if string should be translated
      *
@@ -124,29 +124,9 @@
                 distance: 30
             }]
         },
-        map:      null,
-        currentSettings: null,
+        map:                    null,
+        currentSettings:        null,
         featureEditDialogWidth: "423px",
-
-        /**
-         * Default styles merged by schema styles if defined
-         */
-        styles: {
-            'default': {
-                strokeWidth: 1,
-                strokeColor: '#6fb536',
-                fillColor:   "#6fb536",
-                fillOpacity: 0.3,
-                label: '${label}'
-            },
-            'select':  {
-                strokeWidth: 3,
-                fillColor:   "#F7F79A",
-                strokeColor: '#6fb536',
-                fillOpacity: 0.5
-            }
-
-        },
 
         /**
          * Dynamic loaded styles
