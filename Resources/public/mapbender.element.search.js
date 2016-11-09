@@ -131,10 +131,10 @@
         /**
          * Dynamic loaded styles
          */
-        _styles:       null,
-        _featureTypes: null,
-        _styleMaps:    null,
-        _queries:      {},
+        _styles:    null,
+        _schemas:   null,
+        _styleMaps: null,
+        _queries:   {},
 
         /**
          * Constructor.
@@ -198,7 +198,7 @@
                 widget._trigger('ready');
             });
 
-            widget.refreshFeatureTypes().done(function(){
+            widget.refreshSchemas().done(function(){
                 widget.refreshStyles().done(function(){
                     widget.refreshStyleMaps().done(function(){
                         widget.refreshQueries().done(function(){
@@ -266,7 +266,7 @@
             var widget = this;
             var element = widget.element;
             var styleMaps = widget._styleMaps;
-            var featureTypes = widget._featureTypes;
+            var featureTypes = widget._schemas;
             var queryManager = $("<div/>");
 
             queryManager.queryManager({
@@ -399,11 +399,12 @@
         /**
          * Refresh feature types
          */
-        refreshFeatureTypes: function() {
+        refreshSchemas: function() {
             var widget = this;
-            return widget.query('featureType/list').done(function(r) {
-                widget._featureTypes = r.list;
-                widget._trigger('featureTypesUpdated', null, r.list);
+            return widget.query('schemas/list').done(function(r) {
+                var schemas = r.list;
+                widget._schemas = schemas;
+                widget._trigger('schemasUpdate', null, schemas);
             });
         },
 
