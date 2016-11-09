@@ -134,7 +134,7 @@
         _styles:       null,
         _featureTypes: null,
         _styleMaps:    null,
-        _queries:      [],
+        _queries:      {},
 
         /**
          * Constructor.
@@ -413,7 +413,27 @@
         refreshQueries: function() {
             var widget = this;
             return widget.query('queries/list').done(function(r) {
-                widget._queries = r.list;
+                var queryList = r.list;
+
+                _.each(queryList, function(query, queryId) {
+                    if(!widget._queries.hasOwnProperty(queryId)){
+                        widget._queries[queryId] = _.extend(query, {
+                            clean: function() {
+                                var query = this;
+                                var layer = query.layer;
+                                var map = layer.map;
+                                map.removeControl(query.selectControl);
+                                map.removeLayer(layer);
+                                query.dispatch('update');
+                            }
+                        }, EventDispatcher);
+                    } else {
+                        var existQuery = widget._queries[queryId];
+                        existQuery.clean();
+                        _.extend(existQuery, query);
+                    }
+                });
+                // widget._queries = r.list;
                 widget._trigger('queriesUpdate', null, r.list);
                 widget.renderQueries(r.list);
             });
