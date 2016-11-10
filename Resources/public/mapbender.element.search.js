@@ -266,13 +266,13 @@
             var widget = this;
             var element = widget.element;
             var styleMaps = widget._styleMaps;
-            var featureTypes = widget._schemas;
+            var schemas = widget._schemas;
             var queryManager = $("<div/>");
 
             queryManager.queryManager({
-                data:                    query,
-                featureTypeDescriptions: featureTypes,
-                styleMaps:               styleMaps
+                data:      query,
+                schemas:   schemas,
+                styleMaps: styleMaps
             });
 
             queryManager.bind('querymanagerstylemapchange', function(event, context) {
@@ -615,6 +615,8 @@
                                 return;
                             }
                             var table = $("<table/>");
+                            debugger;
+
                             _.each(feature.data, function(v, k) {
 
                                 if(!v) {

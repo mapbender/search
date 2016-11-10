@@ -27,8 +27,8 @@ class Query extends UniqueBaseEntity
     /** @var StyleMap StyleMap */
     protected $styleMap;
 
-    /** @var string SchemaName */
-    protected $featureType;
+    /** @var string Schema ID or name */
+    protected $schemaId;
 
     /** @var string SQL */
     protected $sql;
@@ -99,18 +99,18 @@ class Query extends UniqueBaseEntity
     /**
      * @return string
      */
-    public function getFeatureType()
+    public function getSchemaId()
     {
-        return $this->featureType;
+        return $this->schemaId;
     }
 
     /**
-     * @param string $featureType
+     * @param string $schemaId
      * @return Query
      */
-    public function setFeatureType($featureType)
+    public function setSchemaId($schemaId)
     {
-        $this->featureType = $featureType;
+        $this->schemaId = $schemaId;
         return $this;
     }
 

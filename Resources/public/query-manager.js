@@ -4,18 +4,18 @@
  */
 $.widget("rw.queryManager", {
     options: {
-        data:                    {
+        data:      {
             id: null
         },
-        featureTypeDescriptions: [],
-        styleMaps:               [],
-        asPopup:                 true
+        schemas:   [],
+        styleMaps: [],
+        asPopup:   true
     },
 
     /**
      * Current source (Feature type description)
      */
-    currentSource: null,
+    currentSchema: null,
 
     /**
      * Constructor
@@ -33,10 +33,10 @@ $.widget("rw.queryManager", {
         }
     },
 
-    changeSource: function(featureTypeId) {
+    changeSource: function(schemaId) {
         var widget = this;
-        var featureTypeDescriptions = widget.option('featureTypeDescriptions');
-        var currentSource = widget.currentSource = featureTypeDescriptions[featureTypeId];
+        var schemas = widget.option('schemas');
+        var currentSource = widget.currentSchema = schemas[schemaId];
 
         widget._trigger('changeSource', null, {
             widget:                 widget,
@@ -53,10 +53,10 @@ $.widget("rw.queryManager", {
         var widget = this;
         var element = $(widget.element);
         var options = widget.options;
-        var featureTypeDescriptions = options.featureTypeDescriptions;
-        var featureTypeId = _.keys(featureTypeDescriptions)[0];
-        var currentSource = widget.changeSource(featureTypeId);
-        var featureTypeNames = _.object(_.keys(featureTypeDescriptions), _.pluck(featureTypeDescriptions, 'title'));
+        var schemas = options.schemas;
+        var schemaId = _.keys(schemas)[0];
+        var currentSource = widget.changeSource(schemaId);
+        var schemaOptions = _.object(_.keys(schemas), _.pluck(schemas, 'title'));
         var formContainer = element.empty().generateElements({
             type:     "tabs",
             children: [{
@@ -70,10 +70,10 @@ $.widget("rw.queryManager", {
                     mandatory:   true
                 }, {
                     type:    "select",
-                    name:    "featureType",
-                    title:   "Featuretyp",
-                    value:   featureTypeId,
-                    options: featureTypeNames,
+                    name:    "schemaId",
+                    title:   "Schema",
+                    value:   schemaId,
+                    options: schemaOptions,
                     change:  function(e) {
                         var featureTypeId = $('select', e.currentTarget).val();
                         currentSource = widget.changeSource(featureTypeId)
@@ -166,6 +166,8 @@ $.widget("rw.queryManager", {
                             var form = el.closest('.popup-dialog');
                             var fieldForm = $("<div style='overflow: initial'/>");
                             var fieldNames = currentSource.fieldNames;
+
+                            debugger;
 
                             fieldForm.generateElements({
                                 type:     'fieldSet',

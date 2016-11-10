@@ -2,6 +2,7 @@
 
 namespace Mapbender\SearchBundle\Element;
 
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
 use Eslider\Driver\HKVStorage;
 use FOM\CoreBundle\Component\ExportResponse;
@@ -200,7 +201,7 @@ class Search extends BaseElement
         $ids          = isset($request['ids']) && is_array($request['ids']) ? $request['ids'] : array();
         $queryManager = $this->container->get('mapbender.query.manager');
         $query        = $queryManager->getById($request['queryId']);
-        $featureType  = $this->container->get('features')->get($query->getFeatureType());
+        $featureType  = $this->container->get('features')->get($query->getSchemaId());
         $config       = $featureType->getConfiguration('export');
         $connection   = $featureType->getConnection();
         $maxResults   = isset($config["maxResults"]) ? $config["maxResults"] : 10000; // TODO: Set max results in export
@@ -227,25 +228,40 @@ class Search extends BaseElement
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      */
-    public function listFeatureTypeAction($request)
+    public function listSchemasAction($request)
     {
         $result                  = array();
         $featureTypeManager      = $this->container->get('features');
         $configuration           = $this->getConfiguration();
-        $allowedFeatureTypes     = $configuration["featureTypes"];
+        $schemas                 = $configuration["schemas"];
         $featureTypeDeclarations = $featureTypeManager->getFeatureTypeDeclarations();
 
-        foreach ($allowedFeatureTypes as $featureTypeSettings) {
-            $featureTypeName = $featureTypeSettings['name'];
+        foreach ($schemas as $schemaId => $schema) {
+            $featureTypeName = $schema['featureType'];
             $declaration     = $featureTypeDeclarations[ $featureTypeName ];
             $title           = isset($declaration['title']) ? $declaration['title'] . " ($featureTypeName)" : ucfirst($featureTypeName);
             $featureType     = $featureTypeManager->get($featureTypeName);
+
             $fieldNames      = $featureType->getFields();
             $operators       = $featureType->getOperators();
             $print           = $featureType->getConfiguration('print');
 
-            $result[ $featureTypeName ] = array(
+            if (isset($schema["fields"])) {
+                foreach ($schema["fields"] as $fieldDescription) {
+                    if (isset($fieldDescription["sql"])) {
+                        /** @var Connection $dbalConnection */
+                        $connectionName   = isset($fieldDescription["connection"]) ? $fieldDescription["connection"] : "default";
+                        $dbalConnection   = $this->container->get("doctrine.dbal.{$connectionName}_connection");
+                        $field["options"] = $dbalConnection->fetchAll($fieldDescription["sql"]);
+                        unset($fieldDescription["connection"]);
+                        unset($fieldDescription["sql"]);
+                    }
+                }
+            }
+
+            $result[ $schemaId ] = array(
                 'title'      => $title,
+                'fields'     => $schema["fields"],
                 'fieldNames' => array_combine($fieldNames, $fieldNames),
                 'operators'  => array_combine($operators, $operators),
                 'print'      => $print
@@ -287,7 +303,7 @@ class Search extends BaseElement
      */
     public function saveQueryAction($request)
     {
-        $data         = $this->filterFields($request['query'], array('userId'));
+        $data         = $this->filterFields($request['query'], array('userId','where'));
         $queryManager = $this->container->get('mapbender.query.manager');
         $query        = $queryManager->saveArray($data);
 
@@ -564,6 +580,9 @@ class Search extends BaseElement
         $queryManager  = $container->get('mapbender.query.manager');
         $query         = $queryManager->create($request['query']);
         $originalQuery = $queryManager->getById($query->getId());
+        $configuration = $this->getConfiguration();
+
+        $queryManager->setSchemas($configuration["schemas"]);
 
         try {
             $request['maxResults'] = 1000;
