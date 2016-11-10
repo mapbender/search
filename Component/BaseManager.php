@@ -47,7 +47,8 @@ abstract class BaseManager extends BaseComponent implements ManagerInterface
         $this->path      = $kernel->getRootDir() . "/config/" . $tableName . ".sqlite";
         $this->tableName = $tableName;
         $this->createDB();
-        $this->logger    = $this->container->get('logger');
+        $this->logger = $this->container->get('logger');
+        $this->setUserId($container->get("security.context")->getUser()->getId());
 
         parent::__construct($container);
     }
