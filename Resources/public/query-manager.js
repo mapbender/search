@@ -396,6 +396,9 @@ $.widget("rw.queryManager", {
             maximizable: true,
             modal:       true,
             width:       "500px",
+            close: function() {
+                debugger;
+            },
             buttons:     [{
                 text:  "Prüfen",
                 click: function() {
@@ -467,6 +470,8 @@ $.widget("rw.queryManager", {
         } else {
             widget.element.remove();
         }
+
+        widget._trigger('close');
     }
 });
 

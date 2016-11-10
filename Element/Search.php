@@ -5,6 +5,7 @@ namespace Mapbender\SearchBundle\Element;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
 use Eslider\Driver\HKVStorage;
+use Eslider\Entity\UniqueBaseEntity;
 use FOM\CoreBundle\Component\ExportResponse;
 use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Element\BaseElement;
@@ -17,7 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Class Search
- *
+
  * @package Mapbender\SearchBundle\Element
  * @author  Andriy Oblivantsev <eslider@gmail.com>
  */
@@ -264,9 +265,10 @@ class Search extends BaseElement
             }
 
             $result[ $schemaId ] = array(
-                'title'  => $title,
-                'fields' => $fields,
-                'print'  => $print
+                'title'       => $title,
+                'fields'      => $fields,
+                'print'       => $print,
+                'featureType' => $featureTypeName
             );
         }
 
@@ -334,7 +336,6 @@ class Search extends BaseElement
         );
     }
 
-
     /**
      * Gets a Style Entity via ID
      *
@@ -363,9 +364,10 @@ class Search extends BaseElement
      */
     public function removeStyleAction($request)
     {
-        $styleManager = $this->container->get('mapbender.style.manager');
         return array(
-            'removed' => $styleManager->remove($request["id"])
+            'removed' => $this->container
+                ->get('mapbender.style.manager')
+                ->remove($request["id"])
         );
     }
 
