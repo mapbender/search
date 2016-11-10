@@ -417,15 +417,17 @@
                 var queryList = r.list;
 
                 _.each(queryList, function(query, queryId) {
-                    if(!widget._queries.hasOwnProperty(queryId)){
+                    if(!widget._queries.hasOwnProperty(queryId)) {
                         widget._queries[queryId] = _.extend(query, {
                             clean: function() {
                                 var query = this;
                                 var layer = query.layer;
-                                var map = layer.map;
-                                map.removeControl(query.selectControl);
-                                map.removeLayer(layer);
-                                query.dispatch('update');
+                                if(layer.map) {
+                                    var map = layer.map;
+                                    map.removeControl(query.selectControl);
+                                    map.removeLayer(layer);
+                                    query.dispatch('update');
+                                }
                             }
                         }, EventDispatcher);
                     } else {
@@ -610,25 +612,24 @@
                     })
                     .bind('queryresultviewfeatureclick ', function(e, context) {
                         function format(feature) {
-
                             if(!feature || !feature.data) {
                                 return;
                             }
-                            var table = $("<table/>");
-                            debugger;
+                            var table = $("<table class='feature-details'/>");
 
-                            _.each(feature.data, function(v, k) {
+                            var query = feature.layer.query;
+                            var schema = widget._schemas[query.schemaId];
+                            var fieldNames = _.object(_.pluck(schema.fields, 'name'), _.pluck(schema.fields, 'title'));
 
-                                if(!v) {
+                            _.each(fieldNames, function(title, key) {
+
+                                if(!feature.data.hasOwnProperty(key) || feature.data[key] == "") {
                                     return;
                                 }
 
-                                var tr = $("<tr/>");
-                                var title = $('<td style="font-weight: bold; padding-right: 10px"/>').html(k + ": ");
-                                var value = $('<td/>').html(v);
-
-                                tr.append(title).append(value);
-                                table.append(tr);
+                                table.append($("<tr/>")
+                                    .append($('<td class="key"/>').html(title + ": "))
+                                    .append($('<td class="value"/>').text(feature.data[key])));
 
                             });
                             return table;

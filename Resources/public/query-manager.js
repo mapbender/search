@@ -55,8 +55,9 @@ $.widget("rw.queryManager", {
         var options = widget.options;
         var schemas = options.schemas;
         var schemaId = _.keys(schemas)[0];
-        var currentSource = widget.changeSource(schemaId);
+        var currentSchema = widget.changeSource(schemaId);
         var schemaOptions = _.object(_.keys(schemas), _.pluck(schemas, 'title'));
+        var initialFields = query && query.fields ? query.fields : [];
         var formContainer = element.empty().generateElements({
             type:     "tabs",
             children: [{
@@ -76,7 +77,7 @@ $.widget("rw.queryManager", {
                     options: schemaOptions,
                     change:  function(e) {
                         var featureTypeId = $('select', e.currentTarget).val();
-                        currentSource = widget.changeSource(featureTypeId)
+                        currentSchema = widget.changeSource(featureTypeId)
                     }
                 }, {
                     type:     "fieldSet",
@@ -132,13 +133,10 @@ $.widget("rw.queryManager", {
                     paging:       false,
                     ordering:     false,
                     columns:      [{
-                        data:  'fieldName',
-                        title: 'Feldname'
-                    }, {
                         data:  'title',
-                        title: 'Operator'
+                        title: 'Feldname'
                     }],
-                    data:         query && query.fields ? query.fields : [],
+                    data:         initialFields,
                     buttons:      [{
                         title:     "Löschen",
                         className: 'remove',
@@ -161,13 +159,11 @@ $.widget("rw.queryManager", {
                         cssClass: "plus",
                         title:    "Neues Feld",
                         css:      {'margin-top': '10px'},
-                        click:    function(e) {
+                        click: function(e) {
                             var el = $(e.currentTarget);
                             var form = el.closest('.popup-dialog');
                             var fieldForm = $("<div style='overflow: initial'/>");
-                            var fieldNames = currentSource.fieldNames;
-
-                            debugger;
+                            var fieldNames = _.object(_.pluck(currentSchema.fields, 'name'), _.pluck(currentSchema.fields, 'title'));
 
                             fieldForm.generateElements({
                                 type:     'fieldSet',
@@ -177,16 +173,7 @@ $.widget("rw.queryManager", {
                                     name:      "fieldName",
                                     options:   fieldNames,
                                     mandatory: true,
-                                    css:       {width: "40%"},
-                                    change:    function(e) {
-                                        var fieldName = fieldForm.formData().fieldName;
-                                        fieldForm.formData({title: fieldName})
-                                    }
-                                }, {
-                                    type:  "input",
-                                    title: "Title (alias)",
-                                    name:  "title",
-                                    css:   {width: "60%"}
+                                    css:       {width: "100%"}
                                 }]
                             });
                             fieldForm.popupDialog({
@@ -207,13 +194,12 @@ $.widget("rw.queryManager", {
                                             return false;
                                         }
 
+                                        var title = _.object(_.pluck(currentSchema.fields, 'name'), _.pluck(currentSchema.fields, 'title'))[data.fieldName];
                                         tableApi.rows.add([{
                                             fieldName: data.fieldName,
-                                            title:     data.title,
+                                            title:     title
                                         }]);
-
                                         tableApi.draw();
-
                                         fieldForm.popupDialog('close');
 
                                         return false;
@@ -274,8 +260,8 @@ $.widget("rw.queryManager", {
                             var el = $(e.currentTarget);
                             var form = el.closest('.popup-dialog');
                             var conditionForm = $("<div style='overflow: initial'/>");
-                            var operators = currentSource.operators;
-                            var fieldNames = currentSource.fieldNames;
+                            var operators = currentSchema.operators;
+                            var fieldNames = currentSchema.fieldNames;
 
                             conditionForm.generateElements({
                                 type:     'fieldSet',

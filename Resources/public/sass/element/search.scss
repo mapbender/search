@@ -74,6 +74,17 @@
       }
     }
   }
+
+  .feature-details {
+    .key {
+      font-weight: bold;
+      padding-right: 10px;
+      white-space: nowrap;
+    }
+    .value {
+
+    }
+  }
 }
 
 // Pop-up dialogs

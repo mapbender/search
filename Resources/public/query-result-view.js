@@ -54,7 +54,7 @@ $.widget("wheregroup.queryResultView", {
                 cssClass: 'onlyExtent',
                 title:    "Nur Kartenabschnitt",
                 checked:  query.extendOnly,
-                change:   function(e) {
+                change:   function() {
                     var input = $('input', this);
                     widget._trigger('changeExtend', null, {
                         query:   query,
