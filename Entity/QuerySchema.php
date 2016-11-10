@@ -23,8 +23,17 @@ class QuerySchema extends BaseEntity
     /** @var array Fields */
     protected $fields = array();
 
+    /** @var array TODO: Export configuration */
+    protected $export = array();
+
+    /** @var array TODO: Print configuration */
+    protected $print = array();
+
+    /** @var string TODO: Schema title */
+    protected $title;
+
     /**
-     * @return string
+     * @return string Feature type name
      */
     public function getFeatureType()
     {

@@ -416,26 +416,26 @@
             return widget.query('queries/list').done(function(r) {
                 var queryList = r.list;
 
-                _.each(queryList, function(query, queryId) {
-                    if(!widget._queries.hasOwnProperty(queryId)) {
-                        widget._queries[queryId] = _.extend(query, {
-                            clean: function() {
-                                var query = this;
-                                var layer = query.layer;
-                                if(layer.map) {
-                                    var map = layer.map;
-                                    map.removeControl(query.selectControl);
-                                    map.removeLayer(layer);
-                                    query.dispatch('update');
-                                }
-                            }
-                        }, EventDispatcher);
-                    } else {
-                        var existQuery = widget._queries[queryId];
-                        existQuery.clean();
-                        _.extend(existQuery, query);
-                    }
-                });
+                // _.each(queryList, function(query, queryId) {
+                //     if(!widget._queries.hasOwnProperty(queryId)) {
+                //         widget._queries[queryId] = _.extend(query, {
+                //             clean: function() {
+                //                 var query = this;
+                //                 var layer = query.layer;
+                //                 if(layer.map) {
+                //                     var map = layer.map;
+                //                     map.removeControl(query.selectControl);
+                //                     map.removeLayer(layer);
+                //                     query.dispatch('update');
+                //                 }
+                //             }
+                //         }, EventDispatcher);
+                //     } else {
+                //         var existQuery = widget._queries[queryId];
+                //         existQuery.clean();
+                //         _.extend(existQuery, query);
+                //     }
+                // });
                 // widget._queries = r.list;
                 widget._trigger('queriesUpdate', null, r.list);
                 widget.renderQueries(r.list);
@@ -452,6 +452,12 @@
             var widget = this;
             var layer = query.layer;
             var map = layer.map;
+
+            // if(!layer.map){
+            //     $.notify("Layer ist nicht vorhanden "+ query.name );
+            //     return;
+            // }
+
             var request = {
                 intersectGeometry: map.getExtent().toGeometry().toString(),
                 srid:              map.getProjectionObject().proj.srsProjNumber,
@@ -517,7 +523,6 @@
             // ---
             var map = widget.map;
 
-
             // TODO: clean up, remove/refresh map layers, events, etc...
             queriesContainer.empty();
 
@@ -531,7 +536,7 @@
                  */
                 query.layer = function createQueryLayer(query) {
                     var styleMaps = widget._styleMaps;
-                    var styleDefinitions = widget._styles
+                    var styleDefinitions = widget._styles;
                     var styleMapDefinition = _.extend({}, styleMaps[query.styleMap] ? styleMaps[query.styleMap] : _.first(_.toArray(styleMaps)));
                     var styleMapConfig = {};
                     _.each(styleMapDefinition.styles, function(styleId, key) {
@@ -988,7 +993,7 @@
             }
 
             _.each(features, function(feature) {
-                layer.drawFeature(feature, highlight ? 'select' : 'default');
+                layer.drawFeature(feature, highlight ? 'hover' : 'default');
             })
         },
 

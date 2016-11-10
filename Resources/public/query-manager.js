@@ -47,6 +47,16 @@ $.widget("rw.queryManager", {
     },
 
     /**
+     * Get current schema
+     * @param schemaId
+     * @returns {null}
+     */
+    getCurrentSchema: function() {
+        var widget = this;
+        return  widget.currentSchema;
+    },
+
+    /**
      * Render
      */
     render: function(query) {
@@ -54,10 +64,17 @@ $.widget("rw.queryManager", {
         var element = $(widget.element);
         var options = widget.options;
         var schemas = options.schemas;
-        var schemaId = _.keys(schemas)[0];
+        var schemaId = query.hasOwnProperty("schemaId") ? query.schemaId : _.keys(schemas)[0];
         var currentSchema = widget.changeSource(schemaId);
         var schemaOptions = _.object(_.keys(schemas), _.pluck(schemas, 'title'));
         var initialFields = query && query.fields ? query.fields : [];
+        var fieldNames = _.object(_.pluck(currentSchema.fields, 'name'), _.pluck(currentSchema.fields, 'title'));
+
+        // Add field titles
+        // _.each(query.conditions, function(condition) {
+        //     condition.fieldTitle = fieldNames[condition.fieldName];
+        // });
+
         var formContainer = element.empty().generateElements({
             type:     "tabs",
             children: [{
@@ -163,6 +180,7 @@ $.widget("rw.queryManager", {
                             var el = $(e.currentTarget);
                             var form = el.closest('.popup-dialog');
                             var fieldForm = $("<div style='overflow: initial'/>");
+                            var currentSchema = widget.getCurrentSchema();
                             var fieldNames = _.object(_.pluck(currentSchema.fields, 'name'), _.pluck(currentSchema.fields, 'title'));
 
                             fieldForm.generateElements({
@@ -219,11 +237,11 @@ $.widget("rw.queryManager", {
                     name:         'conditions',
                     cssClass:     'conditions',
                     lengthChange: false,
-                    searching:    false,
-                    info:         false,
-                    paging:       false,
-                    ordering:     false,
-                    columns:      [{
+                    searching: false,
+                    info:      false,
+                    paging:    false,
+                    ordering:  false,
+                    columns:   [{
                         data:  'fieldName',
                         title: 'Feldname'
                     }, {
@@ -233,8 +251,8 @@ $.widget("rw.queryManager", {
                         data:  'value',
                         title: 'Wert'
                     }],
-                    data:         query && query.conditions ? query.conditions : [],
-                    buttons:      [{
+                    data:      query && query.conditions ? query.conditions : [],
+                    buttons:   [{
                         title:     "Löschen",
                         className: 'remove',
                         cssClass:  'critical',
@@ -260,8 +278,8 @@ $.widget("rw.queryManager", {
                             var el = $(e.currentTarget);
                             var form = el.closest('.popup-dialog');
                             var conditionForm = $("<div style='overflow: initial'/>");
-                            var operators = currentSchema.operators;
-                            var fieldNames = currentSchema.fieldNames;
+                            var currentSchema = widget.getCurrentSchema();
+                            var fieldNames = _.object(_.pluck(currentSchema.fields, 'name'), _.pluck(currentSchema.fields, 'title'));
 
                             conditionForm.generateElements({
                                 type:     'fieldSet',
@@ -271,19 +289,55 @@ $.widget("rw.queryManager", {
                                     name:      "fieldName",
                                     options:   fieldNames,
                                     mandatory: true,
-                                    css:       {width: "40%"}
+                                    css:       {width: "40%"},
+                                    change:    function() {
+                                        var el = $(this);
+                                        var select = $("select", el);
+                                        var fieldDefinition = _.findWhere(currentSchema.fields, {name: select.val()});
+                                        var container = el.next();
+                                        var operators = _.object(fieldDefinition.operators, fieldDefinition.operators);
+
+                                        container.empty();
+
+                                        if(fieldDefinition.hasOwnProperty('options')) {
+                                            container
+                                                .generateElements({
+                                                    title:     "Operator",
+                                                    type:      "select",
+                                                    name:      "operator",
+                                                    options:   operators,
+                                                    mandatory: true,
+                                                    css:       {width: "30%"}
+                                                })
+                                                .generateElements({
+                                                    title:   "Optionen",
+                                                    type:    'select',
+                                                    name:    'value',
+                                                    options: fieldDefinition.options,
+                                                    css:     {width: "70%"}
+                                                });
+                                        } else if(fieldDefinition.hasOwnProperty("operators")) {
+                                            container
+                                                .generateElements({
+                                                    title:     "Operator",
+                                                    type:      "select",
+                                                    name:      "operator",
+                                                    options:   operators,
+                                                    mandatory: true,
+                                                    css:       {width: "30%"}
+                                                })
+                                                .generateElements({
+                                                    title: "Value",
+                                                    type:  "input",
+                                                    name:  "value",
+                                                    css:   {width: "70%"}
+                                                });
+                                        }
+                                    }
                                 }, {
-                                    title:     "Operator",
-                                    type:      "select",
-                                    name:      "operator",
-                                    options:   operators,
-                                    mandatory: true,
-                                    css:       {width: "20%"}
-                                }, {
-                                    title: "Value",
-                                    type:  "input",
-                                    name:  "value",
-                                    css:   {width: "40%"}
+                                    type:     'fieldSet',
+                                    cssClass: 'condition',
+                                    css:      {width: "60%"}
                                 }]
                             });
 
@@ -297,18 +351,19 @@ $.widget("rw.queryManager", {
                                         var resultTable = form.find('[name="conditions"]');
                                         var tableApi = resultTable.resultTable('getApi');
                                         var data = conditionForm.formData();
-
                                         var errorInputs = $(".has-error", conditionForm);
                                         var hasErrors = errorInputs.size() > 0;
+                                        var fieldDefinition = _.findWhere(currentSchema.fields, {name: data.fieldName});
 
                                         if(hasErrors) {
                                             return false;
                                         }
 
                                         tableApi.rows.add([{
-                                            fieldName: data.fieldName,
-                                            operator:  data.operator,
-                                            value:     data.value
+                                            fieldName:  data.fieldName,
+                                            fieldTitle: fieldDefinition.title,
+                                            operator:   data.operator,
+                                            value:      data.value
                                         }]);
 
                                         tableApi.draw();

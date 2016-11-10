@@ -8,7 +8,6 @@ use Mapbender\DataSourceBundle\Entity\Feature;
 use Mapbender\SearchBundle\Entity\Query;
 use Mapbender\SearchBundle\Entity\QueryCondition;
 use Mapbender\SearchBundle\Entity\QuerySchema;
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -16,6 +15,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @package Mapbender\SearchBundle\Component
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
+ * @author  Andriy Oblivantsev <eslider@gmail.com>
  */
 class QueryManager extends BaseManager
 {
@@ -141,17 +141,11 @@ class QueryManager extends BaseManager
      */
     private function addFeatureType(&$results, $featureService, $feature, $query)
     {
-        if ($feature == $query->getSchemaId()) {
+        $featureType     = $this->getQueryFeatureType($query);
+        $queryConditions = $query->getConditions();
+        $criteria        = array('where' => $this->buildCriteria($queryConditions, $featureType));
+        array_merge($results, $featureType->search($criteria));
 
-            $featureType = $featureService->get($feature);
-            if ($featureType == null) {
-                throw new Exception("You have to define the feature type in the corresponding config yml!");
-            }
-            $queryConditions = $query->getConditions();
-            $criteria        = array('where' => $this->buildCriteria($queryConditions, $featureType));
-            array_merge($results, $featureType->search($criteria));
-
-        }
     }
 
     /**
@@ -232,7 +226,7 @@ class QueryManager extends BaseManager
     public function check(Query $query)
     {
         $container   = $this->container;
-        $featureType = $container->get('features')->get($query->getSchemaId());
+        $featureType = $this->getQueryFeatureType($query);
         $connection  = $featureType->getConnection();
         $sql         = $this->buildSql($query, true);
         $runningTime = (microtime(true) * 1000);
@@ -275,10 +269,9 @@ class QueryManager extends BaseManager
      */
     public function buildSql(Query $query, $count = false, $fieldNames = null, $tableAliasName = 't')
     {
-        $featureTypeService = $this->container->get('features');
-        $featureType        = $featureTypeService->get($query->getSchemaId());
-        $connection         = $featureType->getConnection();
-        $fields             = array();
+        $featureType = $this->getQueryFeatureType($query);
+        $connection  = $featureType->getConnection();
+        $fields      = array();
 
         if ($count) {
             $fields[] = 'count(*)';
@@ -307,10 +300,7 @@ class QueryManager extends BaseManager
      */
     public function fetchQuery(Query $query, array $args = array())
     {
-        $featureTypeService = $this->container->get('features');
-        $schema             = $this->schemas[ $query->getSchemaId() ];
-        $featureTypeName    = $schema->getFeatureType();
-        $featureType        = $featureTypeService->get($featureTypeName);
+        $featureType = $this->getQueryFeatureType($query);
         return $featureType->search(array_merge(array(
             'where'      => $this->buildCriteria($query->getConditions(), $featureType),
             'returnType' => 'FeatureCollection'
@@ -321,9 +311,7 @@ class QueryManager extends BaseManager
      * Set query schemas
      *
      * @param array $schemas
-     * @return array
-     * @internal param Query $query
-     * @internal param array $args
+     * @return QueryManager
      */
     public function setSchemas(array $schemas)
     {
@@ -338,6 +326,7 @@ class QueryManager extends BaseManager
         }
 
         $this->schemas = $list;
+        return $this;
     }
 
     /**
@@ -346,5 +335,30 @@ class QueryManager extends BaseManager
     public function getSchemas()
     {
         return $this->schemas;
+    }
+
+    /**
+     * @param $id
+     * @return QuerySchema
+     */
+    public function getSchemaById($id)
+    {
+        return $this->schemas[ $id ];
+    }
+
+    /**
+     * Get query feature type service
+     *
+     * @param Query $query
+     * @return FeatureType
+     */
+    private function getQueryFeatureType(Query $query)
+    {
+        return $this->container
+            ->get('features')
+            ->get($this
+                ->getSchemaById($query->getSchemaId())
+                ->getFeatureType()
+            );
     }
 }

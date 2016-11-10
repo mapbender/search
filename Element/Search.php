@@ -10,6 +10,7 @@ use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Element\BaseElement;
 use Mapbender\DataSourceBundle\Entity\Feature;
 use Mapbender\DigitizerBundle\Component\Uploader;
+use Mapbender\SearchBundle\Entity\QuerySchema;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -198,14 +199,16 @@ class Search extends BaseElement
      */
     public function exportAction($request)
     {
-        $ids          = isset($request['ids']) && is_array($request['ids']) ? $request['ids'] : array();
-        $queryManager = $this->container->get('mapbender.query.manager');
-        $query        = $queryManager->getById($request['queryId']);
-        $featureType  = $this->container->get('features')->get($query->getSchemaId());
-        $config       = $featureType->getConfiguration('export');
-        $connection   = $featureType->getConnection();
-        $maxResults   = isset($config["maxResults"]) ? $config["maxResults"] : 10000; // TODO: Set max results in export
-        $fileName     = $query->getName() . " " . date('Y:m:d H:i:s');
+        $ids             = isset($request['ids']) && is_array($request['ids']) ? $request['ids'] : array();
+        $queryManager    = $this->container->get('mapbender.query.manager')->setSchemas($this->getSchemas());
+        $query           = $queryManager->getById($request['queryId']);
+        $schema          = $this->getSchemaById($query->getSchemaId());
+        $featureTypeName = $schema->getFeatureType();
+        $featureType     = $this->container->get('features')->get($featureTypeName);
+        $config          = $featureType->getConfiguration('export');
+        $connection      = $featureType->getConnection();
+        $maxResults      = isset($config["maxResults"]) ? $config["maxResults"] : 10000; // TODO: Set max results in export
+        $fileName        = $query->getName() . " " . date('Y:m:d H:i:s');
 
         if (!count($ids)) {
             $fields  = $featureType->getFields();
@@ -232,39 +235,38 @@ class Search extends BaseElement
     {
         $result                  = array();
         $featureTypeManager      = $this->container->get('features');
-        $configuration           = $this->getConfiguration();
-        $schemas                 = $configuration["schemas"];
         $featureTypeDeclarations = $featureTypeManager->getFeatureTypeDeclarations();
+        $schemas                 = $this->getSchemas();
 
         foreach ($schemas as $schemaId => $schema) {
-            $featureTypeName = $schema['featureType'];
+            $featureTypeName = $schema->getFeatureType();
             $declaration     = $featureTypeDeclarations[ $featureTypeName ];
             $title           = isset($declaration['title']) ? $declaration['title'] . " ($featureTypeName)" : ucfirst($featureTypeName);
             $featureType     = $featureTypeManager->get($featureTypeName);
-
-            $fieldNames      = $featureType->getFields();
-            $operators       = $featureType->getOperators();
             $print           = $featureType->getConfiguration('print');
+            $fields          = $schema->getFields();
 
-            if (isset($schema["fields"])) {
-                foreach ($schema["fields"] as $fieldDescription) {
-                    if (isset($fieldDescription["sql"])) {
-                        /** @var Connection $dbalConnection */
-                        $connectionName   = isset($fieldDescription["connection"]) ? $fieldDescription["connection"] : "default";
-                        $dbalConnection   = $this->container->get("doctrine.dbal.{$connectionName}_connection");
-                        $field["options"] = $dbalConnection->fetchAll($fieldDescription["sql"]);
-                        unset($fieldDescription["connection"]);
-                        unset($fieldDescription["sql"]);
+            foreach ($fields as &$fieldDescription) {
+                if (isset($fieldDescription["sql"])) {
+                    /** @var Connection $dbalConnection */
+                    $connectionName = isset($fieldDescription["connection"]) ? $fieldDescription["connection"] : "default";
+                    $dbalConnection = $this->container->get("doctrine.dbal.{$connectionName}_connection");
+                    $options        = array();
+
+                    foreach ($dbalConnection->fetchAll($fieldDescription["sql"]) as $row) {
+                        $options[ current($row) ] = current($row);
                     }
+
+                    $fieldDescription["options"] = $options;
+                    unset($fieldDescription["connection"]);
+                    unset($fieldDescription["sql"]);
                 }
             }
 
             $result[ $schemaId ] = array(
-                'title'      => $title,
-                'fields'     => $schema["fields"],
-                'fieldNames' => array_combine($fieldNames, $fieldNames),
-                'operators'  => array_combine($operators, $operators),
-                'print'      => $print
+                'title'  => $title,
+                'fields' => $fields,
+                'print'  => $print
             );
         }
 
@@ -272,24 +274,6 @@ class Search extends BaseElement
 
         return array(
             'list' => $result // array_reverse($result, true)
-        );
-    }
-
-    /**
-     * Describe feature type
-     *
-     * @param $request
-     * @return array
-     */
-    public function describeFeatureTypeAction($request)
-    {
-        $fields    = $this->getFeatureType()->getFields();
-        $operators = $this->getFeatureType()->getOperators();
-
-        return array(
-            'operators'  => array_combine($operators, $operators),
-            'print'      => $this->getFeatureType()->getConfiguration('print'),
-            'fieldNames' => array_combine($fields, $fields)
         );
     }
 
@@ -304,7 +288,7 @@ class Search extends BaseElement
     public function saveQueryAction($request)
     {
         $data         = $this->filterFields($request['query'], array('userId','where'));
-        $queryManager = $this->container->get('mapbender.query.manager');
+        $queryManager = $this->container->get('mapbender.query.manager')->setSchemas($this->getSchemas());
         $query        = $queryManager->saveArray($data);
 
         return array(
@@ -529,7 +513,7 @@ class Search extends BaseElement
     public function listQueriesAction($request)
     {
         $container    = $this->container;
-        $queryManager = $container->get('mapbender.query.manager');
+        $queryManager = $container->get('mapbender.query.manager')->setSchemas($this->getSchemas());
 
         return array(
             'list' => array_reverse($queryManager->listQueries(), true)
@@ -546,7 +530,7 @@ class Search extends BaseElement
     public function checkQueryAction($request)
     {
         $container    = $this->container;
-        $queryManager = $container->get('mapbender.query.manager');
+        $queryManager = $container->get('mapbender.query.manager')->setSchemas($this->getSchemas());
         $query        = $queryManager->create($request['query']);
         $check        = null;
 
@@ -577,7 +561,7 @@ class Search extends BaseElement
     public function fetchQueryAction($request)
     {
         $container     = $this->container;
-        $queryManager  = $container->get('mapbender.query.manager');
+        $queryManager  = $container->get('mapbender.query.manager')->setSchemas($this->getSchemas());
         $query         = $queryManager->create($request['query']);
         $originalQuery = $queryManager->getById($query->getId());
         $configuration = $this->getConfiguration();
@@ -611,7 +595,7 @@ class Search extends BaseElement
     public function removeQueryAction($request)
     {
         $container    = $this->container;
-        $queryManager = $container->get('mapbender.query.manager');
+        $queryManager = $container->get('mapbender.query.manager')->setSchemas($this->getSchemas());
         $id           = $request['id'];
         return array(
             'result' => $queryManager->removeById($id)
@@ -806,4 +790,30 @@ class Search extends BaseElement
         return new JsonResponse($results);
     }
 
+    /**
+     * Get element schemas
+     *
+     * @return QuerySchema[]
+     */
+    protected function getSchemas()
+    {
+        $configuration = $this->getConfiguration();
+        $schemas       = array();
+        foreach ($configuration["schemas"] as $schemaDefinition) {
+            $schemas[] = new QuerySchema($schemaDefinition);
+        }
+        return $schemas;
+    }
+
+    /**
+     * Get element schema by ID
+     *
+     * @param $id
+     * @return QuerySchema
+     */
+    protected function getSchemaById($id)
+    {
+        $schemas = $this->getSchemas();
+        return $schemas[ $id ];
+    }
 }
