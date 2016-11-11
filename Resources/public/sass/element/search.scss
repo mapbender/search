@@ -47,6 +47,10 @@
 
     table.dataTable {
       tbody > tr {
+        &.mark{
+          background-color: #dcdfae !important;
+        }
+
         &.warning{
           background-color: #fcffc6;
         }

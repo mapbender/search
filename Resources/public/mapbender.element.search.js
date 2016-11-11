@@ -612,7 +612,20 @@
                         printWidget.printDigitizerFeature(featureTypeName, feature.fid);
                         return false;
                     })
-                    .bind('queryresultviewbookmark', function(e, context) {
+                    .bind('queryresultviewmark', function(e, context) {
+
+                        var tr = $(context.ui).closest("tr");
+                        var row = context.tableApi.row(tr);
+                        var feature = row.data();
+
+                        if(tr.is(".mark")) {
+                            tr.removeClass('mark');
+                        } else {
+                            tr.addClass('mark');
+                        }
+
+                        feature.mark = tr.is(".mark");
+
                         return false;
                     })
                     .bind('queryresultviewfeatureover', function(e, context) {
@@ -646,31 +659,37 @@
                             return table;
                         }
 
-                        var table = context.tableApi
+                        var table = context.tableApi;
                         var tr = $(context.ui);
                         var row = table.row(tr);
+                        var feature = row.data();
 
                         if(row.child.isShown()) {
-                            // This row is already open - close it
                             row.child.hide();
                             tr.removeClass('shown');
                         } else {
-                            // Open this row
-
-                            var feature = row.data();
                             if(feature){
                                 row.child(format(feature)).show();
                                 tr.addClass('shown');
                             }
                         }
-
                         // widget._openFeatureEditDialog(context.feature);
                     });
 
                 queryTitleView
                     .bind('queryresulttitlebarviewexport', function(e, context) {
                         var query = context.query;
-                        widget.exportFeatures(query.id, 'xls', _.pluck(query.layer.features, 'fid'));
+                        var layer = query.layer;
+                        var features = layer.features;
+                        var markedFeatures = _.where(features, {mark: true});
+                        var exportFormat = 'xls';
+
+                        if(markedFeatures) {
+                            widget.exportFeatures(query.id, exportFormat, _.pluck(markedFeatures, 'fid'));
+                        } else {
+                            widget.exportFeatures(query.id, exportFormat, _.pluck(features, 'fid'));
+                        }
+
                         return false;
                     })
                     .bind('queryresulttitlebarviewedit', function(e, context) {

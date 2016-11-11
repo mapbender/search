@@ -42,6 +42,7 @@ $.widget("wheregroup.queryResultView", {
         var element = $(widget.element);
         var options = widget.options;
         var progressBar = $("<div class='progressBar'/>");
+        var table, tableApi;
 
         element
             .attr('data-id', query.id)
@@ -96,11 +97,12 @@ $.widget("wheregroup.queryResultView", {
             title:     "Bookmarks",
             className: 'bookmark',
             onClick:   function(olFeature, ui) {
-                widget._trigger('bookmark', null, {
+                widget._trigger('mark', null, {
                     feature: olFeature,
                     ui:      ui,
                     query:   query,
-                    widget:  widget
+                    widget:  widget,
+                    tableApi: tableApi
                 })
             }
         });
@@ -131,12 +133,12 @@ $.widget("wheregroup.queryResultView", {
             });
         });
 
-        var table = widget.table = $("<div class='resultQueries'/>").resultTable(tableOptions = _.extend({
+        table = widget.table = $("<div class='resultQueries'/>").resultTable(tableOptions = _.extend({
             columns: columns,
             buttons: buttons
         }, options.table));
 
-        var tableApi = table.resultTable('getApi');
+        tableApi = table.resultTable('getApi');
 
         table.contextMenu({
             selector: 'table > tbody > tr[role="row"]',
