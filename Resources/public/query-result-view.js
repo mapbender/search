@@ -81,7 +81,7 @@ $.widget("wheregroup.queryResultView", {
         var buttons = [];
 
         buttons.push({
-            title:     "Zoom to",
+            title:     "Vergrößern",
             className: 'zoomTo',
             onClick:   function(olFeature, ui) {
                 widget._trigger('zoomTo', null, {
@@ -94,7 +94,7 @@ $.widget("wheregroup.queryResultView", {
         });
 
         buttons.push({
-            title:     "Bookmarks",
+            title:     "Merken",
             className: 'bookmark',
             onClick:   function(olFeature, ui) {
                 widget._trigger('mark', null, {
@@ -108,7 +108,7 @@ $.widget("wheregroup.queryResultView", {
         });
 
         buttons.push({
-            title:     "Print",
+            title:     "Druck",
             className: 'print',
             onClick:   function(olFeature, ui) {
                 widget._trigger('print', null, {
