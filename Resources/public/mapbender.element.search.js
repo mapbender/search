@@ -60,45 +60,6 @@
     }
 
     /**
-     * Example:
-     *     Mapbender.confirmDialog({html: "Feature löschen?", title: "Bitte bestätigen!", onSuccess:function(){
-                  return false;
-           }});
-     * @param options
-     * @returns {*}
-     */
-    Mapbender.confirmDialog = function (options) {
-        var dialog = $("<div class='confirm-dialog'>" + (options.hasOwnProperty('html') ? options.html : "") + "</div>").popupDialog({
-            title:       options.hasOwnProperty('title') ? options.title : "",
-            maximizable: false,
-            dblclick:    false,
-            minimizable: false,
-            resizable:   false,
-            collapsable: false,
-            modal:       true,
-            buttons:     [{
-                text:  "OK",
-                click: function(e) {
-                    if(!options.hasOwnProperty('onSuccess') || options.onSuccess(e) !== false) {
-                        dialog.popupDialog('close');
-                    }
-                    return false;
-                }
-            }, {
-                text:    translate('Cancel'),
-                'class': 'critical',
-                click:   function(e) {
-                    if(!options.hasOwnProperty('onCancel') || options.onCancel(e) !== false) {
-                        dialog.popupDialog('close');
-                    }
-                    return false;
-                }
-            }]
-        });
-        return dialog;
-    };
-
-    /**
      * Digitizing tool set
      *
      * @author Andriy Oblivantsev <eslider@gmail.com>
@@ -275,51 +236,51 @@
                 styleMaps: styleMaps
             });
 
-            queryManager.bind('querymanagerstylemapchange', function(event, context) {
-                widget.openStyleMapManager(context.styleMap, widget._styles);
-            });
-            queryManager.bind('querymanagersubmit', function(event, context) {
-                var errorInputs = $(".has-error", context.form);
-                var hasErrors = errorInputs.size() > 0;
+            queryManager
+                .bind('querymanagerstylemapchange', function(event, context) {
+                    widget.openStyleMapManager(context.styleMap, widget._styles);
+                })
+                .bind('querymanagersubmit', function(event, context) {
+                    var errorInputs = $(".has-error", context.form);
+                    var hasErrors = errorInputs.size() > 0;
 
-                if(hasErrors) {
-                    return false;
-                }
-
-                widget.query('query/save', {query: context.data}).done(function(r) {
-                    var queryManagerWidget = context.widget;
-                    $.extend(queryManagerWidget.options.data, r.entity);
-                    queryManagerWidget.close();
-                    $.notify("Erfolgreich gespeichert!", "info");
-                    widget.refreshQueries()
-                });
-            });
-
-            queryManager.bind('querymanagercheck', function(event, context) {
-                var queryDialog = context.dialog;
-                queryDialog.disableForm();
-                widget.query('query/check', {query: context.data}).done(function(r) {
-                    queryDialog.enableForm();
-
-                    if(r.errorMessage){
-                        $.notify("Fehler beim Ausführen:\n" + r.errorMessage, 'error');
-                        return;
+                    if(hasErrors) {
+                        return false;
                     }
 
-                    $.notify("Anzahl der Ergebnisse : " + r.count, 'info');
-                    $.notify("Ausführungsdauer: " + r.executionTime, 'info');
-                    $.notify(_.toArray(r.explainInfo).join("\n"), 'info');
-                    queryDialog.enableForm();
+                    widget.query('query/save', {query: context.data}).done(function(r) {
+                        var queryManagerWidget = context.widget;
+                        $.extend(queryManagerWidget.options.data, r.entity);
+                        queryManagerWidget.close();
+                        $.notify("Erfolgreich gespeichert!", "info");
+                        widget.refreshQueries()
+                    });
+                })
+                .bind('querymanagercheck', function(event, context) {
+                    var queryDialog = context.dialog;
+                    queryDialog.disableForm();
+                    widget.query('query/check', {query: context.data}).done(function(r) {
+                        queryDialog.enableForm();
+
+                        if(r.errorMessage) {
+                            $.notify("Fehler beim Ausführen:\n" + r.errorMessage, 'error');
+                            return;
+                        }
+
+                        $.notify("Anzahl der Ergebnisse : " + r.count, 'info');
+                        $.notify("Ausführungsdauer: " + r.executionTime, 'info');
+                        $.notify(_.toArray(r.explainInfo).join("\n"), 'info');
+                        queryDialog.enableForm();
+                    });
+                })
+                .bind('querymanagerclose', function(e, styleMaps) {
+                    // WORKS
                 });
-            });
 
             element.bind('mbsearchstylesmapsupdated', function(e, styleMaps) {
                 queryManager.queryManager('updateStyleMapList', styleMaps);
             });
 
-            element.bind('querymanagerclose', function(e, styleMaps) {
-                debugger;
-            });
         },
 
         /**
