@@ -69,6 +69,27 @@ class Search extends BaseElement
     }
 
     /**
+     * Get the element configuration form type.
+     *
+     * Override this method to provide a custom configuration form instead of
+     * the default YAML form.
+     *
+     * @return string Administration type class name
+     */
+    public static function getType()
+    {
+        return null;
+    }
+
+    /**
+     * @return null
+     */
+    public static function getFormTemplate()
+    {
+        return null;
+    }
+
+    /**
      * Prepare form items for each scheme definition
      * Optional: get featureType by name from global context.
      *
@@ -81,7 +102,7 @@ class Search extends BaseElement
         $configuration['debug']   = isset($configuration['debug']) ? $configuration['debug'] : false;
         $configuration['fileUri'] = $this->container->getParameter('mapbender.uploads_dir') . "/" . FeatureType::UPLOAD_DIR_NAME;
 
-        if ($configuration['schemes'] && is_array($configuration['schemes'])) {
+        if (isset($configuration['schemes']) && is_array($configuration['schemes'])) {
             foreach ($configuration['schemes'] as $key => &$scheme) {
                 if (is_string($scheme['featureType'])) {
                     $featureTypes          = $this->container->getParameter('featureTypes');
