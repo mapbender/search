@@ -158,7 +158,7 @@ $.widget("wheregroup.queryResultView", {
                 var olFeature = api.row(tr).data();
                 var items = {};
 
-                items['zoomTo'] = {name: "Zoom to!"};
+                items['zoomTo'] = {name: "Heranzoomen"};
 
 
                 return {
