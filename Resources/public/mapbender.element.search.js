@@ -108,7 +108,7 @@
             var widget = this;
             var element = widget.element;
             var options = widget.options;
-            var target = $(".olMap").attr("id");
+            var target = options.target = $(".olMap").attr("id");
 
             if(!Mapbender.checkTarget("mbSearch", target)) {
                 return;
