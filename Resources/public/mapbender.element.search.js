@@ -567,7 +567,18 @@
                     })
                     .bind('queryresultviewprint', function(e, context) {
                         var feature = context.feature;
-                        var printWidget = $('.mb-element-printclient').data('mapbenderMbPrintClient');
+                        var printWidget = null;
+                        _.each($('.mb-element-printclient'), function(el) {
+                            printWidget = $(el).data("mapbenderMbPrintClient");
+                            if(printWidget) {
+                                return false;
+                            }
+                        });
+
+                        if(!printWidget){
+                            $.notify("Druckelement ist nicht verfügbar");
+                        }
+
                         var query = context.query;
                         var featureTypeName = widget._schemas[query.schemaId].featureType;
                         printWidget.printDigitizerFeature(featureTypeName, feature.fid);
