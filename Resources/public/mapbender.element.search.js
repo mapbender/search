@@ -59,6 +59,7 @@
         }
     }
 
+    //noinspection JSDuplicatedDeclaration
     /**
      * Digitizing tool set
      *
@@ -157,6 +158,16 @@
 
                 //widget.map.resetLayersZIndex();
                 widget._trigger('ready');
+
+                // Check position and react by
+                var containerInfo = new MapbenderContainerInfo(widget, {
+                    onactive:   function() {
+                        widget.enable();
+                    },
+                    oninactive: function() {
+                        widget.disable();
+                    }
+                });
             });
 
             widget.refreshSchemas().done(function(){
@@ -166,6 +177,27 @@
                         });
                     });
                 });
+            });
+        },
+
+        /**
+         * Activate widget
+         */
+        enable: function() {
+            var widget = this;
+            _.each(widget._queries, function(query) {
+                var isActive = query.hasOwnProperty("isActive") && query.isActive;
+                query.layer.setVisibility(isActive);
+            });
+        },
+
+        /**
+         * Deactivate widget
+         */
+        disable: function() {
+            var widget = this;
+            _.each(widget._queries, function(query) {
+                query.layer.setVisibility(false);
             });
         },
 
@@ -401,7 +433,7 @@
                 //         _.extend(existQuery, query);
                 //     }
                 // });
-                // widget._queries = r.list;
+                widget._queries = r.list;
                 widget._trigger('queriesUpdate', null, r.list);
                 widget.renderQueries(r.list);
             });
@@ -439,11 +471,11 @@
 
             if(query.fetchXhr) {
                 query.fetchXhr.abort();
-                $.notify("Datensuche '"+query.name+"' Abbruch",'info');
+                // $.notify("Datensuche '"+query.name+"' Abbruch",'info');
 
             }
 
-            $.notify("Datensuche '"+query.name+"' lädt Daten",'info');
+            // $.notify("Datensuche '"+query.name+"' lädt Daten",'info');
 
             return query.fetchXhr = widget.query('query/fetch', request).done(function(r) {
 
@@ -453,7 +485,7 @@
                     $.notify(r.errorMessage);
                     return;
                 }
-                $.notify("Datensuche '"+query.name+"' geladen.",'info');
+                // $.notify("Datensuche '"+query.name+"' geladen.",'info');
 
                 var geoJsonReader = new OpenLayers.Format.GeoJSON();
                 var featureCollection = geoJsonReader.read({
@@ -470,7 +502,6 @@
                 // Add layer to feature
                 // _.each(features, function(feature) {
                 //     feature.layer = layer;
-                //     feature.schema = schema;
                 // });
             });
         },
