@@ -89,7 +89,7 @@ $.widget("rw.queryManager", {
                 }, {
                     type:    "select",
                     name:    "schemaId",
-                    title:   "Schema",
+                    title:   "Schema (Objekttyp)",
                     value:   schemaId,
                     options: schemaOptions,
                     change:  function(e) {
@@ -101,7 +101,7 @@ $.widget("rw.queryManager", {
                     children: [{
                         type:    "select",
                         name:    "styleMap",
-                        title:   "Style",
+                        title:   "Style map (Motiv)",
                         value:   0,
                         options: _.object(_.pluck(options.styleMaps, 'id'), _.pluck(options.styleMaps, 'name')),
                         css:     {
@@ -186,7 +186,7 @@ $.widget("rw.queryManager", {
                             fieldForm.generateElements({
                                 type:     'fieldSet',
                                 children: [{
-                                    title:     "Field",
+                                    title:     "Feld",
                                     type:      "select",
                                     name:      "fieldName",
                                     options:   fieldNames,
