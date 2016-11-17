@@ -34,7 +34,7 @@ $.widget("wheregroup.queryResultTitleBarView", {
         var editButton = {
             type:     'button',
             cssClass: 'fa fa-edit',
-            title:    'Edit',
+            title:    'Abfrage bearbeiten',
             click:    function(e) {
                 widget._trigger("edit", null, context);
                 return false;
@@ -43,7 +43,7 @@ $.widget("wheregroup.queryResultTitleBarView", {
         var removeButton = {
             cssClass: 'fa fa-remove',
             type:     'button',
-            title:    'Löschen',
+            title:    'Abfrage löschen',
             click:    function(e) {
                 widget._trigger("remove", null, context);
                 return false;
@@ -52,7 +52,7 @@ $.widget("wheregroup.queryResultTitleBarView", {
         var exportButton = {
             type:     'button',
             cssClass: 'fa fa-download',
-            title:    'Export',
+            title:    'Exportieren',
             click:    function(e) {
                 widget._trigger("export", null, context);
                 return false;
@@ -61,7 +61,7 @@ $.widget("wheregroup.queryResultTitleBarView", {
         var zoomToButton = {
             type:     'button',
             cssClass: 'fa fa-map-o',
-            title:    'Zoom to',
+            title:    'Heranzoomen (funktioniert nur wenn welche gefunden wurden)',
             click:    function(e) {
                 widget._trigger("zoomToLayer", null, context);
                 return false;
@@ -70,7 +70,7 @@ $.widget("wheregroup.queryResultTitleBarView", {
         var showButton = {
             type:     'button',
             cssClass: 'fa fa-eye',
-            title:    'Anzeigen',
+            title:    'Abfrageergebnisse Anzeigen',
             click:    function(e) {
                 widget._trigger("visibility", null, context);
                 // return false;
