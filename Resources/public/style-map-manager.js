@@ -97,7 +97,7 @@ $.widget("wheregroup.styleMapManager", {
                     type:    'select',
                     title:   'Mouseover',
                     options: styleNames,
-                    name:    'styles[hover]',
+                    name:    'styles[select]',
                     change:  onStyleChange,
                     css:     {width: '75%'}
                 }, editButton]
@@ -107,7 +107,7 @@ $.widget("wheregroup.styleMapManager", {
                     type:    'select',
                     title:   'Selektiert',
                     options: styleNames,
-                    name:    'styles[select]',
+                    name:    'styles[hover]',
                     change:  onStyleChange,
                     css:     {width: '75%'}
                 }, editButton]
