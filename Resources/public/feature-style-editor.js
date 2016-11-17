@@ -373,7 +373,7 @@
                                 title:    'Farbe',
                                 type:     'colorPicker',
                                 name:     'fontColor',
-                                infoText: 'The font color for the label, to be provided like CSS.',
+                                // infoText: 'The font color for the label, to be provided like CSS.',
                                 css:      {width: "50%"}
                             }, {
                                 title: "Deckkraft",
@@ -460,8 +460,8 @@
             tabs.push(fillTab);
             tabs.push(strokeTab);
             tabs.push(labelTab);
-            tabs.push(imageTab);
-            tabs.push(backGroundTab);
+            // tabs.push(imageTab);
+            // tabs.push(backGroundTab);
             tabs.push(miscTab);
 
             element.generateElements({
