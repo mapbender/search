@@ -94,7 +94,7 @@ abstract class BaseManager extends BaseComponent implements ManagerInterface
 
     /**
      * @param int $userId
-     * @return BaseManager
+     * @return $this
      */
     public function setUserId($userId)
     {
