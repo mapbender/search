@@ -759,7 +759,10 @@
                         return;
                     }
 
-                    widget.fetchQuery(query);
+                    query.titleView.queryResultTitleBarView('showPreloader');
+                    widget.fetchQuery(query).always(function() {
+                        query.titleView.queryResultTitleBarView('hidePreloader');
+                    });
                 }
             });
 
@@ -768,9 +771,10 @@
                     if(!query.layer.getVisibility()) {
                         return
                     }
-
-
-                    widget.fetchQuery(query);
+                    query.titleView.queryResultTitleBarView('showPreloader');
+                    widget.fetchQuery(query).always(function() {
+                        query.titleView.queryResultTitleBarView('hidePreloader');
+                    });
                 });
                 return false;
             };

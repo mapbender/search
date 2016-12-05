@@ -77,6 +77,8 @@ $.widget("wheregroup.queryResultTitleBarView", {
             }
         };
 
+        buttons.push('<i class="fa-li fa fa-spinner fa-spin preloader" style="margin-top: 2px; display: none"></i>');
+
         buttons.push(editButton);
         buttons.push(exportButton);
 
@@ -95,6 +97,18 @@ $.widget("wheregroup.queryResultTitleBarView", {
         });
 
         return element;
+    },
+
+    showPreloader: function() {
+        var widget = this;
+        var element = $(widget.element);
+        $('.preloader', element).show();
+    },
+
+    hidePreloader: function() {
+        var widget = this;
+        var element = $(widget.element);
+        $('.preloader', element).hide();
     },
 
     /**
