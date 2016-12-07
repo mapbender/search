@@ -127,7 +127,7 @@ $.widget("rw.queryManager", {
                     }]
                 }, {
                     type:    "checkbox",
-                    name:    "extentOnly",
+                    name:    "extendOnly",
                     title:   "Nur Kartenausschnitt",
                     checked: true
 
