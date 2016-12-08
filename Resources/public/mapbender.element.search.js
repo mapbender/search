@@ -299,9 +299,8 @@
                             return;
                         }
 
-                        $.notify("Anzahl der Ergebnisse : " + r.count, 'info');
-                        $.notify("Ausführungsdauer: " + r.executionTime, 'info');
-                        $.notify(_.toArray(r.explainInfo).join("\n"), 'info');
+                        $.notify("Anzahl der Ergebnisse : " + r.count + "\nAusführungsdauer: " + r.executionTime, 'info');
+                        // $.notify(_.toArray(r.explainInfo).join("\n"), 'info');
                         queryDialog.enableForm();
                     });
                 })
