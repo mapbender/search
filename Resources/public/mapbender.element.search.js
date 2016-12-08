@@ -461,8 +461,6 @@
                 }
             };
 
-            console.log(query.extendOnly);
-
             if(query.extendOnly) {
                 request.intersectGeometry = map.getExtent().toGeometry().toString()
             }
@@ -778,6 +776,11 @@
                     if(!query.layer.getVisibility()) {
                         return
                     }
+
+                    if(!query.extendOnly){
+                        return;
+                    }
+
                     widget.fetchQuery(query);
                 });
                 return false;
