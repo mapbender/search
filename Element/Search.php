@@ -5,7 +5,6 @@ namespace Mapbender\SearchBundle\Element;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
 use Eslider\Driver\HKVStorage;
-use Eslider\Entity\UniqueBaseEntity;
 use FOM\CoreBundle\Component\ExportResponse;
 use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Element\BaseElement;
@@ -558,7 +557,7 @@ class Search extends BaseElement
         $check        = null;
 
         try {
-            $check = $queryManager->check($query);
+            $check = $queryManager->check($query, $request['intersectGeometry'], $request['srid']);
         } catch (DBALException $e) {
             $message = $e->getMessage();
             if (strpos($message, 'ERROR:')) {

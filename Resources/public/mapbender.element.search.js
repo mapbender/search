@@ -261,6 +261,7 @@
             var styleMaps = widget._styleMaps;
             var schemas = widget._schemas;
             var queryManager = $("<div/>");
+            var map = widget.map;
 
             queryManager.queryManager({
                 data:      query,
@@ -291,7 +292,11 @@
                 .bind('querymanagercheck', function(event, context) {
                     var queryDialog = context.dialog;
                     queryDialog.disableForm();
-                    widget.query('query/check', {query: context.data}).done(function(r) {
+                    widget.query('query/check', {
+                        query:             context.data,
+                        srid:              map.getProjectionObject().proj.srsProjNumber,
+                        intersectGeometry: map.getExtent().toGeometry().toString()
+                    }).done(function(r) {
                         queryDialog.enableForm();
 
                         if(r.errorMessage) {

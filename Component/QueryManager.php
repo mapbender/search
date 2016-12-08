@@ -220,19 +220,29 @@ class QueryManager extends BaseManager
 
 
     /**
-     * @param Query $query
+     * @param Query       $query
+     * @param null|string $intersectGeometry
+     * @param null        $srid
      * @return array
      */
-    public function check(Query $query)
+    public function check(Query $query, $intersectGeometry = null, $srid = null)
     {
         $container   = $this->container;
         $featureType = $this->getQueryFeatureType($query);
         $connection  = $featureType->getConnection();
+        $driver      = $featureType->getDriver();
         $sql         = $this->buildSql($query, true);
+
+        if ($query->isExtendOnly()) {
+            $intersectGeometry = $driver::roundGeometry($intersectGeometry, 2);
+            $sql .= ' AND ' . $driver->getIntersectCondition($intersectGeometry, $featureType->getGeomField(), $srid, $featureType->getSrid());
+        }
+
         $runningTime = (microtime(true) * 1000);
         $count       = $connection->fetchColumn($sql);
         $runningTime = (microtime(true) * 1000) - $runningTime;
         $explainInfo = array();
+
 
         foreach ($connection->fetchAll("EXPLAIN " . $sql) as $info) {
             $explainInfo[] = current($info);
@@ -282,10 +292,10 @@ class QueryManager extends BaseManager
             }
         }
 
-        $sql = 'SELECT ' . implode(', ', $fields) . ' FROM ' . $connection->quoteIdentifier($featureType->getTableName()) . ' ' . $tableAliasName;
+        $sql = 'SELECT ' . implode(', ', $fields) . ' FROM ' . $connection->quoteIdentifier($featureType->getTableName()) . ' ' . $tableAliasName . ' WHERE 1=1 ';
 
         if ($query->hasConditions()) {
-            $sql .= " WHERE " . $this->buildCriteria($query->getConditions(), $featureType);
+            $sql .= ' AND ' . $this->buildCriteria($query->getConditions(), $featureType);
         }
 
         return $sql;
