@@ -455,12 +455,17 @@
             // }
 
             var request = {
-                intersectGeometry: map.getExtent().toGeometry().toString(),
                 srid:              map.getProjectionObject().proj.srsProjNumber,
                 query:             {
                     id: query.id
                 }
             };
+
+            console.log(query.extendOnly);
+
+            if(query.extendOnly) {
+                request.intersectGeometry = map.getExtent().toGeometry().toString()
+            }
 
             if(map.getScale() > 150000) {
                 $.notify("Datensuche '"+query.name+"' ist nicht möglich",'info');
@@ -475,6 +480,7 @@
             }
 
             // $.notify("Datensuche '"+query.name+"' lädt Daten",'info');
+            query.titleView.queryResultTitleBarView('showPreloader');
 
             return query.fetchXhr = widget.query('query/fetch', request).done(function(r) {
 
@@ -502,6 +508,8 @@
                 // _.each(features, function(feature) {
                 //     feature.layer = layer;
                 // });
+            }).always(function() {
+                query.titleView.queryResultTitleBarView('hidePreloader');
             });
         },
 
@@ -589,6 +597,9 @@
 
                 queryView
                     .bind('queryresultviewchangeextend', function(e, context) {
+                        var query = context.query;
+                        query.extendOnly = context.checked;
+                        widget.fetchQuery(query);
                         return false;
                     })
                     .bind('queryresultviewzoomto', function(e, context) {
@@ -758,10 +769,7 @@
                         return;
                     }
 
-                    query.titleView.queryResultTitleBarView('showPreloader');
-                    widget.fetchQuery(query).always(function() {
-                        query.titleView.queryResultTitleBarView('hidePreloader');
-                    });
+                    widget.fetchQuery(query);
                 }
             });
 
@@ -770,10 +778,7 @@
                     if(!query.layer.getVisibility()) {
                         return
                     }
-                    query.titleView.queryResultTitleBarView('showPreloader');
-                    widget.fetchQuery(query).always(function() {
-                        query.titleView.queryResultTitleBarView('hidePreloader');
-                    });
+                    widget.fetchQuery(query);
                 });
                 return false;
             };

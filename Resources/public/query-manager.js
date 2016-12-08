@@ -129,8 +129,8 @@ $.widget("rw.queryManager", {
                     type:    "checkbox",
                     name:    "extendOnly",
                     title:   "Nur Kartenausschnitt",
+                    value:   true,
                     checked: true
-
                 }, {
                     type:  "checkbox",
                     name:  "exportOnly",
