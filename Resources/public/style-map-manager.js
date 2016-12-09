@@ -101,17 +101,19 @@ $.widget("wheregroup.styleMapManager", {
                     change:  onStyleChange,
                     css:     {width: '75%'}
                 }, editButton]
-            }, {
-                type:     'fieldSet',
-                children: [{
-                    type:    'select',
-                    title:   'Selektiert',
-                    options: styleNames,
-                    name:    'styles[hover]',
-                    change:  onStyleChange,
-                    css:     {width: '75%'}
-                }, editButton]
-            }]
+            }
+            // , {
+            //     type:     'fieldSet',
+            //     children: [{
+            //         type:    'select',
+            //         title:   'Selektiert',
+            //         options: styleNames,
+            //         name:    'styles[hover]',
+            //         change:  onStyleChange,
+            //         css:     {width: '75%'}
+            //     }, editButton]
+            // }
+            ]
         });
 
         window.setTimeout(function() {
