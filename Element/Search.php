@@ -590,9 +590,20 @@ class Search extends BaseElement
 
         $queryManager->setSchemas($configuration["schemas"]);
 
+        $schema = $queryManager->getSchemaById($originalQuery->getSchemaId());
+
         try {
-            $request['maxResults'] = 1000;
-            return $queryManager->fetchQuery($originalQuery, $request);
+            $maxResults            = $schema->getMaxResults();
+            $request['maxResults'] = $maxResults;
+            $featureType           = $queryManager->getQueryFeatureType($originalQuery);
+            $results               = $queryManager->fetchQuery($originalQuery, $request);
+            $count                 = count($results["features"]);
+
+            if ($count == $maxResults) {
+                $results["infoMessage"] = "Es sind mehr als $maxResults Ergebnisse sind gefunden, dabei werden die ersten $maxResults angezeigt.";
+            }
+
+            return $results;
         } catch (DBALException $e) {
             $message = $e->getMessage();
             if (strpos($message, 'ERROR:')) {

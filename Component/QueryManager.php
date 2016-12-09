@@ -362,7 +362,7 @@ class QueryManager extends BaseManager
      * @param Query $query
      * @return FeatureType
      */
-    private function getQueryFeatureType(Query $query)
+    public function getQueryFeatureType(Query $query)
     {
         return $this->container
             ->get('features')

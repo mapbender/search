@@ -470,12 +470,6 @@
                 request.intersectGeometry = map.getExtent().toGeometry().toString()
             }
 
-            if(map.getScale() > 150000) {
-                $.notify("Datensuche '"+query.name+"' ist nicht möglich",'info');
-                return false;
-            }
-
-
             if(query.fetchXhr) {
                 query.fetchXhr.abort();
                 // $.notify("Datensuche '"+query.name+"' Abbruch",'info');
@@ -492,6 +486,13 @@
                 if(r.errorMessage) {
                     $.notify(r.errorMessage);
                     return;
+                }
+
+                if(r.infoMessage) {
+                    $(query.titleView).notify(r.infoMessage, {
+                        autoHideDelay: 30000,
+                        className:     'info'
+                    });
                 }
                 // $.notify("Datensuche '"+query.name+"' geladen.",'info');
 
