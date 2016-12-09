@@ -701,7 +701,7 @@
                         var markedFeatures = _.where(features, {mark: true});
                         var exportFormat = 'xls';
 
-                        if(markedFeatures) {
+                        if( markedFeatures.length) {
                             widget.exportFeatures(query.id, exportFormat, _.pluck(markedFeatures, 'fid'));
                         } else {
                             widget.exportFeatures(query.id, exportFormat, _.pluck(features, 'fid'));
