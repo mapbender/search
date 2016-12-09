@@ -81,11 +81,12 @@ $.widget("rw.queryManager", {
                 title:    "Allgemein",
                 type:     'form',
                 children: [{
-                    type:        "input",
-                    name:        "name",
-                    placeholder: "Eindeutige Name",
-                    title:       "Name",
-                    mandatory:   true
+                    type:          "input",
+                    name:          "name",
+                    placeholder:   "Eindeutige Name",
+                    title:         "Name",
+                    mandatoryText: 'Bitte überprüfen',
+                    mandatory:     true
                 }, {
                     type:    "select",
                     name:    "schemaId",

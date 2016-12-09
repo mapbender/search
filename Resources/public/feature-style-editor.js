@@ -402,29 +402,29 @@
 
             };
             var miscTab = {
-                title:    "Misc",
+                title:    "Verschiedenes",
                 type:     "form",
                 children: [{
-                    title:   "Zeiger",
+                    title:   "Zeigersymbol",
                     name:    "cursor",
                     type:    "select",
                     options: {
-                        auto:        'auto',
-                        'default':   'default',
-                        crosshair:   'crosshair',
-                        pointer:     'pointer',
-                        move:        'move',
-                        'n-resize':  'n-resize',
-                        'ne-resize': 'ne-resize',
-                        'e-resize':  'e-resize',
-                        'se-resize': 'se-resize',
-                        's-resize':  's-resize',
-                        'sw-resize': 'sw-resize',
-                        'w-resize':  'w-resize',
-                        'nw-resize': 'nw-resize',
-                        text:        'text',
-                        wait:        'wait',
-                        help:        'help'
+                        auto:        'Automatisch',
+                        'default':   'Vorgabe',
+                        crosshair:   'Kreuz',
+                        pointer:     'Hand',
+                        move:        'Verschieben',
+                        // 'n-resize':  'n-resize',
+                        // 'ne-resize': 'ne-resize',
+                        // 'e-resize':  'e-resize',
+                        // 'se-resize': 'se-resize',
+                        // 's-resize':  's-resize',
+                        // 'sw-resize': 'sw-resize',
+                        // 'w-resize':  'w-resize',
+                        // 'nw-resize': 'nw-resize',
+                        text:        'Textauswahl',
+                        wait:        'Warten',
+                        help:        'Hilfe'
                     },
                     value:   "pointer"
                 }, {

@@ -124,7 +124,7 @@
                     type:     'fieldSet',
                     children: [{
                         type:     'button',
-                        title:    'Neue Abfrage',
+                        title:    'Abfrage',
                         cssClass: 'btn new-query',
                         css:      {width: '33%'},
                         click:    function() {
@@ -132,7 +132,7 @@
                         }
                     }, {
                         type:     'button',
-                        title:    'Neue Theme',
+                        title:    'Thema',
                         cssClass: 'btn new-query',
                         css:      {width: '33%'},
                         click:    function() {
@@ -140,7 +140,7 @@
                         }
                     }, {
                         type:     'button',
-                        title:    'Neuer Style',
+                        title:    'Stil',
                         cssClass: 'btn new-query',
                         css:      {width: '30%'},
                         click:    function() {
