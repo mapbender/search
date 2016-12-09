@@ -93,7 +93,7 @@
                     type:     'fieldSet',
                     children: [{
                         title:         "Breite",
-                        infoText:      "The width of the background width.  If not provided, the graphicWidth will be used.",
+                        infoText:      "Die Breite der Hintergrund-Breite.  Wenn nicht angegeben, wird die graphicWidth verwendet.",
                         type:          "input",
                         name:          "backgroundWidth",
                         mandatoryText: "Bitte nur Zahlen verwenden",
@@ -101,7 +101,7 @@
 
                     }, {
                         title:         "Höhe",
-                        infoText:      "The height of the background graphic.  If not provided, the graphicHeight will be used.",
+                        infoText:      "Die Breite der Hintergrund-Höhe.  Wenn nicht angegeben, wird die graphicHeight verwendet.",
                         type:          "input",
                         name:          "backgroundHeight",
                         mandatoryText: "Bitte nur Zahlen verwenden",
@@ -198,9 +198,9 @@
                         name:    "strokeLineCap",
                         type:    "select",
                         options: {
-                            round:  "round",
-                            square: "square",
-                            butt:   "butt"
+                            round:  "abgerundet",
+                            square: "eckig",
+                            butt:   "bünbdig"
                         },
                         value:   "round",
                         css:     {width: "50%"}
@@ -209,17 +209,17 @@
                         name:    "strokeDashStyle",
                         type:    "select",
                         options: {
-                            Solid:           'Solid',
-                            ShortDash:       'ShortDash',
-                            ShortDot:        'ShortDot',
-                            ShortDashDot:    'ShortDashDot',
-                            ShortDashDotDot: 'ShortDashDotDot',
-                            Dot:             'Dot',
-                            Dash:            'Dash',
-                            LongDash:        'LongDash',
-                            DashDot:         'DashDot',
-                            LongDashDot:     'LongDashDot',
-                            LongDashDotDot:  'LongDashDotDot'
+                            Solid:           'Durchgezogen',
+                            ShortDash:       'Kurze Striche',
+                            ShortDot:        'Kleine Punkte',
+                            ShortDashDot:    'Strichpunkt, kurz',
+                            ShortDashDotDot: 'Strichpunktpunkt, kurz',
+                            Dot:             'Punktiert',
+                            Dash:            'Gestrichelt',
+                            LongDash:        'Gestrichelt, lang',
+                            DashDot:         'Strichpunkt',
+                            LongDashDot:     'Strichpunktpunkt',
+                            LongDashDotDot:  'Strichpunktpunkt, lang'
                         },
                         value:   "Solid",
                         css:     {width: "50%"}

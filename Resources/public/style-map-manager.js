@@ -141,7 +141,7 @@ $.widget("wheregroup.styleMapManager", {
         var element = widget.element;
 
         return element.popupDialog({
-            title:   'Style map',
+            title:   'Kartenstil',
             modal:   true,
             buttons: [{
                 text:  'Abbrechen',
