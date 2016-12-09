@@ -286,7 +286,11 @@
                         $.extend(queryManagerWidget.options.data, r.entity);
                         queryManagerWidget.close();
                         $.notify("Erfolgreich gespeichert!", "info");
-                        widget.refreshQueries()
+                        widget.refreshQueries().done(function() {
+                            var updatedQuery = _.findWhere( widget._queries, {id: query.id});
+
+                            updatedQuery.titleView.addClass('updated');
+                        })
                     });
                 })
                 .bind('querymanagercheck', function(event, context) {

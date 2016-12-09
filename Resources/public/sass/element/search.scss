@@ -93,6 +93,14 @@
   div.notifyjs-container > div.notifyjs-bootstrap-base > span {
     white-space: pre;
   }
+
+  .queries-accordion {
+    > .ui-accordion-header {
+      &.updated {
+        background-color: #ec1b2d;
+      }
+    }
+  }
 }
 
 // Pop-up dialogs
