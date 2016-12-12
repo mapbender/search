@@ -391,9 +391,9 @@
                                 title:    "Selektierbar?",
                                 type:     "checkbox",
                                 checked:  false,
-                                name:     "labelEnabled",
+                                name:     "labelSelect",
                                 infoText: 'If set to true, labels will be selectable using SelectFeature or similar controls.  Default is false.',
-                                value:    '1',
+                                value:    'true',
                                 css:      {
                                     width: '30%'
                                 }
