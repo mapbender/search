@@ -101,7 +101,7 @@ $.widget("rw.queryManager", {
                     children: [{
                         type:    "select",
                         name:    "styleMap",
-                        title:   "Style map (Motiv)",
+                        title:   "Kartenstil",
                         value:   0,
                         options: _.object(_.pluck(options.styleMaps, 'id'), _.pluck(options.styleMaps, 'name')),
                         css:     {
