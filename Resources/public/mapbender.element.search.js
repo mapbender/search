@@ -420,9 +420,19 @@
         refreshQueries: function() {
             var widget = this;
             return widget.query('queries/list').done(function(r) {
-                var queryList = r.list;
+                var queries = r.list;
 
-                // _.each(queryList, function(query, queryId) {
+                // clean up previous queries
+                _.each(widget._queries, function(query) {
+                    if(query.layer && query.layer.map) {
+                        var layer = query.layer;
+                        var map = layer.map;
+                        map.removeControl(query.selectControl);
+                        map.removeLayer(layer);
+                    }
+                });
+
+                // _.each(queries, function(query, queryId) {
                 //     if(!widget._queries.hasOwnProperty(queryId)) {
                 //         widget._queries[queryId] = _.extend(query, {
                 //             clean: function() {
@@ -442,12 +452,14 @@
                 //         _.extend(existQuery, query);
                 //     }
                 // });
-                widget._queries = r.list;
+
+
+                widget._queries = queries;
                 widget._originalQueries = {};
-                _.each(r.list, function(query, id) {
+                _.each(queries, function(query, id) {
                     widget._originalQueries[id] = _.clone(query);
                 });
-                widget._trigger('queriesUpdate', null, r.list);
+                widget._trigger('queriesUpdate', null, queries);
                 widget.renderQueries(r.list);
             });
         },
