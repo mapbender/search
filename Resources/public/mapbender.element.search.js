@@ -93,10 +93,11 @@
         /**
          * Dynamic loaded styles
          */
-        _styles:    null,
-        _schemas:   null,
-        _styleMaps: null,
-        _queries:   {},
+        _styles:          null,
+        _schemas:         null,
+        _styleMaps:       null,
+        _queries:         {},
+        _originalQueries: {},
 
         /**
          * Constructor.
@@ -442,6 +443,10 @@
                 //     }
                 // });
                 widget._queries = r.list;
+                widget._originalQueries = {};
+                _.each(r.list, function(query, id) {
+                    widget._originalQueries[id] = _.clone(query);
+                });
                 widget._trigger('queriesUpdate', null, r.list);
                 widget.renderQueries(r.list);
             });
@@ -714,7 +719,8 @@
                         return false;
                     })
                     .bind('queryresulttitlebarviewedit', function(e, context) {
-                        widget.openQueryManager(context.query);
+                        var originalQuery = widget._originalQueries[context.query.id];
+                        widget.openQueryManager(originalQuery);
                         return false;
                     })
                     .bind('queryresulttitlebarviewzoomtolayer', function(e, context) {
