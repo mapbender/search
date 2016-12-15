@@ -462,7 +462,7 @@
             tabs.push(labelTab);
             // tabs.push(imageTab);
             // tabs.push(backGroundTab);
-            tabs.push(miscTab);
+            // tabs.push(miscTab);
 
             element.generateElements({
                 type:     "tabs",
