@@ -611,6 +611,14 @@
                     }
                 });
 
+                // Workaround to move map by touch vector features
+                if(typeof(selectControl.handlers) != "undefined") { // OL 2.7
+                    selectControl.handlers.feature.stopDown = false;
+                } else if(typeof(selectFeatureControl.handler) != "undefined") { // OL < 2.7
+                    selectControl.handler.stopDown = false;
+                    selectControl.handler.stopUp = false;
+                }
+
                 selectControl.deactivate();
                 map.addControl(selectControl);
 
