@@ -35,6 +35,7 @@
                     type:      'input',
                     name:      'name',
                     title:     'Name',
+                    mandatoryText: "Bitte einen Namen eintragen.",
                     infoText:  'Die Name erscheint in der Auswahlliste.',
                     mandatory: true
                 }]
