@@ -604,10 +604,10 @@
                         // widget._openFeatureEditDialog(features[0]);
                     },
                     overFeature:  function(feature) {
-                        widget._highlightSchemaFeature(feature, true);
+                        widget._highlightSchemaFeature(feature, true, true);
                     },
                     outFeature:   function(feature) {
-                        widget._highlightSchemaFeature(feature, false);
+                        widget._highlightSchemaFeature(feature, false, true);
                     }
                 });
 
@@ -676,9 +676,11 @@
                     })
                     .bind('queryresultviewfeatureover', function(e, context) {
                         widget._highlightSchemaFeature(context.feature, true);
+                        return false;
                     })
                     .bind('queryresultviewfeatureout ', function(e, context) {
                         widget._highlightSchemaFeature(context.feature, false);
+                        return false;
                     })
                     .bind('queryresultviewfeatureclick ', function(e, context) {
                         function format(feature) {
@@ -835,8 +837,7 @@
          * @param {boolean} highlight
          * @private
          */
-        _highlightSchemaFeature: function(feature, highlight) {
-            var widget = this;
+        _highlightSchemaFeature: function(feature, highlight, highlightTableRow) {
             var table = feature.layer.query.resultView.find('.mapbender-element-result-table');
             var tableWidget = table.data('visUiJsResultTable');
             var isSketchFeature = !feature.cluster && feature._sketch && _.size(feature.data) == 0;
@@ -850,6 +851,10 @@
 
             //widget._highlightFeature(feature, highlight);
             layer.drawFeature(feature, highlight ? 'select' : 'default');
+
+            if(!highlightTableRow) {
+                return;
+            }
 
             for (var k in features) {
                 domRow = tableWidget.getDomRowByData(features[k]);

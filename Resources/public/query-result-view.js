@@ -176,13 +176,41 @@ $.widget("wheregroup.queryResultView", {
             }
         });
 
-        table.off('mouseenter', 'mouseleave', 'click');
-
-        table
-            .delegate("tbody > tr[role='row']", 'mouseenter', function() {
-                var tr = this;
+        table.find("tbody")
+            .off('click', '> tr')
+            .on('click', '> tr', function(e) {
+                if(!$(e.target).parent().parent().parent().is(".dataTable")) {
+                    return true;
+                }
+                var tr = $(this).is('td') ? $(this).parent() : this;
                 var row = tableApi.row(tr);
                 var olFeature = row.data();
+
+                if(!olFeature) {
+                    return;
+                }
+
+                widget._trigger('featureClick', null, {
+                    feature:  olFeature,
+                    ui:       tr,
+                    query:    query,
+                    tableApi: tableApi
+                });
+                return false;
+            })
+            .off('mouseover', '> tr')
+            .on('mouseover', '> tr', function(e) {
+                if(!$(e.target).parent().parent().parent().is(".dataTable")) {
+                    return true;
+                }
+                var tr = $(this).is('td') ? $(this).parent() : this;
+                var row = tableApi.row(tr);
+                var olFeature = row.data();
+
+                if(!olFeature) {
+                    return false;
+                }
+
                 widget._trigger('featureOver', null, {
                     feature:  olFeature,
                     ui:       tr,
@@ -190,14 +218,21 @@ $.widget("wheregroup.queryResultView", {
                     widget:   widget,
                     tableApi: tableApi
                 });
-                // widget._highlightFeature(row.data(), true);
                 return false;
-
             })
-            .delegate("tbody > tr[role='row']", 'mouseleave', function() {
-                var tr = this;
+            .off('mouseout', '> tr')
+            .on('mouseout', '> tr', function(e) {
+                if(!$(e.target).parent().parent().parent().is(".dataTable")) {
+                    return true;
+                }
+                var tr = $(this).is('td') ? $(this).parent() : this;
                 var row = tableApi.row(tr);
                 var olFeature = row.data();
+
+                if(!olFeature) {
+                    return false;
+                }
+
                 widget._trigger('featureOut', null, {
                     feature:  olFeature,
                     ui:       tr,
@@ -205,20 +240,6 @@ $.widget("wheregroup.queryResultView", {
                     widget:   widget,
                     tableApi: tableApi
                 });
-                // widget._highlightFeature(row.data(), false);
-                return false;
-            })
-            .delegate("tbody > tr", 'click', function() {
-                var tr = this;
-                var row = tableApi.row(tr);
-                var olFeature = row.data();
-                widget._trigger('featureClick', null, {
-                    feature: olFeature,
-                    ui:      tr,
-                    query:   query,
-                    tableApi: tableApi
-                });
-                // widget.zoomToJsonFeature(row.data());
                 return false;
             });
 
