@@ -35,7 +35,7 @@ class Style extends UniqueBaseEntity
     public $strokeOpacity;
 
     /** @var Number  Pixel stroke width.  Default is 1. */
-    public $strokeSize;
+    public $strokeWidth;
 
     /** @var String  Stroke cap type.  Default is “round”.  [butt | round | square] */
     public $strokeLinecap;

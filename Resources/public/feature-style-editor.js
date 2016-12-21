@@ -196,7 +196,7 @@
                     type:     'fieldSet',
                     children: [{
                         title:   "Glättung",
-                        name:    "strokeLineCap",
+                        name:    "strokeLinecap",
                         type:    "select",
                         options: {
                             round:  "abgerundet",
@@ -207,7 +207,7 @@
                         css:     {width: "50%"}
                     }, {
                         title:   "Style",
-                        name:    "strokeDashStyle",
+                        name:    "strokeDashstyle",
                         type:    "select",
                         options: {
                             Solid:           'Durchgezogen',
@@ -339,10 +339,11 @@
                             css:      {width: "50%"}
 
                         }, {
-                            title:    'Grösse',
-                            name:     'fontSize',
-                            type:     'select',
-                            options:  {
+                            title:   'Grösse',
+                            name:    'fontSize',
+                            type:    'select',
+                            value:   11,
+                            options: {
                                 "9":  9,
                                 "10": 10,
                                 "11": 11,
@@ -388,17 +389,20 @@
                                 css:   {
                                     width: '50%'
                                 }
-                            }, {
-                                title:    "Selektierbar?",
-                                type:     "checkbox",
-                                checked:  false,
-                                name:     "labelSelect",
-                                infoText: 'If set to true, labels will be selectable using SelectFeature or similar controls.  Default is false.',
-                                value:    'true',
-                                css:      {
-                                    width: '30%'
-                                }
-                            }]
+                            }
+                            // ,
+                            // {
+                            //     title:    "Selektierbar?",
+                            //     type:     "checkbox",
+                            //     checked:  false,
+                            //     name:     "labelSelect",
+                            //     infoText: 'If set to true, labels will be selectable using SelectFeature or similar controls.  Default is false.',
+                            //     value:    'true',
+                            //     css:      {
+                            //         width: '30%'
+                            //     }
+                            // }
+                            ]
                     }]
 
             };
