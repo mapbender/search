@@ -600,7 +600,7 @@ class Search extends BaseElement
             $count                 = count($results["features"]);
 
             if ($count == $maxResults) {
-                $results["infoMessage"] = "Es sind mehr als $maxResults Ergebnisse sind gefunden, dabei werden die ersten $maxResults angezeigt.";
+                $results["infoMessage"] = "Es sind mehr als $maxResults Ergebnisse sind gefunden, dabei werden die ersten $maxResults angezeigt.\nBitte an Kollegen mit Flimas-Desktop wenden.";
             }
 
             return $results;
