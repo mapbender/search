@@ -209,20 +209,22 @@
                         title:   "Style",
                         name:    "strokeDashstyle",
                         type:    "select",
+                        //  strokeDashstyle	{String} Stroke dash style.
+                        // Default is “solid”.  [dot | dash | dashdot | longdash | longdashdot | solid]
                         options: {
-                            Solid:           'Durchgezogen',
-                            ShortDash:       'Kurze Striche',
-                            ShortDot:        'Kleine Punkte',
-                            ShortDashDot:    'Strichpunkt, kurz',
-                            ShortDashDotDot: 'Strichpunktpunkt, kurz',
-                            Dot:             'Punktiert',
-                            Dash:            'Gestrichelt',
-                            LongDash:        'Gestrichelt, lang',
-                            DashDot:         'Strichpunkt',
-                            LongDashDot:     'Strichpunktpunkt',
-                            LongDashDotDot:  'Strichpunktpunkt, lang'
+                            solid:           'Durchgezogen',
+                            // shortdash:       'Kurze Striche',
+                            // shortdot:        'Kleine Punkte',
+                            // shortdashdot:    'Strichpunkt, kurz',
+                            // shortdashdotdot: 'Strichpunktpunkt, kurz',
+                            dot:             'Punktiert',
+                            dash:            'Gestrichelt',
+                            longdash:        'Gestrichelt, lang',
+                            dashdot:         'Strichpunkt',
+                            longdashdot:     'Strichpunktpunkt'
+                            // longdashdotdot:  'Strichpunktpunkt, lang'
                         },
-                        value:   "Solid",
+                        value:   "solid",
                         css:     {width: "50%"}
 
                     }]
