@@ -140,7 +140,7 @@ class StyleManager extends BaseManager
      */
     public function remove($id, $scope = null, $parentId = null)
     {
-        $list = $this->listStyles();
+        $list      = $this->listStyles();
         $wasMissed = isset($list[ $id ]);
         unset($list[ $id ]);
         $this->db->saveData($this->tableName, $list, $scope, $parentId, $this->getUserId());
@@ -148,4 +148,28 @@ class StyleManager extends BaseManager
         return $wasMissed;
     }
 
+    /**
+     * Get schema styles
+     *
+     * @param $scheme
+     * @return \Mapbender\SearchBundle\Entity\Style[]
+     */
+    public function getSchemaStyles($scheme)
+    {
+        $styles = array();
+        foreach ($this->listStyles() as $style) {
+            if ($style->schemaName == $scheme['featureTypeName']) {
+                $styleData       = $style->toArray();
+                $styleData['id'] = $style->getId();
+
+                unset($styleData['userId']);
+                unset($styleData['name']);
+                unset($styleData['styleMaps']);
+                unset($styleData['title']);
+
+                $styles[ $style->featureId ] = $styleData;
+            }
+        }
+        return $styles;
+    }
 }

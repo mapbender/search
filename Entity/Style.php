@@ -38,10 +38,10 @@ class Style extends UniqueBaseEntity
     public $strokeSize;
 
     /** @var String  Stroke cap type.  Default is “round”.  [butt | round | square] */
-    public $strokeLineCap;
+    public $strokeLinecap;
 
     /** @var String  Stroke dash style.  Default is “solid”.  [dot | dash | dashdot | longdash | longdashdot | solid] */
-    public $strokeDashStyle;
+    public $strokeDashstyle;
 
     /** @var Boolean  Set to false if no graphic is desired. */
     public $graphic;
@@ -156,6 +156,12 @@ class Style extends UniqueBaseEntity
 
     /** @var String[] Style Maps which contain this style */
     protected $styleMaps;
+
+    /** @var */
+    public $featureId;
+
+    /** @var */
+    public $schemaName;
 
     /**
      * Set user ID
