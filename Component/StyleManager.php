@@ -156,19 +156,22 @@ class StyleManager extends BaseManager
      */
     public function getSchemaStyles($scheme)
     {
-        $styles = array();
+        $styles      = array();
+        $getAnyStyle = isset($scheme['group']) && $scheme['group'] == 'all';
+
         foreach ($this->listStyles() as $style) {
-            if ($style->schemaName == $scheme['featureTypeName']) {
-                $styleData       = $style->toArray();
-                $styleData['id'] = $style->getId();
-
-                unset($styleData['userId']);
-                unset($styleData['name']);
-                unset($styleData['styleMaps']);
-                unset($styleData['title']);
-
-                $styles[ $style->featureId ] = $styleData;
+            if (!$getAnyStyle && $style->schemaName != $scheme['featureTypeName']) {
+                continue;
             }
+            $styleData       = $style->toArray();
+            $styleData['id'] = $style->getId();
+
+            unset($styleData['userId']);
+            unset($styleData['name']);
+            unset($styleData['styleMaps']);
+            unset($styleData['title']);
+
+            $styles[ $style->featureId ] = $styleData;
         }
         return $styles;
     }
