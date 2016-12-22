@@ -128,14 +128,14 @@ class StyleManager extends BaseManager
             return null;
         }
 
-       return $this->createStyle($args);
+        return $this->createStyle($args);
     }
 
 
     /**
-     * @param string  $id
-     * @param string  $scope
-     * @param string  $parentId
+     * @param string $id
+     * @param string $scope
+     * @param string $parentId
      * @return bool
      */
     public function remove($id, $scope = null, $parentId = null)
@@ -146,33 +146,5 @@ class StyleManager extends BaseManager
         $this->db->saveData($this->tableName, $list, $scope, $parentId, $this->getUserId());
 
         return $wasMissed;
-    }
-
-    /**
-     * Get schema styles
-     *
-     * @param $scheme
-     * @return \Mapbender\SearchBundle\Entity\Style[]
-     */
-    public function getSchemaStyles($scheme)
-    {
-        $styles      = array();
-        $getAnyStyle = isset($scheme['group']) && $scheme['group'] == 'all';
-
-        foreach ($this->listStyles() as $style) {
-            if (!$getAnyStyle && $style->schemaName != $scheme['featureTypeName']) {
-                continue;
-            }
-            $styleData       = $style->toArray();
-            $styleData['id'] = $style->getId();
-
-            unset($styleData['userId']);
-            unset($styleData['name']);
-            unset($styleData['styleMaps']);
-            unset($styleData['title']);
-
-            $styles[ $style->featureId ] = $styleData;
-        }
-        return $styles;
     }
 }
