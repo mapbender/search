@@ -15,7 +15,7 @@ class QuerySchema extends BaseEntity
     protected $featureType;
 
     /** @var string Maximal results count */
-    protected $maxResults = 1000;
+    protected $maxResults = 500;
 
     /** @var string Maximal results count */
     protected $maxExtend = 25000;
