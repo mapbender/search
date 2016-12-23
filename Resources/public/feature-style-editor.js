@@ -366,10 +366,11 @@
                                 title:    'Art',
                                 name:     'fontWeight',
                                 type:     'select',
+                                value:    'regular',
                                 options:  {
                                     'regular': 'Normal',
                                     'bold':    'Fett',
-                                    'italic':  'Kursive',
+                                    'italic':  'Kursive'
                                 },
                                 css:      {width: "30%"},
                                 infoText: 'The font weight for the label, to be provided like in CSS.'
