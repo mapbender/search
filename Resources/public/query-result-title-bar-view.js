@@ -61,7 +61,7 @@ $.widget("wheregroup.queryResultTitleBarView", {
         var zoomToButton = {
             type:     'button',
             cssClass: 'fa fa-map-o',
-            title:    'Heranzoomen (funktioniert nur wenn welche gefunden wurden)',
+            title:    'Heranzoomen (Nur wenn Treffer vorhanden sind.)',
             click:    function(e) {
                 widget._trigger("zoomToLayer", null, context);
                 return false;

@@ -83,7 +83,7 @@ $.widget("rw.queryManager", {
                 children: [{
                     type:        "input",
                     name:        "name",
-                    placeholder: "Eindeutige Name",
+                    placeholder: "Eindeutiger Name",
                     title:       "Name",
                     mandatory:   true
                 }, {
