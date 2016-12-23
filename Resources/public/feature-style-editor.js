@@ -326,15 +326,21 @@
                     }, {
                         type:     'fieldSet',
                         children: [{
-                            title:    'Fontname',
-                            type:     'select',
-                            options:  {
-                                "Open Sans":    "Open Sans",
-                                "Calluna Sans": "Calluna Sans",
-                                "Gill Sans MT": "Gill Sans MT",
-                                'Calibri':      'Calibri',
-                                "Trebuchet MS": "Trebuchet MS",
-                                'sans-serif':   'sans-serif'
+                            title:   'Fontname',
+                            type:    'select',
+                            value:   'Arial, Helvetica, sans-serif',
+                            options: {
+                                'Arial, Helvetica, sans-serif':                         'Arial, Helvetica, sans-serif',
+                                '"Arial Black", Gadget, sans-serif':                    'Arial Black, Gadget, sans-serif',
+                                '"Comic Sans MS", cursive, sans-serif':                 'Comic Sans MS, cursive, sans-serif',
+                                'Impact, Charcoal, sans-serif':                         'Impact, Charcoal, sans-serif',
+                                '"Lucida Sans Unicode", "Lucida Grande", sans-serif':   'Lucida Sans Unicode, Lucida Grande, sans-serif',
+                                'Tahoma, Geneva, sans-serif':                           'Tahoma, Geneva, sans-serif',
+                                '"Trebuchet MS", Helvetica, sans-serif':                'Trebuchet MS, Helvetica, sans-serif',
+                                'Verdana, Geneva, sans-serif':                          'Verdana, Geneva, sans-serif',
+                                'Georgia, serif':                                       'Georgia, serif (nichtproportionale Schrift)',
+                                '"Palatino Linotype", "Book Antiqua", Palatino, serif': 'Palatino Linotype, "Book Antiqua", Palatino, serif (nichtproportionale Schrift)',
+                                '"Times New Roman", Times, serif':                      'Times New Roman, Times, serif (nichtproportionale Schrift)'
                             },
                             name:     'fontFamily',
                             infoText: 'The font family for the label, to be provided like in CSS.',
