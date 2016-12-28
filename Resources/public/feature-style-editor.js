@@ -201,7 +201,7 @@
                         options: {
                             round:  "abgerundet",
                             square: "eckig",
-                            butt:   "bünbdig"
+                            butt:   "bündig"
                         },
                         value:   "round",
                         css:     {width: "50%"}
