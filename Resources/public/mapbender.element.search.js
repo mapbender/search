@@ -538,7 +538,7 @@
             _.each(queries, function(query) {
 
                 var schema = widget._schemas[query.schemaId];
-                schema.clustering = schema.clustering ? schema.clustering : options.clustering;
+                schema.clustering =  options.clustering; // schema.clustering ? schema.clustering : options.clustering;
                 var queryTitleView = query.titleView = $('<h3/>').data('query', query).queryResultTitleBarView();
                 var queryView = query.resultView = $('<div/>').data('query', query).queryResultView();
                 var layerName = 'query-' + query.id;
