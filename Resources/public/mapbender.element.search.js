@@ -1,12 +1,5 @@
 (function($) {
-
-    $.notify.defaults( { globalPosition: 'top left', style: 'bootstrap'} );
-    /**
-     * Regular Expression to get checked if string should be translated
-     *
-     * @type {RegExp}
-     */
-    var translationReg = /^trans:\w+\.(\w|-|\.\w+)+\w+$/;
+    'use strict';
 
     /**
      * Translate digitizer keywords
@@ -41,8 +34,11 @@
             inlineSearch:      true,
             useContextMenu:    true,
             clustering:        [{
-                scale:    5000000,
+                scale:    25000,
                 distance: 30
+            }, {
+                scale:   24000,
+                disable: true
             }]
         },
         map:                    null,
@@ -135,6 +131,8 @@
                         }
                     }]
                 });
+
+
 
                 element.generateElements({
                     type: 'html',
@@ -241,22 +239,6 @@
             });
 
             return styleEditor;
-        },
-
-        /**
-         * Load external source
-         *
-         * @param uri
-         * @param onComplete
-         */
-        load: function(uri, onComplete) {
-            var assetUrl = Mapbender.configuration.application.urls.asset + "bundles/mapbendersearch/";
-            var asset = assetUrl + uri;
-            console.log("Load: "+asset);
-            $.getScript(asset, function(data, statusCode, xhr) {
-                console.log("Loaded");
-                onComplete && typeof onComplete == "function" && onComplete(eval(data), data, statusCode, xhr, uri);
-            });
         },
 
 
@@ -531,15 +513,7 @@
                 });
 
                 query.resultView.queryResultView('updateList', featureCollection);
-
-                layer.removeAllFeatures();
-                layer.addFeatures(featureCollection);
-                layer.redraw();
-
-                // Add layer to feature
-                // _.each(features, function(feature) {
-                //     feature.layer = layer;
-                // });
+                widget.reloadFeatures(query, featureCollection);
             }).always(function() {
                 query.titleView.queryResultTitleBarView('hidePreloader');
             });
@@ -562,9 +536,13 @@
             queriesContainer.empty();
 
             _.each(queries, function(query) {
+
+                var schema = widget._schemas[query.schemaId];
+                schema.clustering = schema.clustering ? schema.clustering : options.clustering;
                 var queryTitleView = query.titleView = $('<h3/>').data('query', query).queryResultTitleBarView();
                 var queryView = query.resultView = $('<div/>').data('query', query).queryResultView();
                 var layerName = 'query-' + query.id;
+                var isClustered = schema.isClustered = schema.hasOwnProperty('clustering');
 
                 /**
                  * Create query layer and style maps
@@ -574,13 +552,15 @@
                     var styleDefinitions = widget._styles;
                     var styleMapDefinition = _.extend({}, styleMaps[query.styleMap] ? styleMaps[query.styleMap] : _.first(_.toArray(styleMaps)));
                     var styleMapConfig = {};
+                    var strategies = [];
+
                     _.each(styleMapDefinition.styles, function(styleId, key) {
                         if(styleDefinitions[styleId]) {
                             var styleDefinition = _.extend({}, styleDefinitions[styleId]);
                             // styleDefinition.fillOpacity = 0.5;
                             styleMapConfig[key] = new OpenLayers.Style(styleDefinition, {
                                 context: {
-                                    label: function(feature) {
+                                    clusterLength: function(feature) {
                                         return feature.cluster && feature.cluster.length > 1 ? feature.cluster.length : "";
                                     }
                                 }
@@ -589,12 +569,67 @@
                             delete styleMapDefinition.styles[key];
                         }
                     });
+
+                    if(isClustered) {
+                        var clusterStrategy = new OpenLayers.Strategy.Cluster({
+                            threshold: 1,
+                            distance:  -1
+                        });
+                        strategies.push(clusterStrategy);
+                        query.clusterStrategy = clusterStrategy;
+                    }
+                    styleMapConfig.featureDefault = styleMapConfig['default'];
+                    styleMapConfig.featureSelect = styleMapConfig['select'];
+                    styleMapConfig.clusterDefault = new OpenLayers.Style(_.extend({}, styleMapConfig.featureDefault.defaultStyle, {
+                        pointRadius:         '15', //"${radius}",
+                        // fillColor:     "#ffffff",
+                        fillOpacity:         1,
+                        strokeColor:         "#d10a10",
+                        strokeWidth:         2,
+                        strokeOpacity:       1,
+                        labelOutlineColor:   '#ffffff',
+                        labelOutlineWidth:   3,
+                        labelOutlineOpacity: 1,
+                        fontSize:            '11',
+                        fontColor:           '#707070',
+                        label:               "${clusterLength}",
+                        fontWeight:          'bold'
+                    }), {
+                        context: {
+                            clusterLength: function(feature) {
+                                return feature.cluster && feature.cluster.length > 1 ? feature.cluster.length : "";
+                            }
+                        }
+                    });
+
+                    styleMapConfig.clusterSelect = new OpenLayers.Style(_.extend({}, styleMapConfig.featureSelect.defaultStyle,{
+                        pointRadius:         '15', //"${radius}",
+                        // fillColor:           "#ffffff",
+                        fillOpacity:         0.7,
+                        strokeColor:         "#d10a10",
+                        strokeWidth:         3,
+                        strokeOpacity:       0.8,
+                        labelOutlineColor:   '#ffffff',
+                        labelOutlineWidth:   2,
+                        labelOutlineOpacity: 1,
+                        labelColor:          '#707070',
+                        label:               "${clusterLength}"
+                    }), {
+                        context: {
+                            clusterLength: function(feature) {
+                                return feature.cluster && feature.cluster.length > 1 ? feature.cluster.length : "";
+                            }
+                        }
+                    });
+
                     var layer = new OpenLayers.Layer.Vector(layerName, {
-                        styleMap:   new OpenLayers.StyleMap(styleMapConfig, {extendDefault: true}), // strategies: []
-                        visibility: false
+                        styleMap:   new OpenLayers.StyleMap(styleMapConfig, {extendDefault: true}),
+                        visibility: false,
+                        strategies: strategies
                     }, {extendDefault: true});
-                    // layer.name = layerName;
+
                     layer.query = query;
+
                     return layer;
                 }(query);
 
@@ -643,7 +678,7 @@
                         return false;
                     })
                     .bind('queryresultviewzoomto', function(e, context) {
-                        widget.zoomToJsonFeature(context.feature);
+                        Mapbender.Util.OpenLayers2.zoomToJsonFeature(context.feature);
                         return false;
                     })
                     .bind('queryresultviewprint', function(e, context) {
@@ -759,6 +794,7 @@
                         return false;
                     })
                     .bind('queryresulttitlebarviewvisibility', function(e, context) {
+                        console.log(context);
                         // var query = context.query;
                         // var layer = query.layer;
                         // layer.setVisibility()
@@ -831,8 +867,12 @@
                 return false;
             };
             map.events.register("moveend", null, mapChangeHandler);
-            map.events.register("zoomend", null, mapChangeHandler);
+            map.events.register("zoomend", null, function(e){
+                mapChangeHandler(e);
+                widget.updateClusterStrategies();
+            });
 
+            widget.updateClusterStrategies();
 
             queriesContainer.append(queriesAccordionView);
         },
@@ -851,6 +891,23 @@
             var features = feature.cluster ? feature.cluster : [feature];
             var layer = feature.layer;
             var domRow;
+            var isOutsideFromCluster = !_.contains(feature.layer.features, feature);
+            var clusterFeature;
+
+            if(isOutsideFromCluster) {
+                _.each(feature.layer.features, function(clusteredFeatures) {
+                    if(!clusteredFeatures.cluster) {
+                        return;
+                    }
+
+                    if(_.contains(clusteredFeatures.cluster, feature)) {
+                        clusterFeature = clusteredFeatures;
+                        return false;
+                    }
+                });
+                feature = clusterFeature;
+                features = [feature];
+            }
 
             if(isSketchFeature) {
                 return;
@@ -885,28 +942,7 @@
          * @private
          */
         _highlightFeature: function(feature, highlight) {
-            if(!feature || (feature && !feature.layer)) {
-                return;
-            }
-
-            var layer = feature.layer;
-            var isFeatureVisible = _.contains(feature.layer.features, feature);
-            var features = [];
-
-            if(isFeatureVisible) {
-                features.push(feature);
-            } else {
-                _.each(feature.layer.features, function(_feature) {
-                    if(_feature.cluster && _.contains(_feature.cluster, feature)) {
-                        features.push(_feature);
-                        return false;
-                    }
-                });
-            }
-
-            _.each(features, function(feature) {
-                layer.drawFeature(feature, highlight ? 'hover' : 'default');
-            })
+            return this._highlightSchemaFeature(feature, highlight);
         },
 
         /**
@@ -918,124 +954,7 @@
             return this.map;
         },
 
-        /**
-         * Zoom to JSON feature
-         *
-         * @param {OpenLayers.Feature} feature
-         */
-        zoomToJsonFeature: function(feature) {
-            var widget = this;
-            var olMap = widget.getMap();
-            var bounds = feature.geometry.getBounds();
-            olMap.zoomToExtent(bounds);
-            var mapBounds = olMap.getExtent();
 
-            if(!widget.isContainedInBounds(bounds, mapBounds)) {
-                var niceBounds = widget.getNiceBounds(bounds, mapBounds, 10);
-                olMap.zoomToExtent(niceBounds);
-            }
-        },
-
-        /**
-         *
-         * @param bounds
-         * @param mapBounds
-         * @returns {boolean}
-         */
-        isContainedInBounds: function(bounds, mapBounds) {
-            return bounds.left >= mapBounds.left && bounds.bottom >= mapBounds.bottom && bounds.right <= mapBounds.right &&bounds.top <= mapBounds.top;
-        },
-
-        /**
-         * Get Bounds with padding
-         *
-         * @param {Object} bounds
-         * @param {Object} mapBounds
-         * @param {int} padding
-         */
-        getNiceBounds: function(bounds, mapBounds, padding) {
-            var widget = this;
-
-            var getBiggerBounds = function(bounds) {
-                bounds.left -= padding;
-                bounds.right += padding;
-                bounds.top += padding;
-                bounds.bottom -= padding;
-                return bounds;
-            };
-
-            var cloneBounds = function(bounds) {
-                return {
-                    left:   bounds.left,
-                    right:  bounds.right,
-                    top:    bounds.top,
-                    bottom: bounds.bottom
-                };
-            };
-
-            var scaledMapBounds = cloneBounds(mapBounds);
-
-            while (!widget.isContainedInBounds(bounds, scaledMapBounds)) {
-                scaledMapBounds = getBiggerBounds(bounds, scaledMapBounds);
-            }
-
-            return scaledMapBounds;
-        },
-
-        /**
-         * Get OL feature by X:Y coordinates.
-         *
-         * Dirty but works.
-         *
-         * @param x
-         * @param y
-         * @returns {Array}
-         * @private
-         */
-        _getFeaturesFromEvent: function(x, y) {
-            var features = [], targets = [], layers = [];
-            var layer, target, feature, i, len;
-            var map = this.map;
-
-            //map.resetLayersZIndex();
-
-            // go through all layers looking for targets
-            for (i = map.layers.length - 1; i >= 0; --i) {
-                layer = map.layers[i];
-                if(layer.div.style.display !== "none") {
-                    if(layer === this.activeLayer) {
-                        target = document.elementFromPoint(x, y);
-                        while (target && target._featureId) {
-                            feature = layer.getFeatureById(target._featureId);
-                            if(feature) {
-                                features.push(feature);
-                                target.style.visibility = 'hidden';
-                                targets.push(target);
-                                target = document.elementFromPoint(x, y);
-                            } else {
-                                target = false;
-                            }
-                        }
-                    }
-                    layers.push(layer);
-                    layer.div.style.display = "none";
-                }
-            }
-
-            // restore feature visibility
-            for (i = 0, len = targets.length; i < len; ++i) {
-                targets[i].style.display = "";
-                targets[i].style.visibility = 'visible';
-            }
-
-            // restore layer visibility
-            for (i = layers.length - 1; i >= 0; --i) {
-                layers[i].div.style.display = "block";
-            }
-
-            //map.resetLayersZIndex();
-            return features;
-        },
 
         save: function(dataItem) {
             debugger;
@@ -1110,7 +1029,131 @@
             setTimeout(function() {
                 form.remove();
             }, 200);
+        },
+
+        /**
+         * Reload or replace features from the layer and feature table
+         * - Fix OpenLayer bug by clustered features.
+         *
+         * @param layer
+         * @version 0.2
+         */
+        reloadFeatures: function(query, _features) {
+            var widget = this;
+            var schema = widget._schemas[query.schemaId];
+            var layer = query.layer;
+            var table = query.resultView.find('.mapbender-element-result-table');
+            var tableApi = table.resultTable('getApi');
+            var features = _features ? _features : layer.features;
+
+            if(features.length && features[0].cluster) {
+                features = _.flatten(_.pluck(layer.features, "cluster"));
+            }
+
+            // layer.options
+
+            var featuresWithoutDrawElements = _.difference(features, _.where(features, {_sketch: true}));
+
+            layer.removeAllFeatures();
+            layer.addFeatures(features);
+
+            // Add layer to feature
+            _.each(features, function(feature) {
+                feature.layer = layer;
+                feature.query = query;
+                feature.schema = schema;
+            });
+
+            layer.redraw();
+
+            tableApi.clear();
+            tableApi.rows.add(featuresWithoutDrawElements);
+            tableApi.draw();
+        },
+
+        /**
+         * Update cluster strategies
+         */
+        updateClusterStrategies: function() {
+
+            var widget = this;
+            var options = widget.options;
+            var scale = Math.round(widget.map.getScale());
+            var map = widget.map;
+            var clusterSettings;
+            var closestClusterSettings;
+
+            _.each(widget._queries, function(query) {
+                var schema = widget._schemas[query.schemaId];
+                var layer = query.layer;
+                var styleMap = layer.options.styleMap;
+                var styles = styleMap.styles;
+                var features = layer.features;
+
+                clusterSettings = null;
+
+                if(!schema.clustering) {
+                    return
+                }
+
+                _.each(schema.clustering, function(_clusterSettings) {
+                    if(_clusterSettings.scale == scale) {
+                        clusterSettings = _clusterSettings;
+                        return false;
+                    }
+
+                    if(_clusterSettings.scale < scale) {
+                        if(closestClusterSettings && _clusterSettings.scale > closestClusterSettings.scale) {
+                            closestClusterSettings = _clusterSettings;
+                        } else {
+                            if(!closestClusterSettings) {
+                                closestClusterSettings = _clusterSettings;
+                            }
+                        }
+                    }
+                });
+
+                if(!clusterSettings && closestClusterSettings) {
+                    clusterSettings = closestClusterSettings
+                }
+
+                if(!clusterSettings) {
+                    clusterSettings = {'disable': true};
+                }
+
+                if(clusterSettings) {
+                    if(clusterSettings.hasOwnProperty('disable') && clusterSettings.disable) {
+                        styles['default'] = styles.featureDefault;
+                        styles['select'] = styles.featureSelect;
+
+                        // query.layer.options.
+                        query.clusterStrategy.distance = -1;
+
+                        widget.reloadFeatures(query, []);
+                        query.clusterStrategy.deactivate();
+                        //schema.layer.redraw();
+                        schema.isClustered = false;
+                        widget.reloadFeatures(query, features);
+                        // layer.redraw();
+
+                    } else {
+                        styles['default'] = styles.clusterDefault;
+                        styles['select'] = styles.clusterSelect;
+
+                        query.clusterStrategy.activate();
+                        schema.isClustered = true;
+                        // layer.redraw();
+                    }
+
+                    if(clusterSettings.hasOwnProperty('distance')) {
+                        query.clusterStrategy.distance = clusterSettings.distance;
+                    }
+                } else {
+                    //schema.clusterStrategy.deactivate();
+                }
+            });
         }
+
     });
 
 })(jQuery);

@@ -12,6 +12,7 @@ use Mapbender\DataSourceBundle\Entity\Feature;
 use Mapbender\DigitizerBundle\Component\Uploader;
 use Mapbender\SearchBundle\Entity\QuerySchema;
 use Symfony\Component\Config\Definition\Exception\Exception;
+use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -42,6 +43,7 @@ class Search extends BaseElement
                     '../../vendor/blueimp/jquery-file-upload/js/jquery.iframe-transport.js',
                     '/components/jquery-context-menu/jquery-context-menu-built.js',
                     '/components/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js',
+                    'OpenLayerHelper.js',
                     'feature-style-editor.js',
                     'style-map-manager.js',
                     'query-result-title-bar-view.js',
@@ -93,7 +95,7 @@ class Search extends BaseElement
      * Optional: get featureType by name from global context.
      *
      * @inheritdoc
-     * @throws \Symfony\Component\DependencyInjection\Exception\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function getConfiguration()
     {
