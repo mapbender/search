@@ -18,48 +18,7 @@
         return Mapbender.trans(withoutSuffix ? title : "mb.digitizer." + title);
     }
 
-    /**
-     * Translate object
-     *
-     * @param items
-     * @returns object
-     */
-    function translateObject(items) {
-        for (var k in items) {
-            if(!items.hasOwnProperty(k)){
-                continue;
-            }
-            var item = items[k];
-            if(typeof item === "string" && item.match(translationReg)) {
-                items[k] = translate(item.split(':')[1], true);
-            } else if(typeof item === "object") {
-                translateObject(item);
-            }
-        }
-        return item;
-    }
 
-    /**
-     * Check and replace values recursive if they should be translated.
-     * For checking used "translationReg" variable
-     *
-     *
-     * @param items
-     */
-    function translateStructure(items) {
-        var isArray = items instanceof Array;
-        for (var k in items) {
-            if(isArray || k == "children") {
-                translateStructure(items[k]);
-            } else {
-                if(typeof items[k] == "string" && items[k].match(translationReg)) {
-                    items[k] = translate(items[k].split(':')[1], true);
-                }
-            }
-        }
-    }
-
-    //noinspection JSDuplicatedDeclaration
     /**
      * Digitizing tool set
      *
@@ -124,10 +83,37 @@
                 element.generateElements({
                     type:     'fieldSet',
                     children: [{
+                        type:    'select',
+                        name:    'typeFilter',
+                        css:    {width: '55%'},
+                        change: function(e) {
+                            var select = $(e.target);
+                            var schemaId = select.val();
+
+                            _.each(widget._queries, function(query) {
+                                var titleView = query.titleView;
+                                var resultView = query.resultView;
+                                var querySchemaId = query.schemaId;
+                                var queryLayer =  query.layer;
+
+                                if(schemaId == -1 || querySchemaId == schemaId) {
+                                    titleView.show(0);
+                                    if(query.isActive) {
+                                        resultView.show(0);
+                                        queryLayer.setVisibility(true);
+                                    }
+                                } else {
+                                    titleView.hide(0);
+                                    resultView.hide(0);
+                                    queryLayer.setVisibility(false);
+                                }
+                            });
+                        }
+                    }, {
                         type:     'button',
                         title:    'Abfrage',
                         cssClass: 'btn new-query',
-                        css:      {width: '33%'},
+                        css:      {width: '15%'},
                         click:    function() {
                             widget.openCreateDialog();
                         }
@@ -135,7 +121,7 @@
                         type:     'button',
                         title:    'Thema',
                         cssClass: 'btn new-query',
-                        css:      {width: '33%'},
+                        css:      {width: '15%'},
                         click:    function() {
                             widget.openStyleMapManager({id: null}, widget._styles);
                         }
@@ -143,7 +129,7 @@
                         type:     'button',
                         title:    'Stil',
                         cssClass: 'btn new-query',
-                        css:      {width: '30%'},
+                        css:      {width: '15%'},
                         click:    function() {
                             widget.openStyleEditor();
                         }
@@ -171,14 +157,35 @@
                 });
             });
 
-            widget.refreshSchemas().done(function(){
-                widget.refreshStyles().done(function(){
-                    widget.refreshStyleMaps().done(function(){
-                        widget.refreshQueries().done(function(){
+            widget.refreshSchemas().done(function() {
+                widget.refreshStyles().done(function() {
+                    widget.refreshStyleMaps().done(function() {
+                        widget.refreshQueries().done(function(r) {
+                            widget.renderSchemaFilterSelect();
                         });
                     });
                 });
             });
+        },
+
+        /**
+         * Render object type filter
+         */
+        renderSchemaFilterSelect: function() {
+            var widget = this;
+            var queries = widget._queries;
+            var schemas = widget._schemas;
+            var element = widget.element;
+            var filterSelect = element.find('[name="typeFilter"]');
+
+            element.find('option').remove();
+
+            filterSelect.append('<option value="-1">Alle Objekttypen</option>');
+            _.each(_.unique(_.pluck(queries, 'schemaId')), function(schemaId) {
+                var schema = schemas[schemaId];
+                filterSelect.append('<option value="' + schemaId + '">' + schema.title + '</option>');
+            });
+            filterSelect.val(-1);
         },
 
         /**
