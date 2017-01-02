@@ -558,10 +558,10 @@
                         if(styleDefinitions[styleId]) {
                             var styleDefinition = _.extend({}, styleDefinitions[styleId]);
                             // styleDefinition.fillOpacity = 0.5;
+                            // styleDefinition.fillColor = "${customFillColor}";
                             styleMapConfig[key] = new OpenLayers.Style(styleDefinition, {
                                 context: {
-                                    clusterLength: function(feature) {
-                                        return feature.cluster && feature.cluster.length > 1 ? feature.cluster.length : "";
+                                    'customFillColor': function() {
                                     }
                                 }
                             })
@@ -621,6 +621,56 @@
                             }
                         }
                     });
+
+                    if(schema.featureType == "be") {
+                        var restrictedStyle = {
+                            strokeColor:   "#ffff00",
+                            strokeWidth:   2,
+                            strokeOpacity: 1
+                        };
+                        _.extend(styleMapConfig['featureDefault'].defaultStyle, restrictedStyle);
+                        _.extend(styleMapConfig['featureSelect'].defaultStyle, restrictedStyle);
+                        _.extend(styleMapConfig['clusterDefault'].defaultStyle, restrictedStyle);
+                        _.extend(styleMapConfig['clusterSelect'].defaultStyle, restrictedStyle);
+
+                        var rawRules = [
+                            {value: "DB Netz AG (BK09)", fillColor: "#2ca9a9"},
+                            {value: "DB Netz AG (BK16)", fillColor: "#adfcfc"},
+                            {value: "DB Station & Service AG", fillColor: "#ffb0be"},
+                            {value: "Usedomer Bäderbahn GmbH (UBB)", fillColor: "#ff80c0"},
+                            {value: "DB Energie GmbH", fillColor: "#f2f2f2"},
+                            {value: "DB Fernverkehr AG", fillColor: "#d5aaff"},
+                            {value: "DB Regio AG", fillColor: "#ffb76f"},
+                            {value: "DB Schenker Rail AG", fillColor: "#793f96"},
+                            {value: "DB Fahrzeuginstandhaltung GmbH", fillColor: "#46c426"},
+                            {value: "DB AG", fillColor: "#d8fcd8"},
+                            {value: "DB Systel GmbH", fillColor: "#ad7b10"},
+                            {value: "Stinnes Immobiliendienst (alt)", fillColor: "#c90070"},
+                            {value: "DB Mobility Logistics AG", fillColor: "#e83096"},
+                            {value: "Stinnes ID GmbH & Co. KG", fillColor: "#e73165"},
+                            {value: "2. KG Stinnes Immobiliendienst", fillColor: "#e2007f"},
+                            {value: "Schenker AG", fillColor: "#793f96"}
+                        ];
+
+                        _.each(rawRules,function(rule) {
+                            styleMapConfig['featureDefault'].rules.push(new OpenLayers.Rule({
+                                filter:     new OpenLayers.Filter.Comparison({
+                                    type:     OpenLayers.Filter.Comparison.EQUAL_TO,
+                                    property: "eigentuemer",
+                                    value:    rule.value
+                                }),
+                                symbolizer: {
+                                    fillColor: rule.fillColor
+                                }
+                            }));
+                        });
+
+                        styleMapConfig['featureDefault'].rules.push( new OpenLayers.Rule({
+                            elseFilter: true,
+                            symbolizer: styleMapConfig.featureDefault.defaultStyle
+                        }));
+                        styleMapConfig['featureDefault'].defaultStyle.fillOpacity = 1;
+                    }
 
                     var layer = new OpenLayers.Layer.Vector(layerName, {
                         styleMap:   new OpenLayers.StyleMap(styleMapConfig, {extendDefault: true}),
