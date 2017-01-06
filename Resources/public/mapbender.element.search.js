@@ -821,8 +821,14 @@
                         var query = context.query;
                         var layer = query.layer;
                         var features = layer.features;
-                        var markedFeatures = _.where(features, {mark: true});
                         var exportFormat = 'xls';
+                        var markedFeatures = null;
+
+                        if(features.length && features[0].cluster) {
+                            features = _.flatten(_.pluck(layer.features, "cluster"));
+                        }
+
+                        markedFeatures = _.where(features, {mark: true});
 
                         if( markedFeatures.length) {
                             widget.exportFeatures(query.id, exportFormat, _.pluck(markedFeatures, 'fid'));
