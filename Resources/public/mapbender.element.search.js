@@ -276,9 +276,13 @@
                         $.extend(queryManagerWidget.options.data, r.entity);
                         queryManagerWidget.close();
                         $.notify("Erfolgreich gespeichert!", "info");
+
+                        if(!query){
+                            return;
+                        }
+
                         widget.refreshQueries().done(function() {
                             var updatedQuery = _.findWhere( widget._queries, {id: query.id});
-
                             updatedQuery.titleView.addClass('updated');
                         })
                     });
@@ -409,8 +413,7 @@
         refreshQueries: function() {
             var widget = this;
             return widget.query('queries/list').done(function(r) {
-                var queries = r.list;
-
+                var queries = $.isArray(r.list) ? {} : r.list;
                 // clean up previous queries
                 _.each(widget._queries, function(query) {
                     if(query.layer && query.layer.map) {
@@ -449,7 +452,7 @@
                     widget._originalQueries[id] = _.clone(query);
                 });
                 widget._trigger('queriesUpdate', null, queries);
-                widget.renderQueries(r.list);
+                widget.renderQueries(queries);
             });
         },
 
