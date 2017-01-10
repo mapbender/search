@@ -273,7 +273,7 @@
 
                     widget.query('query/save', {query: context.data}).done(function(r) {
                         var queryManagerWidget = context.widget;
-                        $.extend(queryManagerWidget.options.data, r.entity);
+                        var query = $.extend(queryManagerWidget.options.data, r.entity);
                         queryManagerWidget.close();
                         $.notify("Erfolgreich gespeichert!", "info");
 
@@ -572,6 +572,15 @@
                             delete styleMapDefinition.styles[key];
                         }
                     });
+
+                    if(!styleMapConfig['default']){
+                        styleMapConfig['default'] = new OpenLayers.Style(OpenLayers.Feature.Vector.style["default"], {
+                            extend: true
+                        });
+                        styleMapConfig['select'] = new OpenLayers.Style(OpenLayers.Feature.Vector.style["select"], {
+                            extend: true
+                        });
+                    }
 
                     if(isClustered) {
                         var clusterStrategy = new OpenLayers.Strategy.Cluster({
