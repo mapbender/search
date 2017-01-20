@@ -492,6 +492,8 @@
             // $.notify("Datensuche '"+query.name+"' lädt Daten",'info');
             query.titleView.queryResultTitleBarView('showPreloader');
 
+            query.resultView.queryResultView('updateList', []);
+
             return query.fetchXhr = widget.query('query/fetch', request).done(function(r) {
 
                 delete query.fetchXhr;
