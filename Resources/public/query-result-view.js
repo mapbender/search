@@ -81,7 +81,7 @@ $.widget("wheregroup.queryResultView", {
         var buttons = [];
 
         buttons.push({
-            title:     "Vergrößern",
+            title:     "Springe zu",
             className: 'zoomTo',
             onClick:   function(olFeature, ui) {
                 widget._trigger('zoomTo', null, {
@@ -107,7 +107,7 @@ $.widget("wheregroup.queryResultView", {
             }
         });
 
-        buttons.push({
+/*        buttons.push({
             title:     "Druck",
             className: 'print',
             onClick:   function(olFeature, ui) {
@@ -118,7 +118,7 @@ $.widget("wheregroup.queryResultView", {
                     widget:  widget
                 })
             }
-        });
+        }); */
 
         _.each(query.fields, function(definition) {
             columns.push({
