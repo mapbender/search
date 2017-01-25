@@ -18,7 +18,8 @@
                 '#f0ad4e': '#f0ad4e',
                 '#d9534f': '#d9534f'
             },
-            commonTab:    true
+            commonTab:    true,
+            fillTab: true
         },
 
         /**
@@ -471,7 +472,10 @@
                 tabs.push(commonTab);
             }
 
-            tabs.push(fillTab);
+            if(options.fillTab){
+                tabs.push(fillTab);
+            }
+
             tabs.push(strokeTab);
             tabs.push(labelTab);
             // tabs.push(imageTab);
