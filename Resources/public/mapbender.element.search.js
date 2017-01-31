@@ -636,6 +636,47 @@
                         }
                     });
 
+                    if(schema.featureType == "boris_ipe") {
+                        /**
+                         * Darstellung mit orange-farbigem Umring aus einer Punkt-Strich-Linie
+                         * Vorgabe (durch Nutzer änderbar): Rand/Umring-Farbe: #e8c02f, Breite 5, Style: Strichpunkt
+                         */
+                        var restrictedStyle = {
+                            strokeColor:     "#e8c02f",
+                            strokeWidth:     5,
+                            strokeOpacity:   1,
+                            strokeDashstyle: "dashdot"
+                        };
+                        _.each(['featureDefault', 'clusterDefault'], function(styleMapConfigName) {
+                            _.defaults(styleMapConfig[styleMapConfigName], restrictedStyle);
+                        });
+                    }
+                    if(schema.featureType == "segment") {
+                        /**
+                         * Darstellung mit rotem Umring aus einer Punkt-Strich-Linie
+                         Vorgabe (durch Nutzer änderbar): Rand/Umring-Farbe: #e50c24, Breite 5, Style: Strichpunkt
+                         */
+                        var restrictedStyle = {
+                            strokeColor:     "#0c7e00",
+                            strokeWidth:     5,
+                            strokeOpacity:   1,
+                            strokeDashstyle: "dashdot"
+                        };
+                        _.each(['featureDefault', 'clusterDefault'], function(styleMapConfigName) {
+                            _.defaults(styleMapConfig[styleMapConfigName], restrictedStyle);
+                        });
+                    }
+                    if(schema.featureType == "flur") {
+                        /** Vorgabe (durch Nutzer änderbar): Punkt-Objekt, Durchmesser 7, Farbe #0c7e00 */
+                        var restrictedStyle = {
+                            fillColor:   "#0c7e00",
+                            pointRadius: 7
+                        };
+                        _.each(['featureDefault', 'clusterDefault'], function(styleMapConfigName) {
+                            _.defaults(styleMapConfig[styleMapConfigName], restrictedStyle);
+                        });
+                    }
+
                     if(schema.featureType == "be") {
                         var restrictedStyle = {
                             strokeColor:   "#ffff00",
