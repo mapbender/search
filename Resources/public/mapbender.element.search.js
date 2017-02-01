@@ -53,7 +53,7 @@
         _styleMaps:       null,
         _queries:         {},
         _originalQueries: {},
-
+        _typeFilter:      null,
         /**
          * Constructor.
          *
@@ -85,6 +85,8 @@
                         change: function(e) {
                             var select = $(e.target);
                             var schemaId = select.val();
+
+                            widget._typeFilter = schemaId;
 
                             _.each(widget._queries, function(query) {
                                 var titleView = query.titleView;
@@ -183,7 +185,18 @@
                 var schema = schemas[schemaId];
                 filterSelect.append('<option value="' + schemaId + '">' + schema.title + '</option>');
             });
+
             filterSelect.val(-1);
+
+            // Restore previous value
+            if(widget._typeFilter != null){
+                console.log("Rerender filter",widget._typeFilter);
+                window.setTimeout(function() {
+                    filterSelect.val(widget._typeFilter);
+                    filterSelect.trigger("change")
+                },10);
+            }
+
         },
 
         /**
@@ -284,6 +297,7 @@
                         widget.refreshQueries().done(function() {
                             var updatedQuery = _.findWhere( widget._queries, {id: query.id});
                             updatedQuery.titleView.addClass('updated');
+                            widget.renderSchemaFilterSelect();
                         })
                     });
                 })
