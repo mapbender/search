@@ -465,7 +465,7 @@
         fetchQuery: function(query) {
             var widget = this;
             var layer = query.layer;
-            var map = layer.map;
+            var map = widget.map;
 
             // if(!layer.map){
             //     $.notify("Layer ist nicht vorhanden "+ query.name );
@@ -491,8 +491,24 @@
 
             // $.notify("Datensuche '"+query.name+"' lädt Daten",'info');
             query.titleView.queryResultTitleBarView('showPreloader');
-
             query.resultView.queryResultView('updateList', []);
+
+            if(!query.extendOnly && query._rowFeatures) {
+                setTimeout(function() {
+                    var geoJsonReader = new OpenLayers.Format.GeoJSON();
+                    var featureCollection = geoJsonReader.read({
+                        type:     "FeatureCollection",
+                        features: query._rowFeatures
+                    });
+                    if(!featureCollection.length) {
+                        debugger;
+                    }
+                    query.resultView.queryResultView('updateList', featureCollection);
+                    widget.reloadFeatures(query, featureCollection);
+                    query.titleView.queryResultTitleBarView('hidePreloader');
+                }, 100);
+                return null;
+            }
 
             return query.fetchXhr = widget.query('query/fetch', request).done(function(r) {
 
@@ -510,6 +526,7 @@
                     });
                 }
                 // $.notify("Datensuche '"+query.name+"' geladen.",'info');
+                query._rowFeatures = r.features;
 
                 var geoJsonReader = new OpenLayers.Format.GeoJSON();
                 var featureCollection = geoJsonReader.read({
@@ -662,7 +679,7 @@
                          Vorgabe (durch Nutzer änderbar): Rand/Umring-Farbe: #e50c24, Breite 5, Style: Strichpunkt
                          */
                         var restrictedStyle = {
-                            strokeColor:     "#0c7e00",
+                            strokeColor:     "#e50c24",
                             strokeWidth:     5,
                             strokeOpacity:   1,
                             strokeDashstyle: "dashdot"
@@ -975,9 +992,6 @@
                         return
                     }
 
-                    if(!query.extendOnly){
-                        return;
-                    }
 
                     widget.fetchQuery(query);
                 });
