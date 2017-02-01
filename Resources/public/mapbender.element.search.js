@@ -491,7 +491,6 @@
 
             // $.notify("Datensuche '"+query.name+"' lädt Daten",'info');
             query.titleView.queryResultTitleBarView('showPreloader');
-            query.resultView.queryResultView('updateList', []);
 
             if(!query.extendOnly && query._rowFeatures) {
                 setTimeout(function() {
@@ -500,14 +499,13 @@
                         type:     "FeatureCollection",
                         features: query._rowFeatures
                     });
-                    if(!featureCollection.length) {
-                        debugger;
-                    }
                     query.resultView.queryResultView('updateList', featureCollection);
                     widget.reloadFeatures(query, featureCollection);
                     query.titleView.queryResultTitleBarView('hidePreloader');
                 }, 100);
                 return null;
+            }else {
+                query.resultView.queryResultView('updateList', []);
             }
 
             return query.fetchXhr = widget.query('query/fetch', request).done(function(r) {
