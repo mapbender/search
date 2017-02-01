@@ -575,7 +575,9 @@
                         }
                     });
 
-                    if(!styleMapConfig['default']){
+                    var hasDefaultStyle = !styleMapConfig['default'];
+
+                    if(hasDefaultStyle){
                         styleMapConfig['default'] = new OpenLayers.Style(OpenLayers.Feature.Vector.style["default"], {
                             extend: true
                         });
@@ -593,6 +595,7 @@
                         query.clusterStrategy = clusterStrategy;
                     }
                     styleMapConfig.featureDefault = styleMapConfig['default'];
+
                     styleMapConfig.featureSelect = styleMapConfig['select'];
                     styleMapConfig.clusterDefault = new OpenLayers.Style(_.extend({}, styleMapConfig.featureDefault.defaultStyle, {
                         pointRadius:         '15', //"${radius}",
@@ -636,7 +639,7 @@
                         }
                     });
 
-                    if(schema.featureType == "boris_ipe") {
+                    if(schema.featureType == "boris_ipe" && !hasDefaultStyle) {
                         /**
                          * Darstellung mit orange-farbigem Umring aus einer Punkt-Strich-Linie
                          * Vorgabe (durch Nutzer änderbar): Rand/Umring-Farbe: #e8c02f, Breite 5, Style: Strichpunkt
@@ -647,11 +650,13 @@
                             strokeOpacity:   1,
                             strokeDashstyle: "dashdot"
                         };
+
                         _.each(['featureDefault', 'clusterDefault'], function(styleMapConfigName) {
-                            _.defaults(styleMapConfig[styleMapConfigName], restrictedStyle);
+                            _.extend(styleMapConfig[styleMapConfigName].defaultStyle, restrictedStyle);
                         });
+
                     }
-                    if(schema.featureType == "segment") {
+                    if(schema.featureType == "segment" && !hasDefaultStyle) {
                         /**
                          * Darstellung mit rotem Umring aus einer Punkt-Strich-Linie
                          Vorgabe (durch Nutzer änderbar): Rand/Umring-Farbe: #e50c24, Breite 5, Style: Strichpunkt
@@ -663,17 +668,18 @@
                             strokeDashstyle: "dashdot"
                         };
                         _.each(['featureDefault', 'clusterDefault'], function(styleMapConfigName) {
-                            _.defaults(styleMapConfig[styleMapConfigName], restrictedStyle);
+                            _.extend(styleMapConfig[styleMapConfigName].defaultStyle, restrictedStyle);
                         });
                     }
-                    if(schema.featureType == "flur") {
+
+                    if(schema.featureType == "flur" && !hasDefaultStyle) {
                         /** Vorgabe (durch Nutzer änderbar): Punkt-Objekt, Durchmesser 7, Farbe #0c7e00 */
                         var restrictedStyle = {
                             fillColor:   "#0c7e00",
                             pointRadius: 7
                         };
                         _.each(['featureDefault', 'clusterDefault'], function(styleMapConfigName) {
-                            _.defaults(styleMapConfig[styleMapConfigName], restrictedStyle);
+                            _.extend(styleMapConfig[styleMapConfigName].defaultStyle, restrictedStyle);
                         });
                     }
 
