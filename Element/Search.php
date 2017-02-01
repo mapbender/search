@@ -602,7 +602,7 @@ class Search extends BaseElement
             $count                 = count($results["features"]);
 
             if ($count == $maxResults) {
-                $results["infoMessage"] = "Mehr als $maxResults Treffer gefunden, $maxResults Treffer angezeigt. \nGgf. an Kollegen mit FLIMAS-Desktiop wenden.";
+                $results["infoMessage"] = "Mehr als $maxResults Treffer gefunden, $maxResults Treffer angezeigt. \nGgf. an Kollegen mit FLIMAS-Desktop wenden.";
             }
 
             return $results;
