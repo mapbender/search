@@ -18,7 +18,8 @@
   "require": {
     "php": ">=5.3.3",
     "mapbender/data-source": "*",
-    "eslider/hkv-storage": "*"
+    "eslider/hkv-storage": "*",
+    "zumba/json-serializer": "*"
   },
   "config": {
     "bin-dir": "bin"
