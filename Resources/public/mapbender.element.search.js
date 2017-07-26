@@ -714,9 +714,6 @@
 
                     if(schema.featureType == "be") {
                         var restrictedStyle = {
-                            strokeColor:   "#ffff00",
-                            strokeWidth:   2,
-                            strokeOpacity: 1
                         };
                         _.extend(styleMapConfig['featureDefault'].defaultStyle, restrictedStyle);
                         _.extend(styleMapConfig['featureSelect'].defaultStyle, restrictedStyle);
@@ -759,7 +756,6 @@
                             elseFilter: true,
                             symbolizer: styleMapConfig.featureDefault.defaultStyle
                         }));
-                        styleMapConfig['featureDefault'].defaultStyle.fillOpacity = 1;
                     }
 
                     var layer = new OpenLayers.Layer.Vector(layerName, {
