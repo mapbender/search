@@ -107,7 +107,20 @@ $.widget("wheregroup.queryResultView", {
             }
         });
 
-/*        buttons.push({
+        buttons.push({
+            title:     "Objekt anzeigen/ausblenden",
+            className: 'visibility',
+            onClick:   function(olFeature, ui) {
+                widget._trigger('toggleVisibility', null, {
+                    feature: olFeature,
+                    ui:      ui,
+                    query:   query,
+                    widget:  widget
+                })
+            }
+        });
+
+       /* buttons.push({
             title:     "Druck",
             className: 'print',
             onClick:   function(olFeature, ui) {

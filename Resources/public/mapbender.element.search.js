@@ -613,6 +613,9 @@
                         styleMapConfig['select'] = new OpenLayers.Style(OpenLayers.Feature.Vector.style["select"], {
                             extend: true
                         });
+                        styleMapConfig['invisible'] = new OpenLayers.Style(OpenLayers.Feature.Vector.style["invisible"], {
+                            display: 'none'
+                        });
                     }
 
                     if(isClustered) {
@@ -623,12 +626,13 @@
                         strategies.push(clusterStrategy);
                         query.clusterStrategy = clusterStrategy;
                     }
-                    styleMapConfig.featureDefault = styleMapConfig['default'];
 
+                    styleMapConfig.featureDefault = styleMapConfig['default'];
                     styleMapConfig.featureSelect = styleMapConfig['select'];
+                    styleMapConfig.featureInvisible = styleMapConfig['invisible'];
+
                     styleMapConfig.clusterDefault = new OpenLayers.Style(_.extend({}, styleMapConfig.featureDefault.defaultStyle, {
-                        pointRadius:         '15', //"${radius}",
-                        // fillColor:     "#ffffff",
+                        pointRadius:         '15',
                         fillOpacity:         1,
                         strokeColor:         "#d10a10",
                         strokeWidth:         2,
@@ -649,8 +653,7 @@
                     });
 
                     styleMapConfig.clusterSelect = new OpenLayers.Style(_.extend({}, styleMapConfig.featureSelect.defaultStyle,{
-                        pointRadius:         '15', //"${radius}",
-                        // fillColor:           "#ffffff",
+                        pointRadius:         '15',
                         fillOpacity:         0.7,
                         strokeColor:         "#d10a10",
                         strokeWidth:         3,
@@ -717,8 +720,10 @@
                         };
                         _.extend(styleMapConfig['featureDefault'].defaultStyle, restrictedStyle);
                         _.extend(styleMapConfig['featureSelect'].defaultStyle, restrictedStyle);
+                        _.extend(styleMapConfig['featureInvisible'].defaultStyle, restrictedStyle);
                         _.extend(styleMapConfig['clusterDefault'].defaultStyle, restrictedStyle);
                         _.extend(styleMapConfig['clusterSelect'].defaultStyle, restrictedStyle);
+                        _.extend(styleMapConfig['clusterInvisible'].defaultStyle, restrictedStyle);
 
                         var rawRules = [
                             {value: "DB Netz AG (BK09)", fillColor: "#2ca9a9"},
@@ -849,6 +854,24 @@
                         }
 
                         feature.mark = tr.is(".mark");
+
+                        return false;
+                    })
+                    .bind('queryresultviewtogglevisibility', function(e, context) {
+
+                        var feature = widget._checkFeatureCluster(context.feature);
+                        var layer = feature.layer;
+                        var featureStyle = (context.feature.styleId) ? context.feature.styleId : 'default';
+
+
+                        if(!feature.renderIntent || feature.renderIntent != 'invisible') {
+                            featureStyle = 'invisible';
+                        }
+
+                        layer.drawFeature(feature, featureStyle);
+
+                        context.ui.toggleClass("icon-invisibility");
+                        context.ui.closest('tr').toggleClass('invisible-feature');
 
                         return false;
                     })
@@ -1024,35 +1047,18 @@
          * @private
          */
         _highlightSchemaFeature: function(feature, highlight, highlightTableRow) {
+            var feature = this._checkFeatureCluster(feature);
             var table = feature.layer.query.resultView.find('.mapbender-element-result-table');
             var tableWidget = table.data('visUiJsResultTable');
             var isSketchFeature = !feature.cluster && feature._sketch && _.size(feature.data) == 0;
             var features = feature.cluster ? feature.cluster : [feature];
             var layer = feature.layer;
             var domRow;
-            var isOutsideFromCluster = !_.contains(feature.layer.features, feature);
-            var clusterFeature;
-
-            if(isOutsideFromCluster) {
-                _.each(feature.layer.features, function(clusteredFeatures) {
-                    if(!clusteredFeatures.cluster) {
-                        return;
-                    }
-
-                    if(_.contains(clusteredFeatures.cluster, feature)) {
-                        clusterFeature = clusteredFeatures;
-                        return false;
-                    }
-                });
-                feature = clusterFeature;
-                features = [feature];
-            }
 
             if(isSketchFeature) {
                 return;
             }
 
-            //widget._highlightFeature(feature, highlight);
             layer.drawFeature(feature, highlight ? 'select' : 'default');
 
             if(!highlightTableRow) {
@@ -1082,6 +1088,32 @@
          */
         _highlightFeature: function(feature, highlight) {
             return this._highlightSchemaFeature(feature, highlight);
+        },
+
+        /**
+         * Check feature cluster
+         *
+         * @param {OpenLayers.Feature} feature
+         * @returns {OpenLayers.Feature} feature
+         * @private
+         */
+        _checkFeatureCluster: function(feature) {
+            var isOutsideFromCluster = !_.contains(feature.layer.features, feature);
+
+            if(isOutsideFromCluster) {
+                _.each(feature.layer.features, function(clusteredFeatures) {
+                    if(!clusteredFeatures.cluster) {
+                        return;
+                    }
+
+                    if(_.contains(clusteredFeatures.cluster, feature)) {
+                        feature = clusteredFeatures;
+                        return false;
+                    }
+                });
+            }
+
+            return feature;
         },
 
         /**
@@ -1264,6 +1296,7 @@
                     if(clusterSettings.hasOwnProperty('disable') && clusterSettings.disable) {
                         styles['default'] = styles.featureDefault;
                         styles['select'] = styles.featureSelect;
+                        styles['invisible'] = styles.featureInvisible;
 
                         // query.layer.options.
                         query.clusterStrategy.distance = -1;

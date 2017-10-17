@@ -79,6 +79,7 @@ mb:
       bookmark: Merken
       zoomTo: Einzoomen
       save: Speichern
+      toggleVisibility: Objekt anzeigen/ausblenden
 
     search:
       table:
