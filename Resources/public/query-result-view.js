@@ -53,7 +53,7 @@ $.widget("wheregroup.queryResultView", {
             children: [{
                 type:     'checkbox',
                 cssClass: 'onlyExtent',
-                title:    "Nur Kartenabschnitt",
+                title:    Mapbender.trans("mb.search.onlyMapSection"),
                 checked:  query.extendOnly,
                 change:   function() {
                     var input = $('input', this);
@@ -81,7 +81,7 @@ $.widget("wheregroup.queryResultView", {
         var buttons = [];
 
         buttons.push({
-            title:     "Springe zu",
+            title:     Mapbender.trans("mb.search.feature.zoomTo"),
             className: 'zoomTo',
             onClick:   function(olFeature, ui) {
                 widget._trigger('zoomTo', null, {
@@ -94,7 +94,7 @@ $.widget("wheregroup.queryResultView", {
         });
 
         buttons.push({
-            title:     "Merken",
+            title:     Mapbender.trans("mb.search.feature.bookmark"),
             className: 'bookmark',
             onClick:   function(olFeature, ui) {
                 widget._trigger('mark', null, {
@@ -108,7 +108,7 @@ $.widget("wheregroup.queryResultView", {
         });
 
         buttons.push({
-            title:     "Objekt anzeigen/ausblenden",
+            title:     Mapbender.trans("mb.search.feature.toggleVisibility"),
             className: 'visibility',
             onClick:   function(olFeature, ui) {
                 widget._trigger('toggleVisibility', null, {

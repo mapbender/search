@@ -1,5 +1,6 @@
 mb:
   search:
+
     # Buttons
     Edit: Bearbeiten
     Create: Erstellen
@@ -12,6 +13,9 @@ mb:
     Export: Export
     HTML-Export: HTML Export
 
+    #Form
+    onlyMapSection: Only map section
+
     # Status
     saved: Gespeichert
     removed: Gelöscht
@@ -22,8 +26,8 @@ mb:
       connection:
         name: Verbindungsname
       publish: Veröffentlichen
-    # Feature
 
+    # Feature
     feature:
       bookmark: Lesezeichnen
       zoomTo: Einzoomen

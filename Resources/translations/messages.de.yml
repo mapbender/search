@@ -1,5 +1,6 @@
 mb:
   search:
+
     # Buttons
     Edit: Bearbeiten
     Create: Erstellen
@@ -12,6 +13,9 @@ mb:
     Export: Exportieren
     HTML-Export: HTML Export
     Check: Prüfen
+
+    #Form
+    onlyMapSection: Nur Kartenabschnitt
 
     # Need to have plus icon ("\f067") .new-query class
 
@@ -77,7 +81,7 @@ mb:
     # Feature
     feature:
       bookmark: Merken
-      zoomTo: Einzoomen
+      zoomTo: Springe zu
       save: Speichern
       toggleVisibility: Objekt anzeigen/ausblenden
 
