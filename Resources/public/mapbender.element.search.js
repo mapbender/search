@@ -57,7 +57,7 @@
         /**
          * Constructor.
          *
-         * At this moment not all elements (like a OpenLayers) are avaible.
+         * At this moment not all elements (like a OpenLayers) are available.
          *
          * @private
          */
@@ -141,9 +141,6 @@
                     html: '<div class="queries"></div>'
                 });
 
-                // widget.activateContextMenu();
-
-                //widget.map.resetLayersZIndex();
                 widget._trigger('ready');
 
                 // Check position and react by
@@ -438,28 +435,6 @@
                     }
                 });
 
-                // _.each(queries, function(query, queryId) {
-                //     if(!widget._queries.hasOwnProperty(queryId)) {
-                //         widget._queries[queryId] = _.extend(query, {
-                //             clean: function() {
-                //                 var query = this;
-                //                 var layer = query.layer;
-                //                 if(layer.map) {
-                //                     var map = layer.map;
-                //                     map.removeControl(query.selectControl);
-                //                     map.removeLayer(layer);
-                //                     query.dispatch('update');
-                //                 }
-                //             }
-                //         }, EventDispatcher);
-                //     } else {
-                //         var existQuery = widget._queries[queryId];
-                //         existQuery.clean();
-                //         _.extend(existQuery, query);
-                //     }
-                // });
-
-
                 widget._queries = queries;
                 widget._originalQueries = {};
                 _.each(queries, function(query, id) {
@@ -481,11 +456,6 @@
             var layer = query.layer;
             var map = widget.map;
 
-            // if(!layer.map){
-            //     $.notify("Layer ist nicht vorhanden "+ query.name );
-            //     return;
-            // }
-
             var request = {
                 srid:              map.getProjectionObject().proj.srsProjNumber,
                 query:             {
@@ -499,11 +469,8 @@
 
             if(query.fetchXhr) {
                 query.fetchXhr.abort();
-                // $.notify("Datensuche '"+query.name+"' Abbruch",'info');
-
             }
 
-            // $.notify("Datensuche '"+query.name+"' lädt Daten",'info');
             query.titleView.queryResultTitleBarView('showPreloader');
 
             if(!query.extendOnly && query._rowFeatures) {
@@ -537,7 +504,7 @@
                         className:     'info'
                     });
                 }
-                // $.notify("Datensuche '"+query.name+"' geladen.",'info');
+
                 query._rowFeatures = r.features;
 
                 var geoJsonReader = new OpenLayers.Format.GeoJSON();
@@ -591,8 +558,7 @@
                     _.each(styleMapDefinition.styles, function(styleId, key) {
                         if(styleDefinitions[styleId]) {
                             var styleDefinition = _.extend({}, styleDefinitions[styleId]);
-                            // styleDefinition.fillOpacity = 0.5;
-                            // styleDefinition.fillColor = "${customFillColor}";
+
                             styleMapConfig[key] = new OpenLayers.Style(styleDefinition, {
                                 context: {
                                     'customFillColor': function() {
@@ -610,10 +576,12 @@
                         styleMapConfig['default'] = new OpenLayers.Style(OpenLayers.Feature.Vector.style["default"], {
                             extend: true
                         });
+
                         styleMapConfig['select'] = new OpenLayers.Style(OpenLayers.Feature.Vector.style["select"], {
                             extend: true
                         });
-                        styleMapConfig['invisible'] = new OpenLayers.Style(OpenLayers.Feature.Vector.style["invisible"], {
+
+                        styleMapConfig['invisible'] = new OpenLayers.Style({
                             display: 'none'
                         });
                     }
@@ -670,6 +638,8 @@
                             }
                         }
                     });
+
+                    styleMapConfig.clusterInvisible = styleMapConfig.featureInvisible.defaultStyle;
 
                     if(schema.featureType == "boris_ipe" && !hasDefaultStyle) {
                         /**
@@ -862,7 +832,6 @@
                         var feature = widget._checkFeatureCluster(context.feature);
                         var layer = feature.layer;
                         var featureStyle = (context.feature.styleId) ? context.feature.styleId : 'default';
-
 
                         if(!feature.renderIntent || feature.renderIntent != 'invisible') {
                             featureStyle = 'invisible';
@@ -1311,6 +1280,7 @@
                     } else {
                         styles['default'] = styles.clusterDefault;
                         styles['select'] = styles.clusterSelect;
+                        styles['invisible'] = styles.clusterInvisible;
 
                         query.clusterStrategy.activate();
                         schema.isClustered = true;
