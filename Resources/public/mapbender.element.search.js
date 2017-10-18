@@ -1017,22 +1017,43 @@
          */
         _highlightSchemaFeature: function(feature, highlight, highlightTableRow) {
             var feature = this._checkFeatureCluster(feature);
-            var table = feature.layer.query.resultView.find('.mapbender-element-result-table');
-            var tableWidget = table.data('visUiJsResultTable');
             var isSketchFeature = !feature.cluster && feature._sketch && _.size(feature.data) == 0;
-            var features = feature.cluster ? feature.cluster : [feature];
             var layer = feature.layer;
-            var domRow;
 
-            if(isSketchFeature) {
+            if (this._isFeatureInvisible(feature) || isSketchFeature) {
                 return;
             }
 
             layer.drawFeature(feature, highlight ? 'select' : 'default');
 
-            if(!highlightTableRow) {
-                return;
+            if(highlightTableRow) {
+                this._highlightTableRow(feature, highlight);
             }
+        },
+
+        /**
+         * Highlight feature on the map
+         *
+         * @param {OpenLayers.Feature} feature
+         * @param {boolean} highlight
+         * @private
+         */
+        _highlightFeature: function(feature, highlight) {
+            return this._highlightSchemaFeature(feature, highlight);
+        },
+
+        /**
+         * Highlight table row
+         *
+         * @param {OpenLayers.Feature} feature
+         * @param {boolean} highlight
+         * @private
+         */
+        _highlightTableRow: function(feature, highlight) {
+            var table = feature.layer.query.resultView.find('.mapbender-element-result-table');
+            var tableWidget = table.data('visUiJsResultTable');
+            var features = feature.cluster ? feature.cluster : [feature];
+            var domRow;
 
             for (var k in features) {
                 domRow = tableWidget.getDomRowByData(features[k]);
@@ -1049,14 +1070,14 @@
         },
 
         /**
-         * Highlight feature on the map
+         * Is a feature invisible?
          *
          * @param {OpenLayers.Feature} feature
-         * @param {boolean} highlight
+         * @returns {boolean}
          * @private
          */
-        _highlightFeature: function(feature, highlight) {
-            return this._highlightSchemaFeature(feature, highlight);
+        _isFeatureInvisible: function(feature) {
+            return (feature.renderIntent === 'invisible') ? true : false;
         },
 
         /**
