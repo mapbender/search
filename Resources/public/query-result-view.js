@@ -213,9 +213,11 @@ $.widget("wheregroup.queryResultView", {
             })
             .off('mouseover', '> tr')
             .on('mouseover', '> tr', function(e) {
-                if(!$(e.target).parent().parent().parent().is(".dataTable")) {
+
+                if(!$(e.target).closest('table').hasClass("dataTable")) {
                     return true;
                 }
+
                 var tr = $(this).is('td') ? $(this).parent() : this;
                 var row = tableApi.row(tr);
                 var olFeature = row.data();
@@ -235,7 +237,7 @@ $.widget("wheregroup.queryResultView", {
             })
             .off('mouseout', '> tr')
             .on('mouseout', '> tr', function(e) {
-                if(!$(e.target).parent().parent().parent().is(".dataTable")) {
+                if(!$(e.target).closest('table').hasClass("dataTable")) {
                     return true;
                 }
                 var tr = $(this).is('td') ? $(this).parent() : this;
