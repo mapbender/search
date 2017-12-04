@@ -576,11 +576,13 @@
                         styleMapConfig['default'] = new OpenLayers.Style(OpenLayers.Feature.Vector.style["default"], {
                             extend: true
                         });
-
+                    }
+                    if (!styleMapConfig['select']) {
                         styleMapConfig['select'] = new OpenLayers.Style(OpenLayers.Feature.Vector.style["select"], {
                             extend: true
                         });
-
+                    }
+                    if (!styleMapConfig['invisible']) {
                         styleMapConfig['invisible'] = new OpenLayers.Style({
                             display: 'none'
                         });
