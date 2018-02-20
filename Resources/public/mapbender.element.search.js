@@ -57,7 +57,7 @@
         /**
          * Constructor.
          *
-         * At this moment not all elements (like a OpenLayers) are avaible.
+         * At this moment not all elements (like a OpenLayers) are available.
          *
          * @private
          */
@@ -141,9 +141,6 @@
                     html: '<div class="queries"></div>'
                 });
 
-                // widget.activateContextMenu();
-
-                //widget.map.resetLayersZIndex();
                 widget._trigger('ready');
 
                 // Check position and react by
@@ -438,28 +435,6 @@
                     }
                 });
 
-                // _.each(queries, function(query, queryId) {
-                //     if(!widget._queries.hasOwnProperty(queryId)) {
-                //         widget._queries[queryId] = _.extend(query, {
-                //             clean: function() {
-                //                 var query = this;
-                //                 var layer = query.layer;
-                //                 if(layer.map) {
-                //                     var map = layer.map;
-                //                     map.removeControl(query.selectControl);
-                //                     map.removeLayer(layer);
-                //                     query.dispatch('update');
-                //                 }
-                //             }
-                //         }, EventDispatcher);
-                //     } else {
-                //         var existQuery = widget._queries[queryId];
-                //         existQuery.clean();
-                //         _.extend(existQuery, query);
-                //     }
-                // });
-
-
                 widget._queries = queries;
                 widget._originalQueries = {};
                 _.each(queries, function(query, id) {
@@ -481,11 +456,6 @@
             var layer = query.layer;
             var map = widget.map;
 
-            // if(!layer.map){
-            //     $.notify("Layer ist nicht vorhanden "+ query.name );
-            //     return;
-            // }
-
             var request = {
                 srid:              map.getProjectionObject().proj.srsProjNumber,
                 query:             {
@@ -499,11 +469,8 @@
 
             if(query.fetchXhr) {
                 query.fetchXhr.abort();
-                // $.notify("Datensuche '"+query.name+"' Abbruch",'info');
-
             }
 
-            // $.notify("Datensuche '"+query.name+"' lädt Daten",'info');
             query.titleView.queryResultTitleBarView('showPreloader');
 
             if(!query.extendOnly && query._rowFeatures) {
@@ -537,7 +504,7 @@
                         className:     'info'
                     });
                 }
-                // $.notify("Datensuche '"+query.name+"' geladen.",'info');
+
                 query._rowFeatures = r.features;
 
                 var geoJsonReader = new OpenLayers.Format.GeoJSON();
@@ -591,8 +558,7 @@
                     _.each(styleMapDefinition.styles, function(styleId, key) {
                         if(styleDefinitions[styleId]) {
                             var styleDefinition = _.extend({}, styleDefinitions[styleId]);
-                            // styleDefinition.fillOpacity = 0.5;
-                            // styleDefinition.fillColor = "${customFillColor}";
+
                             styleMapConfig[key] = new OpenLayers.Style(styleDefinition, {
                                 context: {
                                     'customFillColor': function() {
@@ -610,8 +576,15 @@
                         styleMapConfig['default'] = new OpenLayers.Style(OpenLayers.Feature.Vector.style["default"], {
                             extend: true
                         });
+                    }
+                    if (!styleMapConfig['select']) {
                         styleMapConfig['select'] = new OpenLayers.Style(OpenLayers.Feature.Vector.style["select"], {
                             extend: true
+                        });
+                    }
+                    if (!styleMapConfig['invisible']) {
+                        styleMapConfig['invisible'] = new OpenLayers.Style({
+                            display: 'none'
                         });
                     }
 
@@ -623,12 +596,13 @@
                         strategies.push(clusterStrategy);
                         query.clusterStrategy = clusterStrategy;
                     }
-                    styleMapConfig.featureDefault = styleMapConfig['default'];
 
+                    styleMapConfig.featureDefault = styleMapConfig['default'];
                     styleMapConfig.featureSelect = styleMapConfig['select'];
+                    styleMapConfig.featureInvisible = styleMapConfig['invisible'];
+
                     styleMapConfig.clusterDefault = new OpenLayers.Style(_.extend({}, styleMapConfig.featureDefault.defaultStyle, {
-                        pointRadius:         '15', //"${radius}",
-                        // fillColor:     "#ffffff",
+                        pointRadius:         '15',
                         fillOpacity:         1,
                         strokeColor:         "#d10a10",
                         strokeWidth:         2,
@@ -649,8 +623,7 @@
                     });
 
                     styleMapConfig.clusterSelect = new OpenLayers.Style(_.extend({}, styleMapConfig.featureSelect.defaultStyle,{
-                        pointRadius:         '15', //"${radius}",
-                        // fillColor:           "#ffffff",
+                        pointRadius:         '15',
                         fillOpacity:         0.7,
                         strokeColor:         "#d10a10",
                         strokeWidth:         3,
@@ -667,6 +640,8 @@
                             }
                         }
                     });
+
+                    styleMapConfig.clusterInvisible = styleMapConfig.featureInvisible.defaultStyle;
 
                     if(schema.featureType == "boris_ipe" && !hasDefaultStyle) {
                         /**
@@ -717,8 +692,10 @@
                         };
                         _.extend(styleMapConfig['featureDefault'].defaultStyle, restrictedStyle);
                         _.extend(styleMapConfig['featureSelect'].defaultStyle, restrictedStyle);
+                        _.extend(styleMapConfig['featureInvisible'].defaultStyle, restrictedStyle);
                         _.extend(styleMapConfig['clusterDefault'].defaultStyle, restrictedStyle);
                         _.extend(styleMapConfig['clusterSelect'].defaultStyle, restrictedStyle);
+                        _.extend(styleMapConfig['clusterInvisible'].defaultStyle, restrictedStyle);
 
                         var rawRules = [
                             {value: "DB Netz AG (BK09)", fillColor: "#2ca9a9"},
@@ -849,6 +826,23 @@
                         }
 
                         feature.mark = tr.is(".mark");
+
+                        return false;
+                    })
+                    .bind('queryresultviewtogglevisibility', function(e, context) {
+
+                        var feature = widget._checkFeatureCluster(context.feature);
+                        var layer = feature.layer;
+                        var featureStyle = (context.feature.styleId) ? context.feature.styleId : 'default';
+
+                        if(!feature.renderIntent || feature.renderIntent != 'invisible') {
+                            featureStyle = 'invisible';
+                        }
+
+                        layer.drawFeature(feature, featureStyle);
+
+                        context.ui.toggleClass("icon-invisibility");
+                        context.ui.closest('tr').toggleClass('invisible-feature');
 
                         return false;
                     })
@@ -1024,40 +1018,44 @@
          * @private
          */
         _highlightSchemaFeature: function(feature, highlight, highlightTableRow) {
-            var table = feature.layer.query.resultView.find('.mapbender-element-result-table');
-            var tableWidget = table.data('visUiJsResultTable');
+            var feature = this._checkFeatureCluster(feature);
             var isSketchFeature = !feature.cluster && feature._sketch && _.size(feature.data) == 0;
-            var features = feature.cluster ? feature.cluster : [feature];
             var layer = feature.layer;
-            var domRow;
-            var isOutsideFromCluster = !_.contains(feature.layer.features, feature);
-            var clusterFeature;
 
-            if(isOutsideFromCluster) {
-                _.each(feature.layer.features, function(clusteredFeatures) {
-                    if(!clusteredFeatures.cluster) {
-                        return;
-                    }
-
-                    if(_.contains(clusteredFeatures.cluster, feature)) {
-                        clusterFeature = clusteredFeatures;
-                        return false;
-                    }
-                });
-                feature = clusterFeature;
-                features = [feature];
-            }
-
-            if(isSketchFeature) {
+            if (this._isFeatureInvisible(feature) || isSketchFeature) {
                 return;
             }
 
-            //widget._highlightFeature(feature, highlight);
             layer.drawFeature(feature, highlight ? 'select' : 'default');
 
-            if(!highlightTableRow) {
-                return;
+            if(highlightTableRow) {
+                this._highlightTableRow(feature, highlight);
             }
+        },
+
+        /**
+         * Highlight feature on the map
+         *
+         * @param {OpenLayers.Feature} feature
+         * @param {boolean} highlight
+         * @private
+         */
+        _highlightFeature: function(feature, highlight) {
+            return this._highlightSchemaFeature(feature, highlight);
+        },
+
+        /**
+         * Highlight table row
+         *
+         * @param {OpenLayers.Feature} feature
+         * @param {boolean} highlight
+         * @private
+         */
+        _highlightTableRow: function(feature, highlight) {
+            var table = feature.layer.query.resultView.find('.mapbender-element-result-table');
+            var tableWidget = table.data('visUiJsResultTable');
+            var features = feature.cluster ? feature.cluster : [feature];
+            var domRow;
 
             for (var k in features) {
                 domRow = tableWidget.getDomRowByData(features[k]);
@@ -1074,14 +1072,40 @@
         },
 
         /**
-         * Highlight feature on the map
+         * Is a feature invisible?
          *
          * @param {OpenLayers.Feature} feature
-         * @param {boolean} highlight
+         * @returns {boolean}
          * @private
          */
-        _highlightFeature: function(feature, highlight) {
-            return this._highlightSchemaFeature(feature, highlight);
+        _isFeatureInvisible: function(feature) {
+            return (feature.renderIntent === 'invisible') ? true : false;
+        },
+
+        /**
+         * Check feature cluster
+         *
+         * @param {OpenLayers.Feature} feature
+         * @returns {OpenLayers.Feature} feature
+         * @private
+         */
+        _checkFeatureCluster: function(feature) {
+            var isOutsideFromCluster = !_.contains(feature.layer.features, feature);
+
+            if(isOutsideFromCluster) {
+                _.each(feature.layer.features, function(clusteredFeatures) {
+                    if(!clusteredFeatures.cluster) {
+                        return;
+                    }
+
+                    if(_.contains(clusteredFeatures.cluster, feature)) {
+                        feature = clusteredFeatures;
+                        return false;
+                    }
+                });
+            }
+
+            return feature;
         },
 
         /**
@@ -1264,6 +1288,7 @@
                     if(clusterSettings.hasOwnProperty('disable') && clusterSettings.disable) {
                         styles['default'] = styles.featureDefault;
                         styles['select'] = styles.featureSelect;
+                        styles['invisible'] = styles.featureInvisible;
 
                         // query.layer.options.
                         query.clusterStrategy.distance = -1;
@@ -1278,6 +1303,7 @@
                     } else {
                         styles['default'] = styles.clusterDefault;
                         styles['select'] = styles.clusterSelect;
+                        styles['invisible'] = styles.clusterInvisible;
 
                         query.clusterStrategy.activate();
                         schema.isClustered = true;

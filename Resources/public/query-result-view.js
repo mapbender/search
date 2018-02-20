@@ -53,7 +53,7 @@ $.widget("wheregroup.queryResultView", {
             children: [{
                 type:     'checkbox',
                 cssClass: 'onlyExtent',
-                title:    "Nur Kartenabschnitt",
+                title:    Mapbender.trans("mb.search.onlyMapSection"),
                 checked:  query.extendOnly,
                 change:   function() {
                     var input = $('input', this);
@@ -81,7 +81,7 @@ $.widget("wheregroup.queryResultView", {
         var buttons = [];
 
         buttons.push({
-            title:     "Springe zu",
+            title:     Mapbender.trans("mb.search.feature.zoomTo"),
             className: 'zoomTo',
             onClick:   function(olFeature, ui) {
                 widget._trigger('zoomTo', null, {
@@ -94,7 +94,7 @@ $.widget("wheregroup.queryResultView", {
         });
 
         buttons.push({
-            title:     "Merken",
+            title:     Mapbender.trans("mb.search.feature.bookmark"),
             className: 'bookmark',
             onClick:   function(olFeature, ui) {
                 widget._trigger('mark', null, {
@@ -107,7 +107,20 @@ $.widget("wheregroup.queryResultView", {
             }
         });
 
-/*        buttons.push({
+        buttons.push({
+            title:     Mapbender.trans("mb.search.feature.toggleVisibility"),
+            className: 'visibility',
+            onClick:   function(olFeature, ui) {
+                widget._trigger('toggleVisibility', null, {
+                    feature: olFeature,
+                    ui:      ui,
+                    query:   query,
+                    widget:  widget
+                })
+            }
+        });
+
+       /* buttons.push({
             title:     "Druck",
             className: 'print',
             onClick:   function(olFeature, ui) {
@@ -200,9 +213,11 @@ $.widget("wheregroup.queryResultView", {
             })
             .off('mouseover', '> tr')
             .on('mouseover', '> tr', function(e) {
-                if(!$(e.target).parent().parent().parent().is(".dataTable")) {
+
+                if(!$(e.target).closest('table').hasClass("dataTable")) {
                     return true;
                 }
+
                 var tr = $(this).is('td') ? $(this).parent() : this;
                 var row = tableApi.row(tr);
                 var olFeature = row.data();
@@ -222,7 +237,7 @@ $.widget("wheregroup.queryResultView", {
             })
             .off('mouseout', '> tr')
             .on('mouseout', '> tr', function(e) {
-                if(!$(e.target).parent().parent().parent().is(".dataTable")) {
+                if(!$(e.target).closest('table').hasClass("dataTable")) {
                     return true;
                 }
                 var tr = $(this).is('td') ? $(this).parent() : this;
