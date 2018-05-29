@@ -2,7 +2,6 @@
 
 namespace Mapbender\SearchBundle\Controller;
 
-use Mapbender\ConfiguratorBundle\Controller\BaseController;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -11,7 +10,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @package Mapbender\SearchBundle\Controller
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
-class MapbenderController extends BaseController
+class MapbenderController
 {
 
     const MAPBENDER_FEATURE_SERVICE  = "features";
