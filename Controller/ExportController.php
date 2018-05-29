@@ -8,6 +8,7 @@ use Mapbender\DataSourceBundle\Component\FeatureTypeService;
 use Mapbender\SearchBundle\Component\QueryManager;
 use Mapbender\SearchBundle\Entity\ExportRequest;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 /**
  * Class ExportController
@@ -16,7 +17,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  * @Route("/export/")
  */
-class ExportController extends MapbenderController
+class ExportController extends Controller
 {
 
 
@@ -26,20 +27,13 @@ class ExportController extends MapbenderController
     /**@var QueryManager */
     protected $queryManager;
 
-
-    /**
-     *This method has desired services injected.
-     *
-     * @return string[]
-     */
-    protected function mappings()
+    public function __construct(ContainerInterface $container)
     {
-        return array(
-            "featureService"  => static::MAPBENDER_FEATURE_SERVICE,
-            "queryManager"    => static::MAPBENDER_QUERY_MANAGER,
-            "securityContext" => static::MAPBENDER_SECURITY_CONTEXT
-        );
+        $this->featureService = $container->get(MapbenderController::MAPBENDER_FEATURE_SERVICE);
+        $this->queryManager = $container->get(MapbenderController::MAPBENDER_QUERY_MANAGER);
+        $this->setContainer($container);
     }
+
 
     /**
      * @Method("POST")
