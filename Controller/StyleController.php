@@ -9,7 +9,9 @@ use Mapbender\SearchBundle\Component\StyleManager;
 use Mapbender\SearchBundle\Entity\StyleMap;
 use Mapbender\SearchBundle\Utils\HTTPStatusConstants;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -21,7 +23,7 @@ use Symfony\Component\Routing\Annotation\Route;
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  * @Route("/style/")
  */
-class StyleController extends MapbenderController
+class StyleController extends Controller
 {
 
     /** @var SecurityContext */
@@ -33,18 +35,12 @@ class StyleController extends MapbenderController
     /** @var User */
     protected $user;
 
-    /**
-     *This method has desired services injected.
-     *
-     * @return string[]
-     */
-    protected function mappings()
+    public function __construct(ContainerInterface $container)
     {
-        return array("styleManager"    => static::MAPBENDER_STYLE_MANAGER,
-                     "securityContext" => static::MAPBENDER_SECURITY_CONTEXT
-        );
+        $this->styleManager = $container->get(MapbenderController::MAPBENDER_STYLE_MANAGER);
+        $this->securityContext = $container->get(MapbenderController::MAPBENDER_SECURITY_CONTEXT);
+        $this->setContainer($container);
     }
-
 
     /**
      * @param       $message

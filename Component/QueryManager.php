@@ -227,7 +227,6 @@ class QueryManager extends BaseManager
      */
     public function check(Query $query, $intersectGeometry = null, $srid = null)
     {
-        $container   = $this->container;
         $featureType = $this->getQueryFeatureType($query);
         $connection  = $featureType->getConnection();
         $driver      = $featureType->getDriver();

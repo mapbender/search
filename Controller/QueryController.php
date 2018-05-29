@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 /**
  * Class QueryController
@@ -21,7 +22,7 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  * @Route("/query/")
  */
-class QueryController extends MapbenderController
+class QueryController extends Controller
 {
 
     /** @var SecurityContext */
@@ -33,18 +34,12 @@ class QueryController extends MapbenderController
     /** @var User */
     protected $user;
 
-    /**
-     *This method has desired services injected.
-     *
-     * @return string[]
-     */
-    protected function mappings()
+    public function __construct(ContainerInterface $container)
     {
-        return array("queryManager"    => static::MAPBENDER_QUERY_MANAGER,
-                     "securityContext" => static::MAPBENDER_SECURITY_CONTEXT
-        );
+        $this->queryManager = $container->get(MapbenderController::MAPBENDER_QUERY_MANAGER);
+        $this->securityContext = $container->get(MapbenderController::MAPBENDER_SECURITY_CONTEXT);
+        $this->setContainer($container);
     }
-
 
     /**
      * @param       $message
