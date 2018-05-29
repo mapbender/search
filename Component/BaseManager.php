@@ -3,7 +3,6 @@
 namespace Mapbender\SearchBundle\Component;
 
 use Eslider\Driver\HKVStorage;
-use Mapbender\ConfiguratorBundle\Component\BaseComponent;
 use Mapbender\CoreBundle\Component\SecurityContext;
 use Monolog\Logger;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -14,7 +13,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @package Mapbender\SearchBundle\Component
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
-abstract class BaseManager extends BaseComponent implements ManagerInterface
+abstract class BaseManager implements ManagerInterface
 {
     /** @var HKVStorage */
     protected $db;
@@ -34,6 +33,9 @@ abstract class BaseManager extends BaseComponent implements ManagerInterface
     /** @var Logger */
     protected $logger;
 
+    /** @var ContainerInterface */
+    protected $container;
+
     /**
      * BaseManager constructor.
      *
@@ -49,8 +51,6 @@ abstract class BaseManager extends BaseComponent implements ManagerInterface
         $this->createDB();
         $this->logger = $this->container->get('logger');
         $this->setUserId($container->get("security.context")->getUser()->getId());
-
-        parent::__construct($container);
     }
 
 

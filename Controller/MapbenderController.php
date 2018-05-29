@@ -22,10 +22,6 @@ class MapbenderController extends BaseController implements ContainerAwareInterf
     const MAPBENDER_SECURITY_CONTEXT = "security.context";
 
 
-    /**@var boolean */
-    protected $containerSet = false;
-
-
     /**
      * Override this method to have desired services injected.
      *
@@ -56,12 +52,8 @@ class MapbenderController extends BaseController implements ContainerAwareInterf
     public function setContainer(ContainerInterface $container = null)
     {
         $this->container    = $container;
-        $this->containerSet = true;
-        if ($this->containerSet) {
-            foreach ($this->mappings() as $key => $mapping) {
-                $this->{$key} = $this->container->get($mapping);
-            }
-
+        foreach ($this->mappings() as $key => $mapping) {
+            $this->{$key} = $this->container->get($mapping);
         }
     }
 }
