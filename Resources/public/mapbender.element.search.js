@@ -1184,6 +1184,7 @@
             form.append($('<input name="queryId" value="' + queryId + '" />'));
             form.append($('<input name="type" value="' + exportType + '" />'));
             form.attr('action', widget.elementUrl + 'export');
+            form.attr('target', '_blank');
 
             $("body").append(form);
 
