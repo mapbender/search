@@ -2,8 +2,6 @@
 
 namespace Mapbender\SearchBundle\Controller;
 
-use Symfony\Component\DependencyInjection\ContainerInterface;
-
 /**
  * Class MapbenderController
  *

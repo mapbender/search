@@ -9,6 +9,7 @@ use Mapbender\SearchBundle\Component\QueryManager;
 use Mapbender\SearchBundle\Entity\ExportRequest;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Class ExportController
