@@ -6,10 +6,15 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
 use Eslider\Driver\HKVStorage;
 use FOM\CoreBundle\Component\ExportResponse;
+use Mapbender\DataSourceBundle\Component\DataStore;
+use Mapbender\DataSourceBundle\Component\DataStoreService;
 use Mapbender\DataSourceBundle\Component\FeatureType;
+use Mapbender\DataSourceBundle\Component\FeatureTypeService;
 use Mapbender\DataSourceBundle\Element\BaseElement;
 use Mapbender\DataSourceBundle\Entity\Feature;
 use Mapbender\DigitizerBundle\Component\Uploader;
+use Mapbender\SearchBundle\Component\QueryManager;
+use Mapbender\SearchBundle\Component\StyleManager;
 use Mapbender\SearchBundle\Entity\QuerySchema;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
@@ -223,11 +228,11 @@ class Search extends BaseElement
     public function exportAction($request)
     {
         $ids             = isset($request['ids']) && is_array($request['ids']) ? $request['ids'] : array();
-        $queryManager    = $this->container->get('mapbender.query.manager')->setSchemas($this->getSchemas());
+        $queryManager    = $this->getQueryManager(true);
         $query           = $queryManager->getById($request['queryId']);
         $schema          = $this->getSchemaById($query->getSchemaId());
         $featureTypeName = $schema->getFeatureType();
-        $featureType     = $this->container->get('features')->get($featureTypeName);
+        $featureType     = $this->getFeatureTypeService()->get($featureTypeName);
         $config          = $featureType->getConfiguration('export');
         $connection      = $featureType->getConnection();
         $maxResults      = isset($config["maxResults"]) ? $config["maxResults"] : 10000; // TODO: Set max results in export
@@ -257,7 +262,7 @@ class Search extends BaseElement
     public function listSchemasAction($request)
     {
         $result                  = array();
-        $featureTypeManager      = $this->container->get('features');
+        $featureTypeManager      = $this->getFeatureTypeService();
         $featureTypeDeclarations = $featureTypeManager->getFeatureTypeDeclarations();
         $schemas                 = $this->getSchemas();
 
@@ -312,7 +317,7 @@ class Search extends BaseElement
     public function saveQueryAction($request)
     {
         $data         = $this->filterFields($request['query'], array('userId','where'));
-        $queryManager = $this->container->get('mapbender.query.manager')->setSchemas($this->getSchemas());
+        $queryManager = $this->getQueryManager(true);
         $query        = $queryManager->saveArray($data);
 
         return array(
@@ -331,7 +336,7 @@ class Search extends BaseElement
     public function saveStyleAction($request)
     {
         $data         = $this->filterFields($request['style'], array('userId', 'styleMaps', 'pointerEvents'));
-        $styleManager = $this->container->get("mapbender.style.manager");
+        $styleManager = $this->getStyleManager();
         $style        = $styleManager->createStyle($data);
         $style->setUserId($this->getUserId());
         $style = $styleManager->save($style);
@@ -352,7 +357,7 @@ class Search extends BaseElement
      */
     public function listStyleAction($request)
     {
-        $styleManager = $this->container->get('mapbender.style.manager');
+        $styleManager = $this->getStyleManager();
         return array(
             'list' => array_reverse($styleManager->listStyles(), true)
         );
@@ -366,7 +371,7 @@ class Search extends BaseElement
      */
     public function getStyleAction($request)
     {
-        $styleManager = $this->container->get("mapbender.style.manager");
+        $styleManager = $this->getStyleManager();
         $id           = isset($request["id"]) ? $request["id"] : "UNDEFINED";
 
         $style = $styleManager->getById($id);
@@ -386,10 +391,10 @@ class Search extends BaseElement
      */
     public function removeStyleAction($request)
     {
+        $styleManager = $this->getStyleManager();
+        $removed = $styleManager->remove($request["id"]);
         return array(
-            'removed' => $this->container
-                ->get('mapbender.style.manager')
-                ->remove($request["id"])
+            'removed' => $removed,
         );
     }
 
@@ -536,8 +541,7 @@ class Search extends BaseElement
      */
     public function listQueriesAction($request)
     {
-        $container    = $this->container;
-        $queryManager = $container->get('mapbender.query.manager')->setSchemas($this->getSchemas());
+        $queryManager = $this->getQueryManager(true);
 
         return array(
             'list' => array_reverse($queryManager->listQueries(), true)
@@ -553,8 +557,7 @@ class Search extends BaseElement
      */
     public function checkQueryAction($request)
     {
-        $container    = $this->container;
-        $queryManager = $container->get('mapbender.query.manager')->setSchemas($this->getSchemas());
+        $queryManager = $this->getQueryManager(true);
         $query        = $queryManager->create($request['query']);
         $check        = null;
 
@@ -584,8 +587,7 @@ class Search extends BaseElement
      */
     public function fetchQueryAction($request)
     {
-        $container     = $this->container;
-        $queryManager  = $container->get('mapbender.query.manager')->setSchemas($this->getSchemas());
+        $queryManager  = $this->getQueryManager(true);
         $query         = $queryManager->create($request['query']);
         $originalQuery = $queryManager->getById($query->getId());
         $configuration = $this->getConfiguration();
@@ -600,6 +602,7 @@ class Search extends BaseElement
             $featureType           = $queryManager->getQueryFeatureType($originalQuery);
             $results               = $queryManager->fetchQuery($originalQuery, $request);
             $count                 = count($results["features"]);
+
 
             if ($count == $maxResults) {
                 $results["infoMessage"] = "Mehr als $maxResults Treffer gefunden, $maxResults Treffer angezeigt. \nGgf. an Kollegen mit FLIMAS-Desktop wenden.";
@@ -629,8 +632,7 @@ class Search extends BaseElement
      */
     public function removeQueryAction($request)
     {
-        $container    = $this->container;
-        $queryManager = $container->get('mapbender.query.manager')->setSchemas($this->getSchemas());
+        $queryManager = $this->getQueryManager(true);
         $id           = $request['id'];
         return array(
             'result' => $queryManager->removeById($id)
@@ -657,7 +659,7 @@ class Search extends BaseElement
 
         $id           = $request['id'];
         $dataItemId   = $request['dataItemId'];
-        $dataStore    = $this->container->get("data.source")->get($id);
+        $dataStore    = $this->getDataStoreById($id);
         $dataItem     = $dataStore->get($dataItemId);
         $dataItemData = null;
         if ($dataItem) {
@@ -677,7 +679,7 @@ class Search extends BaseElement
     {
         $id          = $request['id'];
         $dataItem    = $request['dataItem'];
-        $dataStore   = $this->container->get("data.source")->get($id);
+        $dataStore   = $this->getDataStoreById($id);
         $uniqueIdKey = $dataStore->getDriver()->getUniqueId();
         if (empty($request['dataItem'][ $uniqueIdKey ])) {
             unset($request['dataItem'][ $uniqueIdKey ]);
@@ -694,7 +696,7 @@ class Search extends BaseElement
     public function removeDatastoreAction($request)
     {
         $id                = $request['id'];
-        $dataStore         = $this->container->get("data.source")->get($id);
+        $dataStore         = $this->getDataStoreById($id);
         $uniqueIdKey       = $dataStore->getDriver()->getUniqueId();
         $dataItemId        = $request['dataItem'][ $uniqueIdKey ];
         $results["result"] = $dataStore->remove($dataItemId);
@@ -850,5 +852,56 @@ class Search extends BaseElement
     {
         $schemas = $this->getSchemas();
         return $schemas[ $id ];
+    }
+
+    /**
+     * @param bool $initSchemas
+     * @return QueryManager
+     */
+    protected function getQueryManager($initSchemas = true)
+    {
+        /** @var QueryManager $queryManager */
+        $queryManager = $this->container->get('mapbender.query.manager');
+        if ($initSchemas) {
+            /**
+             * @todo: Don't mutate services after container initialization.
+             *        This is a (backwards compatible) violation of expected service usage.
+             *        If we need schemas, we should supply them in the calls to the service, not set them first with
+             *        global side effects.
+             */
+            $queryManager->setSchemas($this->getSchemas());
+        }
+        return $queryManager;
+    }
+
+    /**
+     * @return FeatureTypeService
+     */
+    protected function getFeatureTypeService()
+    {
+        /** @var FeatureTypeService $service */
+        $service = $this->container->get("features");
+        return $service;
+    }
+
+    /**
+     * @return StyleManager
+     */
+    protected function getStyleManager()
+    {
+        /** @var StyleManager $service */
+        $service = $this->container->get('mapbender.style.manager');
+        return $service;
+    }
+
+    /**
+     * @param string $id
+     * @return DataStore
+     */
+    protected function getDataStoreById($id)
+    {
+        /** @var DataStoreService $dataStoreService */
+        $dataStoreService = $this->container->get('data.source');
+        return $dataStoreService->get($id);
     }
 }
