@@ -33,3 +33,5 @@ mb:
       zoomTo: Einzoomen
       save: Save
       toggleVisibility: Objekt show/hide
+
+mb.search.api.query.error: 'Feature API query error.'

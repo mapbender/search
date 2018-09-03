@@ -2,17 +2,6 @@
     'use strict';
 
     /**
-     * Translate digitizer keywords
-     * @param title
-     * @param withoutSuffix
-     * @returns {*}
-     */
-    function translate(title, withoutSuffix) {
-        return Mapbender.trans(withoutSuffix ? title : "mb.digitizer." + title);
-    }
-
-
-    /**
      * Digitizing tool set
      *
      * @author Andriy Oblivantsev <eslider@gmail.com>
@@ -1146,7 +1135,7 @@
                     window.location.reload();
                 }
             }).fail(function(xhr) {
-                var errorMessage = translate('api.query.error-message');
+                var errorMessage = Mapbender.trans('mb.search.api.query.error');
                 var errorDom = $(xhr.responseText);
                 // https://stackoverflow.com/a/298758
                 var exceptionTextNodes = $('.sf-reset .text-exception h1', errorDom).contents().filter(function() {

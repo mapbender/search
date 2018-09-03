@@ -89,3 +89,5 @@ mb:
       table:
         info:
           status: _START_ to _END_ from _TOTAL_
+
+mb.search.api.query.error: 'Feature API: Abfrage fehlgeschlagen.'
