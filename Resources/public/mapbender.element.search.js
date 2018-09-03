@@ -1127,42 +1127,37 @@
          * Digitizer API connection query
          *
          * @param uri suffix
-         * @param request query
+         * @param data object or null
+         * @param method string (default 'POST'; @todo: 'GET' should be default)
          * @return xhr jQuery XHR object
          * @version 0.2
          */
-        query: function(uri, request) {
+        query: function(uri, data, method) {
             var widget = this;
             return $.ajax({
                 url:         widget.elementUrl + uri,
-                type:        'POST',
+                method:      method || 'POST',
                 contentType: "application/json; charset=utf-8",
                 dataType:    "json",
-                data:        JSON.stringify(request)
-            }).error(function(xhr) {
-
-                if(xhr.statusText == "abort"){
-                    return;
+                data:        data && (method === 'GET' && data || JSON.stringify(data)) || null
+            }).fail(function(xhr) {
+                // this happens on logout: error callback with status code 200 'ok'
+                if (xhr.status === 200 && xhr.getResponseHeader("Content-Type").toLowerCase().indexOf("text/html") >= 0) {
+                    window.location.reload();
                 }
-
+            }).fail(function(xhr) {
                 var errorMessage = translate('api.query.error-message');
                 var errorDom = $(xhr.responseText);
-
-                if(errorDom.size() && errorDom.is(".sf-reset")) {
-                    errorMessage += "\n" + errorDom.find(".block_exception h2").text() + "\n";
-                    errorMessage += "Trace:\n";
-                    _.each(errorDom.find(".traces li"), function(li) {
-                        errorMessage += $(li).text() + "\n";
-                    });
-
-                } else {
-                    errorMessage += JSON.stringify(xhr.responseText);
+                // https://stackoverflow.com/a/298758
+                var exceptionTextNodes = $('.sf-reset .text-exception h1', errorDom).contents().filter(function() {
+                    return this.nodeType === (Node && Node.TEXT_NODE || 3) && ((this.nodeValue || '').trim());
+                });
+                if (exceptionTextNodes && exceptionTextNodes.length) {
+                    errorMessage = [errorMessage, exceptionTextNodes[0].nodeValue.trim()].join("\n");
                 }
-
-                $.notify(errorMessage,{
+                $.notify(errorMessage, {
                     autoHide: false
                 });
-                console.log(errorMessage, xhr);
             });
         },
 
