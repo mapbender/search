@@ -1,30 +1,28 @@
 <?php
 namespace Mapbender\SearchBundle\Entity;
 
-use Eslider\Entity\UniqueBaseEntity;
-
 /**
  * Class SearchQuery
  *
  * @package Mapbender\SearchBundle\Entity
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
-class QueryCondition extends UniqueBaseEntity
+class QueryCondition extends UniqueBase
 {
     /** @var string Name */
-    protected $name;
+    public $name;
 
     /** @var string $fieldName */
-    protected $fieldName;
+    public $fieldName;
 
     /** @var string Operator */
-    protected $operator;
+    public $operator;
 
     /** @var string Value */
-    protected $value;
+    public $value;
 
     /** @var string SQL */
-    protected $sql;
+    public $sql;
 
     /**
      * @return string

@@ -2,7 +2,6 @@
 
 namespace Mapbender\SearchBundle\Entity;
 
-use Eslider\Entity\UniqueBaseEntity;
 use FOM\CoreBundle\Component\ExportResponse;
 
 /**
@@ -11,7 +10,7 @@ use FOM\CoreBundle\Component\ExportResponse;
  * @package Mapbender\SearchBundle\Entity
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
-class ExportRequest extends UniqueBaseEntity
+class ExportRequest extends UniqueBase
 {
     /** @var string[] */
     public $ids = array();

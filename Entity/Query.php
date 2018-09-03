@@ -2,45 +2,43 @@
 
 namespace Mapbender\SearchBundle\Entity;
 
-use Eslider\Entity\UniqueBaseEntity;
-
 /**
  * Class SearchQuery
  *
  * @package Mapbender\SearchBundle\Entity
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
-class Query extends UniqueBaseEntity
+class Query extends UniqueBase
 {
     /** @var string Name */
-    protected $name;
+    public $name;
 
     /** @var QueryCondition[] Conditions */
-    protected $conditions;
+    public $conditions;
 
     /** @var Field[] Fields */
-    protected $fields;
+    public $fields;
 
     /** @var int $userId */
-    protected $userId;
+    public $userId;
 
     /** @var StyleMap StyleMap */
-    protected $styleMap;
+    public $styleMap;
 
     /** @var string Schema ID or name */
-    protected $schemaId;
+    public $schemaId;
 
     /** @var string SQL */
-    protected $sql;
+    public $sql;
 
     /** @var string Where */
-    protected $where;
+    public $where;
 
     /** @var bool Look for extend only? */
-    protected $extendOnly = true;
+    public $extendOnly = true;
 
     /** @var bool Only for Export? */
-    protected $exportOnly = false;
+    public $exportOnly = false;
 
     /**
      * @return string

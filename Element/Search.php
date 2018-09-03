@@ -198,7 +198,7 @@ class Search extends BaseElement
             case 'queries/list':
             case 'style/list':
             case 'stylemap/list':
-                return $this->zumbaResponse(array(
+                return new JsonResponse(array(
                     'list' => array_reverse($repository->getAll(), true)
                 ));
             case 'query/remove':
@@ -213,7 +213,7 @@ class Search extends BaseElement
                 $repository->save($entity);
                 // @todo: fix this inconsistency
                 $responseDataKey = ($saveDataKey == 'query') ? 'entity' : $saveDataKey;
-                return $this->zumbaResponse(array(
+                return new JsonResponse(array(
                     $responseDataKey => $entity,
                 ));
             default:
@@ -270,7 +270,7 @@ class Search extends BaseElement
      * Export results
      *
      * @param $request
-     * @return mixed
+     * @return ExportResponse
      */
     public function exportAction($request)
     {
@@ -302,7 +302,7 @@ class Search extends BaseElement
      * Export results
      *
      * @param $request
-     * @return mixed
+     * @return JsonResponse
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      */
@@ -348,16 +348,16 @@ class Search extends BaseElement
 
         ksort($result);
 
-        return array(
-            'list' => $result // array_reverse($result, true)
-        );
+        return new JsonResponse(array(
+            'list' => $result,
+        ));
     }
 
     /**
      * Removes a Style Entity ID from StyleMap Entity
      *
      * @param $request
-     * @return array
+     * @return JsonResponse
      * @throws \Symfony\Component\Config\Definition\Exception\Exception
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
@@ -367,9 +367,9 @@ class Search extends BaseElement
         $styleManager = $this->getStyleMapManager();
         $styleMapId   = $request['styleMapId'];
         $styleId      = $request['styleId'];
-        return array(
+        return new JsonResponse(array(
             'result' => $styleManager->removeStyle($styleMapId, $styleId)
-        );
+        ));
     }
 
 
@@ -377,7 +377,7 @@ class Search extends BaseElement
      * Add a Style Entity ID to StyleMap Entity
      *
      * @param $request
-     * @return mixed
+     * @return JsonResponse
      */
     public function addStyleToStylemapAction($request)
     {
@@ -396,6 +396,7 @@ class Search extends BaseElement
      *
      * @param $request
      * @return \Mapbender\DataSourceBundle\Entity\Feature[]
+     * @todo: figure out if we can serialize this without Zumba\Utils\JsonSerializer
      */
     public function selectFeaturesAction($request)
     {
@@ -412,7 +413,7 @@ class Search extends BaseElement
      * List queries
      *
      * @param $request
-     * @return \Mapbender\DataSourceBundle\Entity\Feature[]
+     * @return JsonResponse
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      */
     public function checkQueryAction($request)
@@ -434,12 +435,11 @@ class Search extends BaseElement
             );
         }
 
-        return $check;
+        return new JsonResponse($check);
     }
 
 
     /**
-     * List queries
      *
      * @param $request
      * @return \Mapbender\DataSourceBundle\Entity\Feature[]
@@ -553,18 +553,18 @@ class Search extends BaseElement
      * Delete feature
      *
      * @param $request
-     * @return bool|mixed|null
+     * @return JsonResponse
      */
     public function deleteAction($request)
     {
-        return $this->getFeatureType()->remove($request['feature']);
+        return new JsonResponse($this->getFeatureType()->remove($request['feature']));
     }
 
     /**
      * Upload file action
      *
      * @param $request
-     * @return bool|mixed|null
+     * @return JsonResponse
      */
     public function uploadFileAction($request)
     {

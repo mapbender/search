@@ -3,9 +3,8 @@
 namespace Mapbender\SearchBundle\Component;
 
 use Eslider\Driver\HKVStorage;
-use Eslider\Entity\BaseEntity;
-use Eslider\Entity\UniqueBaseEntity;
 use Mapbender\CoreBundle\Component\SecurityContext;
+use Mapbender\SearchBundle\Entity\UniqueBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -46,21 +45,27 @@ abstract class BaseManager implements ManagerInterface
     }
 
     /**
+     * @param mixed[] $data
+     * @return UniqueBase
+     */
+    abstract public function create($data);
+
+    /**
      * List all records
      *
-     * @return BaseEntity[]
+     * @return UniqueBase[]
      * @internal param int $id
      */
     public function getAll()
     {
-        /** @var BaseEntity[] $list */
+        /** @var UniqueBase[] $list */
         $list = $this->db->getData($this->tableName, null, null, $this->getUserId());
         return $list ? $list : array();
     }
 
     /**
      * @param int $id
-     * @return BaseEntity|null
+     * @return UniqueBase|null
      */
     public function getById($id)
     {
@@ -70,8 +75,8 @@ abstract class BaseManager implements ManagerInterface
     }
 
     /**
-     * @param UniqueBaseEntity $entity
-     * @return UniqueBaseEntity
+     * @param UniqueBase $entity
+     * @return UniqueBase
      */
     public function save($entity)
     {
@@ -103,7 +108,7 @@ abstract class BaseManager implements ManagerInterface
 
     /**
      * @param $data
-     * @return UniqueBaseEntity
+     * @return UniqueBase
      */
     public function createFiltered($data)
     {

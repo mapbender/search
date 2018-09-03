@@ -1,36 +1,34 @@
 <?php
 namespace Mapbender\SearchBundle\Entity;
 
-use Eslider\Entity\BaseEntity;
-
 /**
  * Class QuerySchema
  *
  * @package Mapbender\SearchBundle\Entity
  * @author  Andriy Oblivantsev <eslider@gmail.com>
  */
-class QuerySchema extends BaseEntity
+class QuerySchema extends Base
 {
     /** @var string Feature type name or ID */
-    protected $featureType;
+    public $featureType;
 
     /** @var string Maximal results count */
-    protected $maxResults = 500;
+    public $maxResults = 500;
 
     /** @var string Maximal results count */
-    protected $maxExtend = 25000;
+    public $maxExtend = 25000;
 
     /** @var array Fields */
-    protected $fields = array();
+    public $fields = array();
 
     /** @var array TODO: Export configuration */
-    protected $export = array();
+    public $export = array();
 
     /** @var array TODO: Print configuration */
-    protected $print = array();
+    public $print = array();
 
     /** @var string TODO: Schema title */
-    protected $title;
+    public $title;
 
     /**
      * @return string Feature type name

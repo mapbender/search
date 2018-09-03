@@ -2,24 +2,22 @@
 
 namespace Mapbender\SearchBundle\Entity;
 
-use Eslider\Entity\UniqueBaseEntity;
-
 /**
  * Class StyleMap
  *
  * @package Mapbender\DataSourceBundle\Entity
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
-class StyleMap extends UniqueBaseEntity
+class StyleMap extends UniqueBase
 {
     /** @var string Name * */
-    protected $name;
+    public $name;
 
     /* @var Style[] Style list */
-    protected $styles = array();
+    public $styles = array();
 
     /** @var string userId * */
-    protected $userId;
+    public $userId;
 
     /**
      * @return string

@@ -2,8 +2,6 @@
 
 namespace Mapbender\SearchBundle\Entity;
 
-use Eslider\Entity\UniqueBaseEntity;
-
 /**
  * Class Style
  *
@@ -11,10 +9,10 @@ use Eslider\Entity\UniqueBaseEntity;
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  * @author  Andriy Oblivantsev <eslider@gmail.com>
  */
-class Style extends UniqueBaseEntity
+class Style extends UniqueBase
 {
     /** @var string Name */
-    protected $name;
+    public $name;
 
     /** @var Boolean  Set to false if no fill is desired. */
     public $fill;
@@ -152,10 +150,10 @@ class Style extends UniqueBaseEntity
     public $display;
 
     /** @var int User ID */
-    protected $userId;
+    public $userId;
 
     /** @var String[] Style Maps which contain this style */
-    protected $styleMaps;
+    public $styleMaps;
 
     /** @var */
     public $featureId;
