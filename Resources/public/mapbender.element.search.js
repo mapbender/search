@@ -1113,7 +1113,6 @@
         },
 
         /**
-         * Digitizer API connection query
          *
          * @param uri suffix
          * @param data object or null
@@ -1134,7 +1133,10 @@
                 if (xhr.status === 200 && xhr.getResponseHeader("Content-Type").toLowerCase().indexOf("text/html") >= 0) {
                     window.location.reload();
                 }
-            }).fail(function(xhr) {
+            }).fail(function(xhr, message, e) {
+                if (xhr.statusText === 'abort') {
+                    return;
+                }
                 var errorMessage = Mapbender.trans('mb.search.api.query.error');
                 var errorDom = $(xhr.responseText);
                 // https://stackoverflow.com/a/298758
