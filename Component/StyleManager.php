@@ -1,7 +1,6 @@
 <?php
 namespace Mapbender\SearchBundle\Component;
 
-use Eslider\Entity\UniqueBaseEntity;
 use Mapbender\SearchBundle\Entity\Style;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -33,10 +32,6 @@ class StyleManager extends BaseManager
      */
     public function create($args)
     {
-        $style = new Style($args);
-        if (!isset($args['id'])) {
-            $style->setId($this->generateUUID());
-        }
-        return $style;
+        return new Style($args);
     }
 }

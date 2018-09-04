@@ -319,8 +319,9 @@ class Search extends BaseElement
     {
         $data         = $this->filterFields($request['query'], array('userId','where'));
         $queryManager = $this->getQueryManager(true);
-        $query        = $queryManager->save($queryManager->create($data));
-
+        $query        = $queryManager->create($data);
+        $query->setUserId($this->getUserId());
+        $queryManager->save($query);
         return array(
             'entity' => $query
         );

@@ -63,12 +63,7 @@ class QueryManager extends BaseManager
      */
     public function create($args)
     {
-        $query = new Query($args);
-        if (!isset($args["id"])) {
-            $query->setId($this->generateUUID());
-        }
-        $query->setUserId($this->getUserId());
-        return $query;
+        return new Query($args);
     }
 
     /**

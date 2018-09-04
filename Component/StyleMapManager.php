@@ -39,12 +39,7 @@ class StyleMapManager extends BaseManager
      */
     public function create($args)
     {
-        $styleMap = new StyleMap($args);
-        if (!isset($args['id'])) {
-            $styleMap->setId($this->generateUUID());
-        }
-        $styleMap->setUserId($this->getUserId());
-        return $styleMap;
+        return new StyleMap($args);
     }
 
     /**

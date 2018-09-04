@@ -75,6 +75,9 @@ abstract class BaseManager implements ManagerInterface
      */
     public function save($entity)
     {
+        if (!$entity->getId()) {
+            $entity->setId($this->generateUUID());
+        }
         $all = $this->getAll();
         $id = $entity->getId();
         $all[$id] = $entity;
