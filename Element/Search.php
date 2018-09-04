@@ -21,6 +21,9 @@ use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Zumba\Util\JsonSerializer;
 
 /**
  * Class Search
@@ -173,14 +176,65 @@ class Search extends BaseElement
      */
     public function httpAction($action)
     {
-        /** @var $requestService Request */
-        $request = $this->getRequestData();
-
-        if (isset($request['schema'])) {
-            $this->setSchema($request);
+        $words = array_filter(explode('/', $action));
+        if (!$words) {
+            throw new BadRequestHttpException("Invalid action " . var_export($action, true));
         }
+        /** @todo: defeat redundant json encode in client, then we can do this ourselves */
+        $request = $this->getRequestData();
+        switch (strtolower($words[0])) {
+            case 'style':
+                $saveDataKey = 'style';
+                $saveFieldFilter = array('userId', 'styleMaps', 'pointerEvents');
+                $repository = $this->getStyleManager();
+                break;
+            case 'stylemap':
+                $saveDataKey = 'styleMap';
+                $saveFieldFilter = array('userId');
+                $repository = $this->getStyleMapManager();
+                break;
+            case 'query':
+            case 'queries':
+                $saveDataKey = 'query';
+                $saveFieldFilter = array('userId','where');
+                $repository = $this->getQueryManager();
+                break;
+            default:
+                if (isset($request['schema'])) {
+                    $this->setSchema($request);
+                }
+                return parent::httpAction($action);
+        }
+        if ($repository) switch (strtolower($words[1])) {
+            case 'list':
+                return $this->zumbaResponse(array(
+                    'list' => array_reverse($repository->getAll(), true)
+                ));
+            case 'remove':
+                return new JsonResponse(array(
+                    'result' => $repository->remove($request['id']),
+                ));
+            case 'save':
+                $filtered = $this->filterFields($request[$saveDataKey], $saveFieldFilter);
+                $entity = $repository->create($filtered);
+                $entity->setUserId($this->getUserId());
+                $repository->save($entity);
+                // @todo: fix this inconsistency
+                $responseDataKey = ($saveDataKey == 'query') ? 'entity' : $saveDataKey;
+                return $this->zumbaResponse(array(
+                    $responseDataKey => $entity,
+                ));
+            default:
+                break;
+        }
+        throw new BadRequestHttpException("Invalid action " . var_export($action, true));
+    }
 
-        return parent::httpAction($action);
+    private function zumbaResponse($data)
+    {
+        $serializer = new JsonSerializer();
+        $responseBody = $serializer->serialize($data);
+        return new Response($responseBody, 200, array('Content-Type' => 'application/json'));
     }
 
     /**
@@ -308,177 +362,6 @@ class Search extends BaseElement
     }
 
     /**
-     * Export results
-     *
-     * @param $request
-     * @return mixed
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
-     */
-    public function saveQueryAction($request)
-    {
-        $data         = $this->filterFields($request['query'], array('userId','where'));
-        $queryManager = $this->getQueryManager(true);
-        $query        = $queryManager->create($data);
-        $query->setUserId($this->getUserId());
-        $queryManager->save($query);
-        return array(
-            'entity' => $query
-        );
-    }
-
-    /**
-     * Save Styles
-     *
-     * @param $request
-     * @return mixed
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
-     */
-    public function saveStyleAction($request)
-    {
-        $data         = $this->filterFields($request['style'], array('userId', 'styleMaps', 'pointerEvents'));
-        $styleManager = $this->getStyleManager();
-        $style        = $styleManager->create($data);
-        $style->setUserId($this->getUserId());
-        $style = $styleManager->save($style);
-        return array(
-            'style' => $style
-        );
-    }
-
-
-    /**
-     * List styles
-     *
-     * @param $request
-     * @return mixed
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
-     * @throws \InvalidArgumentException
-     */
-    public function listStyleAction($request)
-    {
-        $styleManager = $this->getStyleManager();
-        return array(
-            'list' => array_reverse($styleManager->getAll(), true)
-        );
-    }
-
-    /**
-     * Gets a Style Entity via ID
-     *
-     * @param $request
-     * @return mixed
-     */
-    public function getStyleAction($request)
-    {
-        $styleManager = $this->getStyleManager();
-        $id           = isset($request["id"]) ? $request["id"] : "UNDEFINED";
-
-        $style = $styleManager->getById($id);
-        return new JsonResponse(array(
-            'style' => HKVStorage::encodeValue($style)
-        ));
-    }
-
-
-    /**
-     * Removes a Style Entity via ID
-     *
-     * @param $request
-     * @return mixed
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
-     */
-    public function removeStyleAction($request)
-    {
-        $styleManager = $this->getStyleManager();
-        $removed = $styleManager->remove($request["id"]);
-        return array(
-            'removed' => $removed,
-        );
-    }
-
-
-    /**
-     * Saves a StyleMap Entity
-     *
-     * @param $request
-     * @return array
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
-     */
-    public function saveStyleMapAction($request)
-    {
-        $data            = $this->filterFields($request["styleMap"], array('userId'));
-        $styleMapManager = $this->getStyleMapManager();
-        $styleMap        = $styleMapManager->create($data);
-        $styleMap->setUserId($this->getUserId());
-        $styleMapManager->save($styleMap);
-
-        return array(
-            'styleMap' => $styleMap
-        );
-    }
-
-
-    /**
-     * Lists all StyleMap Entities
-     *
-     * @param array $request
-     * @return mixed
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
-     */
-    public function listStyleMapAction($request)
-    {
-        $styleMapManager = $this->getStyleMapManager();
-        return array(
-            'list' => array_reverse($styleMapManager->getAll(), true)
-        );
-    }
-
-
-    /**
-     * Gets a StyleMap Entity via ID
-     *
-     * @param $request
-     * @return mixed
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
-     */
-    public function getStyleMapAction($request)
-    {
-        $styleMapManager = $this->getStyleMapManager();
-        $id              = $request['id'];
-        $styleMap        = $styleMapManager->getById($id);
-
-        return array(
-            'entity' => $styleMap
-        );
-    }
-
-
-    /**
-     * Removes a Style Entity via ID
-     *
-     * @param $request
-     * @return array
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
-     */
-    public function removeStyleMapAction($request)
-    {
-        $id              = $request['id'];
-        $styleMapManager = $this->getStyleMapManager();
-        return array(
-            'result' => $styleMapManager->remove($id)
-        );
-    }
-
-
-    /**
      * Removes a Style Entity ID from StyleMap Entity
      *
      * @param $request
@@ -531,22 +414,6 @@ class Search extends BaseElement
                     'maxResults' => 2500
                 ),
                 $request));
-    }
-
-    /**
-     * List queries
-     *
-     * @param $request
-     * @return \Mapbender\DataSourceBundle\Entity\Feature[]
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
-     */
-    public function listQueriesAction($request)
-    {
-        $queryManager = $this->getQueryManager(true);
-
-        return array(
-            'list' => array_reverse($queryManager->getAll(), true)
-        );
     }
 
     /**
@@ -620,22 +487,6 @@ class Search extends BaseElement
         }
 
         return $check;
-    }
-
-    /**
-     * List queries
-     *
-     * @param $request
-     * @return \Mapbender\DataSourceBundle\Entity\Feature[]
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
-     */
-    public function removeQueryAction($request)
-    {
-        $queryManager = $this->getQueryManager(true);
-        $id           = $request['id'];
-        return array(
-            'result' => $queryManager->remove($id)
-        );
     }
 
     /**
