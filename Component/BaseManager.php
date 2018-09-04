@@ -18,9 +18,6 @@ abstract class BaseManager implements ManagerInterface
     /** @var HKVStorage */
     protected $db;
 
-    /* @var Configuration configuration */
-    protected $configuration;
-
     /* @var string userId */
     protected $userId = SecurityContext::USER_ANONYMOUS_ID;
 
@@ -71,25 +68,6 @@ abstract class BaseManager implements ManagerInterface
     protected function generateUUID()
     {
         return uniqid("", true);
-    }
-
-
-    /**
-     * @return configuration
-     */
-    public function getConfiguration()
-    {
-        return $this->configuration;
-    }
-
-    /**
-     * @param configuration $configuration
-     * @return BaseManager
-     */
-    public function setConfiguration($configuration)
-    {
-        $this->configuration = $configuration;
-        return $this;
     }
 
     /**

@@ -1,7 +1,6 @@
 <?php
 namespace Mapbender\SearchBundle\Component;
 
-use Eslider\Driver\HKVStorage;
 use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Component\FeatureTypeService;
 use Mapbender\DataSourceBundle\Entity\Feature;
@@ -19,15 +18,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class QueryManager extends BaseManager
 {
-    /** @var HKVStorage $db */
-    protected $db;
-
-    /** @var Configuration $configuration */
-    protected $configuration;
-
-    /** @var string Scope */
-    protected $scope;
-
     /** @var QuerySchema[] Schemas */
     protected $schemas;
 
@@ -183,43 +173,6 @@ class QueryManager extends BaseManager
     }
 
     /**
-     * @return Configuration
-     */
-    public function getConfiguration()
-    {
-        return $this->configuration;
-    }
-
-    /**
-     * @param Configuration $configuration
-     * @return QueryManager
-     */
-    public function setConfiguration($configuration)
-    {
-        $this->configuration = $configuration;
-        return $this;
-    }
-
-    /**
-     * @param int $userId
-     * @return QueryManager
-     */
-    public function setUserId($userId)
-    {
-        $this->userId = $userId;
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getUserId()
-    {
-        return $this->userId;
-    }
-
-
-    /**
      * @param Query       $query
      * @param null|string $intersectGeometry
      * @param null        $srid
@@ -266,7 +219,7 @@ class QueryManager extends BaseManager
         if (isset($queries[ $id ])) {
             unset($queries[ $id ]);
         }
-        return $this->db->saveData($this->tableName, $queries, null, $this->scope, $this->getUserId());
+        return $this->db->saveData($this->tableName, $queries, null, null, $this->getUserId());
     }
 
     /**
