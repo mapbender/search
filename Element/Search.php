@@ -157,6 +157,8 @@ class Search extends BaseElement
      */
     public function httpAction($action)
     {
+        // action seems to come in lower-case anyway, might be browser dependent
+        $action = strtolower($action);
         switch ($action) {
             case 'schemas/list':
             case 'query/fetch':
@@ -184,8 +186,8 @@ class Search extends BaseElement
                 $saveDataKey = 'style';
                 $repository = $this->getStyleManager();
                 break;
-            case 'styleMap/list':
-            case 'styleMap/save':
+            case 'stylemap/list':
+            case 'stylemap/save':
                 $saveDataKey = 'styleMap';
                 $repository = $this->getStyleMapManager();
                 break;
@@ -195,7 +197,7 @@ class Search extends BaseElement
         switch ($action) {
             case 'queries/list':
             case 'style/list':
-            case 'styleMap/list':
+            case 'stylemap/list':
                 return $this->zumbaResponse(array(
                     'list' => array_reverse($repository->getAll(), true)
                 ));
@@ -205,7 +207,7 @@ class Search extends BaseElement
                 ));
             case 'query/save':
             case 'style/save':
-            case 'styleMap/save':
+            case 'stylemap/save':
                 $entity = $repository->createFiltered($request[$saveDataKey]);
                 $entity->setUserId($this->getUserId());
                 $repository->save($entity);
