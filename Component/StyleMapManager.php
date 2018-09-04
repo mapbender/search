@@ -12,6 +12,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @method StyleMap getById(integer $id)
  * @method StyleMap[] getAll()
  * @method StyleMap save(StyleMap $entity)
+ * @method StyleMap createFiltered(array $data)
  */
 class StyleMapManager extends BaseManager
 {

@@ -15,6 +15,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @method Query getById(integer $id)
  * @method Query[] getAll()
  * @method Query save(Query $entity)
+ * @method Query createFiltered(array $data)
  */
 class QueryManager extends BaseManager
 {
@@ -38,6 +39,22 @@ class QueryManager extends BaseManager
     }
 
     /**
+     * @param $args
+     * @return Query
+     */
+    public function create($args)
+    {
+        return new Query($args);
+    }
+
+    protected function getBlacklistedFields()
+    {
+        return array_merge(parent::getBlacklistedFields(), array(
+            'where',
+        ));
+    }
+
+    /**
      * @param QueryCondition[] $queryConditions
      * @param FeatureType      $featureType
      * @return string SQL
@@ -55,15 +72,6 @@ class QueryManager extends BaseManager
                 . ' ' . $connection->quote($condition->getValue());
         }
         return implode(' AND ', $whereConditions);
-    }
-
-    /**
-     * @param $args
-     * @return Query
-     */
-    public function create($args)
-    {
-        return new Query($args);
     }
 
     /**

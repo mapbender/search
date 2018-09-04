@@ -11,7 +11,6 @@ use Mapbender\DataSourceBundle\Component\DataStoreService;
 use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Component\FeatureTypeService;
 use Mapbender\DataSourceBundle\Element\BaseElement;
-use Mapbender\DataSourceBundle\Entity\Feature;
 use Mapbender\DigitizerBundle\Component\Uploader;
 use Mapbender\SearchBundle\Component\QueryManager;
 use Mapbender\SearchBundle\Component\StyleManager;
@@ -20,7 +19,6 @@ use Mapbender\SearchBundle\Entity\QuerySchema;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Zumba\Util\JsonSerializer;
@@ -155,68 +153,60 @@ class Search extends BaseElement
     }
 
     /**
-     * Remove given fields
-     *
-     * @param $data
-     * @param $fields
-     * @return mixed
-     */
-    protected function filterFields($data, $fields)
-    {
-        foreach ($fields as $deniedFieldName) {
-            if (isset($data[ $deniedFieldName ])) {
-                unset($data[ $deniedFieldName ]);
-            }
-        }
-        return $data;
-    }
-
-    /**
      * @inheritdoc
      */
     public function httpAction($action)
     {
-        $words = array_filter(explode('/', $action));
-        if (!$words) {
-            throw new BadRequestHttpException("Invalid action " . var_export($action, true));
-        }
-        /** @todo: defeat redundant json encode in client, then we can do this ourselves */
-        $request = $this->getRequestData();
-        switch (strtolower($words[0])) {
-            case 'style':
-                $saveDataKey = 'style';
-                $saveFieldFilter = array('userId', 'styleMaps', 'pointerEvents');
-                $repository = $this->getStyleManager();
-                break;
-            case 'stylemap':
-                $saveDataKey = 'styleMap';
-                $saveFieldFilter = array('userId');
-                $repository = $this->getStyleMapManager();
-                break;
-            case 'query':
-            case 'queries':
-                $saveDataKey = 'query';
-                $saveFieldFilter = array('userId','where');
-                $repository = $this->getQueryManager();
-                break;
-            default:
+        switch ($action) {
+            case 'schemas/list':
+            case 'query/fetch':
+            case 'query/check':
+            case 'export':
+                $request = $this->getRequestData();
                 if (isset($request['schema'])) {
                     $this->setSchema($request['schema']);
                 }
                 return parent::httpAction($action);
+            default:
+                break;
         }
-        if ($repository) switch (strtolower($words[1])) {
-            case 'list':
+        /** @todo: defeat redundant json encode in client, then we can do this ourselves */
+        $request = $this->getRequestData();
+        switch ($action) {
+            case 'queries/list':
+            case 'query/save':
+            case 'query/remove':
+                $saveDataKey = 'query';
+                $repository = $this->getQueryManager();
+                break;
+            case 'style/list':
+            case 'style/save':
+                $saveDataKey = 'style';
+                $repository = $this->getStyleManager();
+                break;
+            case 'styleMap/list':
+            case 'styleMap/save':
+                $saveDataKey = 'styleMap';
+                $repository = $this->getStyleMapManager();
+                break;
+            default:
+                throw new BadRequestHttpException("Invalid action " . var_export($action, true));
+        }
+        switch ($action) {
+            case 'queries/list':
+            case 'style/list':
+            case 'styleMap/list':
                 return $this->zumbaResponse(array(
                     'list' => array_reverse($repository->getAll(), true)
                 ));
-            case 'remove':
+            case 'query/remove':
                 return new JsonResponse(array(
                     'result' => $repository->remove($request['id']),
                 ));
-            case 'save':
-                $filtered = $this->filterFields($request[$saveDataKey], $saveFieldFilter);
-                $entity = $repository->create($filtered);
+            case 'query/save':
+            case 'style/save':
+            case 'styleMap/save':
+                $entity = $repository->createFiltered($request[$saveDataKey]);
                 $entity->setUserId($this->getUserId());
                 $repository->save($entity);
                 // @todo: fix this inconsistency

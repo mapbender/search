@@ -101,6 +101,40 @@ abstract class BaseManager implements ManagerInterface
         return $wasMissed;
     }
 
+    /**
+     * @param $data
+     * @return UniqueBaseEntity
+     */
+    public function createFiltered($data)
+    {
+        $filtered = $this->filterFields($data);
+        return $this->create($filtered);
+    }
+
+    /**
+     * @return string[] field names that are not settable by the user
+     */
+    protected function getBlacklistedFields()
+    {
+        return array(
+            'id',
+        );
+    }
+
+    /**
+     * Remove blacklisted fields
+     *
+     * @param mixed[] $data
+     * @return mixed[]
+     */
+    protected function filterFields($data)
+    {
+        foreach ($this->getBlacklistedFields() as $deniedFieldName) {
+            unset($data[$deniedFieldName]);
+        }
+        return $data;
+    }
+
 
     /**
      * Drop database

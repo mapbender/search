@@ -10,6 +10,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @method Style getById(integer $id)
  * @method Style[] getAll()
  * @method Style save(Style $entity)
+ * @method Style createFiltered(array $data)
  */
 class StyleManager extends BaseManager
 {
@@ -33,5 +34,13 @@ class StyleManager extends BaseManager
     public function create($args)
     {
         return new Style($args);
+    }
+
+    protected function getBlacklistedFields()
+    {
+        return array_merge(parent::getBlacklistedFields(), array(
+            'styleMaps',
+            'pointerEvents',
+        ));
     }
 }
