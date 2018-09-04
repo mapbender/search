@@ -11,7 +11,7 @@ class ResolveParametricServiceIdsPass implements CompilerPassInterface
     public function process(ContainerBuilder $container)
     {
         $targettedServiceIds = array(
-            'mapbender.query.manager',
+            'mapbender.search.query.manager',
         );
         foreach ($targettedServiceIds as $consumerId) {
             $definition = $container->getDefinition($consumerId);

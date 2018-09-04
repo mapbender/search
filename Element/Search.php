@@ -410,7 +410,7 @@ class Search extends BaseElement
     public function saveStyleMapAction($request)
     {
         $data            = $this->filterFields($request["styleMap"], array('userId'));
-        $styleMapManager = $this->container->get("mapbender.stylemap.manager");
+        $styleMapManager = $this->container->get("mapbender.search.stylemap.manager");
         $styleMap        = $styleMapManager->create($data);
 
         $styleMap->setUserId($this->getUserId());
@@ -432,7 +432,7 @@ class Search extends BaseElement
      */
     public function listStyleMapAction($request)
     {
-        $styleMapManager = $this->container->get('mapbender.stylemap.manager');
+        $styleMapManager = $this->container->get('mapbender.search.stylemap.manager');
         return array(
             'list' => array_reverse($styleMapManager->listStyleMaps(), true)
         );
@@ -449,7 +449,7 @@ class Search extends BaseElement
      */
     public function getStyleMapAction($request)
     {
-        $styleMapManager = $this->container->get('mapbender.stylemap.manager');
+        $styleMapManager = $this->container->get('mapbender.search.stylemap.manager');
         $id              = $request['id'];
         $styleMap        = $styleMapManager->getById($id);
 
@@ -470,7 +470,7 @@ class Search extends BaseElement
     public function removeStyleMapAction($request)
     {
         $id              = $request['id'];
-        $styleMapManager = $this->container->get('mapbender.stylemap.manager');
+        $styleMapManager = $this->container->get('mapbender.search.stylemap.manager');
         return array(
             'result' => $styleMapManager->remove($id)
         );
@@ -488,7 +488,7 @@ class Search extends BaseElement
      */
     public function removeStyleFromStyleMapAction($request)
     {
-        $styleManager = $this->container->get('mapbender.stylemap.manager');
+        $styleManager = $this->container->get('mapbender.search.stylemap.manager');
         $styleMapId   = $request['styleMapId'];
         $styleId      = $request['styleId'];
         return array(
@@ -505,7 +505,7 @@ class Search extends BaseElement
      */
     public function addStyleToStylemapAction($request)
     {
-        $styleMapManager = $this->container->get("mapbender.stylemap.manager");
+        $styleMapManager = $this->container->get("mapbender.search.stylemap.manager");
         $styleMapId      = isset($request["stylemapid"]) ? $request["stylemapid"] : "UNDEFINED";
         $styleId         = isset($request["styleid"]) ? $request["styleid"] : "UNDEFINED";
         $style           = $styleMapManager->addStyle($styleMapId, $styleId);
@@ -861,7 +861,7 @@ class Search extends BaseElement
     protected function getQueryManager($initSchemas = true)
     {
         /** @var QueryManager $queryManager */
-        $queryManager = $this->container->get('mapbender.query.manager');
+        $queryManager = $this->container->get('mapbender.search.query.manager');
         if ($initSchemas) {
             /**
              * @todo: Don't mutate services after container initialization.
@@ -891,7 +891,7 @@ class Search extends BaseElement
     protected function getStyleManager()
     {
         /** @var StyleManager $service */
-        $service = $this->container->get('mapbender.style.manager');
+        $service = $this->container->get('mapbender.search.style.manager');
         return $service;
     }
 

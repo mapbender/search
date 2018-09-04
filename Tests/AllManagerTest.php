@@ -189,7 +189,7 @@ class AllManagerTest extends SymfonyTest2
      */
     public function getStyleManager()
     {
-         return  self::$container->get("mapbender.style.manager");
+         return  self::$container->get("mapbender.search.style.manager");
     }
 
     /**
@@ -198,7 +198,7 @@ class AllManagerTest extends SymfonyTest2
     private function getQueryManager()
     {
 
-        return self::$container->get("mapbender.query.manager");
+        return self::$container->get("mapbender.search.query.manager");
 
     }
 
@@ -207,7 +207,7 @@ class AllManagerTest extends SymfonyTest2
      */
     private function getStyleMapManager()
     {
-        return self::$container->get("mapbender.stylemap.manager");
+        return self::$container->get("mapbender.search.stylemap.manager");
     }
 
     /**

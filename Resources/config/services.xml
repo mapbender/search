@@ -8,17 +8,17 @@
     </parameters>
     <services>
 
-        <service class="Mapbender\SearchBundle\Component\QueryManager" id="mapbender.query.manager">
+        <service class="Mapbender\SearchBundle\Component\QueryManager" id="mapbender.search.query.manager">
             <argument type="service" id="service_container"/>
             <argument type="service" id="%mapbender.search.featuretype.service.id%" />
         </service>
-        <service class="Mapbender\SearchBundle\Component\StyleManager" id="mapbender.style.manager">
+        <service class="Mapbender\SearchBundle\Component\StyleManager" id="mapbender.search.style.manager">
             <argument type="service" id="service_container"/>
         </service>
 
-        <service class="Mapbender\SearchBundle\Component\StyleMapManager" id="mapbender.stylemap.manager">
+        <service class="Mapbender\SearchBundle\Component\StyleMapManager" id="mapbender.search.stylemap.manager">
             <argument type="service" id="service_container"/>
-            <argument type="service" id="mapbender.style.manager"/>
+            <argument type="service" id="mapbender.search.style.manager"/>
         </service>
     </services>
 </container>
