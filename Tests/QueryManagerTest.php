@@ -26,13 +26,6 @@ class QueryManagerTest extends SymfonyTest2
 
     }
 
-    /*protected function tearDown()
-    {
-        $dropDatabaseFailedMessage = "It was not possible to drop the Database";
-        self::assertTrue($this->queryManager->dropDatabase(), $dropDatabaseFailedMessage);
-
-    }*/
-
     public function testSave()
     {
         $query = $this->getMockupQuery();

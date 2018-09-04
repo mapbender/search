@@ -100,16 +100,6 @@ class AllManagerTest extends SymfonyTest2
 
     }
 
-    protected function tearDown()
-    {
-
-        $dropDatabaseFailedMessage = "It was not possible to drop the Database";
-        self::assertTrue($this->styleManager->dropDatabase(), $dropDatabaseFailedMessage);
-        self::assertTrue($this->styleMapManager->dropDatabase(), $dropDatabaseFailedMessage);
-        self::assertTrue($this->queryManager->dropDatabase(), $dropDatabaseFailedMessage);
-    }
-
-
     public function testCreateStyle()
     {
         self::assertEquals($this->styleData["graphicWidth"], $this->getMockupStyle()->getGraphicWidth());

@@ -25,13 +25,6 @@ class StyleManagerTest extends SymfonyTest2
 
     }
 
-    protected function tearDown()
-    {
-        $dropDatabaseFailedMessage = "It was not possible to drop the Database";
-        self::assertTrue($this->styleManager->dropDatabase(), $dropDatabaseFailedMessage);
-    }
-
-
     public function testSave()
     {
 
