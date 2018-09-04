@@ -3,7 +3,6 @@ namespace Mapbender\SearchBundle\Component;
 
 use Eslider\Entity\UniqueBaseEntity;
 use Mapbender\SearchBundle\Entity\Style;
-use Mapbender\SearchBundle\Entity\StyleMap;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -31,7 +30,7 @@ class StyleManager extends BaseManager
      * @param $args
      * @return Style
      */
-    public function createStyle($args)
+    public function create($args)
     {
         $style = new Style($args);
         if (!isset($args['id'])) {
@@ -45,34 +44,15 @@ class StyleManager extends BaseManager
      * Save style.
      *
      * @param      $style
-     * @param int  $scope
-     * @param int  $parentId
      * @return UniqueBaseEntity|Style|null
      */
-    public function save($style, $scope = null, $parentId = null)
+    public function save($style)
     {
-        $styles        = $this->listStyles();
+        $styles        = $this->getAll();
         $id            = $style->getId();
         $styles[ $id ] = $style;
-        $this->db->saveData($this->tableName, $styles, $scope, $parentId, $this->getUserId());
+        $this->db->saveData($this->tableName, $styles, null, null, $this->getUserId());
         return $style;
-    }
-
-    /**
-     * Save query
-     *
-     * @param array $args
-     * @param null  $scope
-     * @param null  $parentId
-     * @return Style
-     */
-    public function saveArray($args, $scope = null, $parentId = null)
-    {
-        return $this->save(
-            $this->createStyle($args),
-            $scope,
-            $parentId
-        );
     }
 
     /**
@@ -83,7 +63,7 @@ class StyleManager extends BaseManager
      */
     public function getById($id)
     {
-        $styles = $this->listStyles();
+        $styles = $this->getAll();
 
         return isset($styles[ $id ]) ? $styles[ $id ] : null;
     }
@@ -97,7 +77,7 @@ class StyleManager extends BaseManager
     public function getByIds($ids)
     {
         $styles    = array();
-        $styleMaps = $this->listStyles();
+        $styleMaps = $this->getAll();
 
         foreach ($styleMaps as $key => $value) {
             if (in_array($key, $ids)) {
@@ -113,38 +93,22 @@ class StyleManager extends BaseManager
      *
      * @return Style[]
      */
-    public function listStyles()
+    public function getAll()
     {
         $styles = $this->db->getData($this->tableName, null, null, $this->getUserId());
         return $styles ? $styles : array();
     }
 
     /**
-     * @param $args
-     * @return StyleMap
-     */
-    public function create($args)
-    {
-        if ($args == null) {
-            return null;
-        }
-
-        return $this->createStyle($args);
-    }
-
-
-    /**
      * @param string $id
-     * @param string $scope
-     * @param string $parentId
      * @return bool
      */
-    public function remove($id, $scope = null, $parentId = null)
+    public function remove($id)
     {
-        $list      = $this->listStyles();
+        $list      = $this->getAll();
         $wasMissed = isset($list[ $id ]);
         unset($list[ $id ]);
-        $this->db->saveData($this->tableName, $list, $scope, $parentId, $this->getUserId());
+        $this->db->saveData($this->tableName, $list, null, null, $this->getUserId());
 
         return $wasMissed;
     }

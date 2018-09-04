@@ -4,7 +4,6 @@ namespace Mapbender\SearchBundle\Component;
 
 use Eslider\Entity\BaseEntity;
 use Eslider\Entity\UniqueBaseEntity;
-use Mapbender\CoreBundle\Component\SecurityContext;
 
 /**
  * Interface ManagerInterface
@@ -18,11 +17,9 @@ interface ManagerInterface
      * Saves the entity
      *
      * @param UniqueBaseEntity|BaseEntity $args
-     * @param int                         $scope
-     * @param int                         $parentId
      * @return UniqueBaseEntity|BaseEntity
      */
-    public function save($args, $scope = null, $parentId = null);
+    public function save($args);
 
     /**
      * @param        $id

@@ -59,7 +59,7 @@ class QueryManagerTest extends SymfonyTest2
     {
         $query = $this->getMockupQuery();
         $this->queryManager->save($query);
-        $queryList = $this->queryManager->listQueries();
+        $queryList = $this->queryManager->getAll();
         $count     = $queryList != null ? count($queryList) : 0;
         self::assertGreaterThan(0, $count);
         $notContainedInListErrorMessage = "The saved Query is not contained by the query list!";

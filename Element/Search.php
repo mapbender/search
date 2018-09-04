@@ -15,6 +15,7 @@ use Mapbender\DataSourceBundle\Entity\Feature;
 use Mapbender\DigitizerBundle\Component\Uploader;
 use Mapbender\SearchBundle\Component\QueryManager;
 use Mapbender\SearchBundle\Component\StyleManager;
+use Mapbender\SearchBundle\Component\StyleMapManager;
 use Mapbender\SearchBundle\Entity\QuerySchema;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
@@ -318,7 +319,7 @@ class Search extends BaseElement
     {
         $data         = $this->filterFields($request['query'], array('userId','where'));
         $queryManager = $this->getQueryManager(true);
-        $query        = $queryManager->saveArray($data);
+        $query        = $queryManager->save($queryManager->create($data));
 
         return array(
             'entity' => $query
@@ -337,7 +338,7 @@ class Search extends BaseElement
     {
         $data         = $this->filterFields($request['style'], array('userId', 'styleMaps', 'pointerEvents'));
         $styleManager = $this->getStyleManager();
-        $style        = $styleManager->createStyle($data);
+        $style        = $styleManager->create($data);
         $style->setUserId($this->getUserId());
         $style = $styleManager->save($style);
         return array(
@@ -359,7 +360,7 @@ class Search extends BaseElement
     {
         $styleManager = $this->getStyleManager();
         return array(
-            'list' => array_reverse($styleManager->listStyles(), true)
+            'list' => array_reverse($styleManager->getAll(), true)
         );
     }
 
@@ -410,7 +411,7 @@ class Search extends BaseElement
     public function saveStyleMapAction($request)
     {
         $data            = $this->filterFields($request["styleMap"], array('userId'));
-        $styleMapManager = $this->container->get("mapbender.search.stylemap.manager");
+        $styleMapManager = $this->getStyleMapManager();
         $styleMap        = $styleMapManager->create($data);
 
         $styleMap->setUserId($this->getUserId());
@@ -432,9 +433,9 @@ class Search extends BaseElement
      */
     public function listStyleMapAction($request)
     {
-        $styleMapManager = $this->container->get('mapbender.search.stylemap.manager');
+        $styleMapManager = $this->getStyleMapManager();
         return array(
-            'list' => array_reverse($styleMapManager->listStyleMaps(), true)
+            'list' => array_reverse($styleMapManager->getAll(), true)
         );
     }
 
@@ -449,7 +450,7 @@ class Search extends BaseElement
      */
     public function getStyleMapAction($request)
     {
-        $styleMapManager = $this->container->get('mapbender.search.stylemap.manager');
+        $styleMapManager = $this->getStyleMapManager();
         $id              = $request['id'];
         $styleMap        = $styleMapManager->getById($id);
 
@@ -470,7 +471,7 @@ class Search extends BaseElement
     public function removeStyleMapAction($request)
     {
         $id              = $request['id'];
-        $styleMapManager = $this->container->get('mapbender.search.stylemap.manager');
+        $styleMapManager = $this->getStyleMapManager();
         return array(
             'result' => $styleMapManager->remove($id)
         );
@@ -488,7 +489,7 @@ class Search extends BaseElement
      */
     public function removeStyleFromStyleMapAction($request)
     {
-        $styleManager = $this->container->get('mapbender.search.stylemap.manager');
+        $styleManager = $this->getStyleMapManager();
         $styleMapId   = $request['styleMapId'];
         $styleId      = $request['styleId'];
         return array(
@@ -505,7 +506,7 @@ class Search extends BaseElement
      */
     public function addStyleToStylemapAction($request)
     {
-        $styleMapManager = $this->container->get("mapbender.search.stylemap.manager");
+        $styleMapManager = $this->getStyleMapManager();
         $styleMapId      = isset($request["stylemapid"]) ? $request["stylemapid"] : "UNDEFINED";
         $styleId         = isset($request["styleid"]) ? $request["styleid"] : "UNDEFINED";
         $style           = $styleMapManager->addStyle($styleMapId, $styleId);
@@ -544,7 +545,7 @@ class Search extends BaseElement
         $queryManager = $this->getQueryManager(true);
 
         return array(
-            'list' => array_reverse($queryManager->listQueries(), true)
+            'list' => array_reverse($queryManager->getAll(), true)
         );
     }
 
@@ -635,7 +636,7 @@ class Search extends BaseElement
         $queryManager = $this->getQueryManager(true);
         $id           = $request['id'];
         return array(
-            'result' => $queryManager->removeById($id)
+            'result' => $queryManager->remove($id)
         );
     }
 
@@ -892,6 +893,16 @@ class Search extends BaseElement
     {
         /** @var StyleManager $service */
         $service = $this->container->get('mapbender.search.style.manager');
+        return $service;
+    }
+
+    /**
+     * @return StyleMapManager
+     */
+    protected function getStyleMapManager()
+    {
+        /** @var StyleMapManager $service */
+        $service = $this->container->get('mapbender.search.stylemap.manager');
         return $service;
     }
 

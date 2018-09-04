@@ -3,7 +3,6 @@ namespace Mapbender\SearchBundle\Component;
 
 use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Component\FeatureTypeService;
-use Mapbender\DataSourceBundle\Entity\Feature;
 use Mapbender\SearchBundle\Entity\Query;
 use Mapbender\SearchBundle\Entity\QueryCondition;
 use Mapbender\SearchBundle\Entity\QuerySchema;
@@ -38,18 +37,6 @@ class QueryManager extends BaseManager
     }
 
     /**
-     * Save query
-     *
-     * @param array $array
-     * @return Query
-     */
-    public function saveArray($array)
-    {
-        $query = $this->create($array);
-        return $this->save($query);
-    }
-
-    /**
      * Get query by id
      *
      * @param int $id
@@ -58,7 +45,7 @@ class QueryManager extends BaseManager
      */
     public function getById($id)
     {
-        $queries = $this->listQueries();
+        $queries = $this->getAll();
         return isset($queries[ $id ]) ? $queries[ $id ] : null;
     }
 
@@ -67,18 +54,16 @@ class QueryManager extends BaseManager
      * Save query
      *
      * @param Query $query
-     * @param null  $scope
-     * @param null  $parentId
      * @return Query
      */
-    public function save($query, $scope = null, $parentId = null)
+    public function save($query)
     {
-        $queries        = $this->listQueries();
+        $queries        = $this->getAll();
         $id             = $query->getId();
         $queries[ $id ] = $query;
-        $result         = $this->db->saveData($this->tableName, $queries, $scope, $parentId, $this->getUserId());
+        $result         = $this->db->saveData($this->tableName, $queries, null, null, $this->getUserId());
 
-        return $query; //isset($result[ $id ]) ? $result[ $query->getId() ] : null;
+        return $query;
 
     }
 
@@ -89,59 +74,10 @@ class QueryManager extends BaseManager
      * @return Query[]
      * @internal param int $id
      */
-    public function listQueries()
+    public function getAll()
     {
         $list = $this->db->getData($this->tableName, null, null, $this->getUserId());
         return $list ? $list : array();
-    }
-
-
-    /**
-     * Returns all
-     *
-     * @param FeatureTypeService $featureService
-     * @return Feature[]
-     */
-    public function listQueriesByAllFeatureTypes($featureService = null)
-    {
-        return $this->listQueriesByFeatureTypes($featureService, $featureService->getFeatureTypeDeclarations());
-    }
-
-
-    /**
-     * @param FeatureTypeService $featureService
-     * @param array              $featureTypes
-     * @return Feature[]
-     */
-    public function listQueriesByFeatureTypes($featureService, array $featureTypes)
-    {
-        $queries = $this->listQueries();
-        $results = array();
-
-        foreach ($featureTypes as $i => $feature) {
-            foreach ($queries as $j => $query) {
-                $this->addFeatureType($results, $featureService, $feature, $query);
-            }
-
-        }
-
-        return $results;
-    }
-
-
-    /**
-     * @param array              $results
-     * @param FeatureTypeService $featureService
-     * @param string             $feature
-     * @param Query              $query
-     */
-    private function addFeatureType(&$results, $featureService, $feature, $query)
-    {
-        $featureType     = $this->getQueryFeatureType($query);
-        $queryConditions = $query->getConditions();
-        $criteria        = array('where' => $this->buildCriteria($queryConditions, $featureType));
-        array_merge($results, $featureType->search($criteria));
-
     }
 
     /**
@@ -219,9 +155,9 @@ class QueryManager extends BaseManager
      * @param $id
      * @return \Eslider\Entity\HKV
      */
-    public function removeById($id)
+    public function remove($id)
     {
-        $queries = $this->listQueries();
+        $queries = $this->getAll();
         if (isset($queries[ $id ])) {
             unset($queries[ $id ]);
         }

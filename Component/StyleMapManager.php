@@ -50,39 +50,25 @@ class StyleMapManager extends BaseManager
      * Save style.
      *
      * @param StyleMap $styleMap
-     * @param int      $scope
-     * @param int      $parentId
      * @return StyleMap
      */
-    public function save($styleMap, $scope = null, $parentId = null)
+    public function save($styleMap)
     {
-        $styleMaps                       = $this->listStyleMaps(false);
+        $styleMaps                       = $this->getAll();
         $styleMaps[ $styleMap->getId() ] = $styleMap;
-        $this->db->saveData($this->tableName, $styleMaps, $scope, $parentId, $this->getUserId());
+        $this->db->saveData($this->tableName, $styleMaps, null, null, $this->getUserId());
         return $styleMap;
-    }
-
-    /**
-     * Save query
-     *
-     * @param array $args
-     * @return StyleMap
-     */
-    public function saveArray($args)
-    {
-        return $this->save($this->create($args));
     }
 
     /**
      * Get StyleMap by id
      *
      * @param int  $id
-     * @param bool $fetchData
      * @return StyleMap|null
      */
-    public function getById($id, $fetchData = false)
+    public function getById($id)
     {
-        $styleMaps = $this->listStyleMaps($fetchData);
+        $styleMaps = $this->getAll();
         return isset($styleMaps[ $id ]) ? $styleMaps[ $id ] : null;
 
     }
@@ -90,37 +76,26 @@ class StyleMapManager extends BaseManager
     /**
      * List all StyleMaps
      *
-     * @param bool $fetchData Default = false
      * @return \Mapbender\SearchBundle\Entity\StyleMap[]|null
      */
-    public function listStyleMaps($fetchData = false)
+    public function getAll()
     {
         /**@var StyleMap[] $styleMaps*/
         $styleMaps = $this->db->getData($this->tableName, null, null, $this->getUserId());
-
-        if ($fetchData) {
-            foreach ($styleMaps as $key => $styleMap) {
-                $ids = array_keys($styleMap->getStyles());
-                $styleMap->setStyles($this->styleManager->getByIds($ids));
-            }
-        }
-
         return $styleMaps ? $styleMaps : array();
     }
 
     /**
      * @param string $id
-     * @param string $scope
-     * @param string $parentId
      * @return bool
      */
-    public function remove($id, $scope = null, $parentId = null)
+    public function remove($id)
     {
-        $list      = $this->listStyleMaps(false);
+        $list      = $this->getAll();
         $wasMissed = isset($list[ $id ]);
         unset($list[ $id ]);
 
-        $this->db->saveData($this->tableName, $list, $scope, $parentId, $this->getUserId());
+        $this->db->saveData($this->tableName, $list, null, null, $this->getUserId());
 
         return $wasMissed;
 
