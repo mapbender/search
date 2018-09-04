@@ -413,7 +413,6 @@ class Search extends BaseElement
         $data            = $this->filterFields($request["styleMap"], array('userId'));
         $styleMapManager = $this->getStyleMapManager();
         $styleMap        = $styleMapManager->create($data);
-
         $styleMap->setUserId($this->getUserId());
         $styleMapManager->save($styleMap);
 
@@ -589,19 +588,17 @@ class Search extends BaseElement
     public function fetchQueryAction($request)
     {
         $queryManager  = $this->getQueryManager(true);
-        $query         = $queryManager->create($request['query']);
-        $originalQuery = $queryManager->getById($query->getId());
+        $query = $queryManager->getById($request['query']['id']);
         $configuration = $this->getConfiguration();
 
         $queryManager->setSchemas($configuration["schemas"]);
 
-        $schema = $queryManager->getSchemaById($originalQuery->getSchemaId());
+        $schema = $queryManager->getSchemaById($query->getSchemaId());
 
         try {
             $maxResults            = $schema->getMaxResults();
             $request['maxResults'] = $maxResults;
-            $featureType           = $queryManager->getQueryFeatureType($originalQuery);
-            $results               = $queryManager->fetchQuery($originalQuery, $request);
+            $results               = $queryManager->fetchQuery($query, $request);
             $count                 = count($results["features"]);
 
 

@@ -6,10 +6,11 @@ use Mapbender\SearchBundle\Entity\Style;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class StyleManager
- *
- * @package Mapbender\SearchBundle\Component
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
+ *
+ * @method Style getById(integer $id)
+ * @method Style[] getAll()
+ * @method Style save(Style $entity)
  */
 class StyleManager extends BaseManager
 {
@@ -37,79 +38,5 @@ class StyleManager extends BaseManager
             $style->setId($this->generateUUID());
         }
         return $style;
-    }
-
-
-    /**
-     * Save style.
-     *
-     * @param      $style
-     * @return UniqueBaseEntity|Style|null
-     */
-    public function save($style)
-    {
-        $styles        = $this->getAll();
-        $id            = $style->getId();
-        $styles[ $id ] = $style;
-        $this->db->saveData($this->tableName, $styles, null, null, $this->getUserId());
-        return $style;
-    }
-
-    /**
-     * Get StyleMap by id
-     *
-     * @param string $id
-     * @return Style|null
-     */
-    public function getById($id)
-    {
-        $styles = $this->getAll();
-
-        return isset($styles[ $id ]) ? $styles[ $id ] : null;
-    }
-
-    /**
-     * Get StyleMap by ids
-     *
-     * @param $ids
-     * @return \Mapbender\SearchBundle\Entity\Style[]
-     */
-    public function getByIds($ids)
-    {
-        $styles    = array();
-        $styleMaps = $this->getAll();
-
-        foreach ($styleMaps as $key => $value) {
-            if (in_array($key, $ids)) {
-                $styles[ $key ] = $value;
-            }
-        }
-
-        return $styles;
-    }
-
-    /**
-     * List all StyleMaps
-     *
-     * @return Style[]
-     */
-    public function getAll()
-    {
-        $styles = $this->db->getData($this->tableName, null, null, $this->getUserId());
-        return $styles ? $styles : array();
-    }
-
-    /**
-     * @param string $id
-     * @return bool
-     */
-    public function remove($id)
-    {
-        $list      = $this->getAll();
-        $wasMissed = isset($list[ $id ]);
-        unset($list[ $id ]);
-        $this->db->saveData($this->tableName, $list, null, null, $this->getUserId());
-
-        return $wasMissed;
     }
 }

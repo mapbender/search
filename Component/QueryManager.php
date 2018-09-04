@@ -9,11 +9,12 @@ use Mapbender\SearchBundle\Entity\QuerySchema;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class QueryManager
- *
- * @package Mapbender\SearchBundle\Component
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  * @author  Andriy Oblivantsev <eslider@gmail.com>
+ *
+ * @method Query getById(integer $id)
+ * @method Query[] getAll()
+ * @method Query save(Query $entity)
  */
 class QueryManager extends BaseManager
 {
@@ -34,50 +35,6 @@ class QueryManager extends BaseManager
         $this->featureTypeService = $featureTypeService;
         parent::__construct($container, $sqlitePath);
 
-    }
-
-    /**
-     * Get query by id
-     *
-     * @param int $id
-     * @return Query|null
-     * @internal param string $userId
-     */
-    public function getById($id)
-    {
-        $queries = $this->getAll();
-        return isset($queries[ $id ]) ? $queries[ $id ] : null;
-    }
-
-
-    /**
-     * Save query
-     *
-     * @param Query $query
-     * @return Query
-     */
-    public function save($query)
-    {
-        $queries        = $this->getAll();
-        $id             = $query->getId();
-        $queries[ $id ] = $query;
-        $result         = $this->db->saveData($this->tableName, $queries, null, null, $this->getUserId());
-
-        return $query;
-
-    }
-
-
-    /**
-     * List all queries
-     *
-     * @return Query[]
-     * @internal param int $id
-     */
-    public function getAll()
-    {
-        $list = $this->db->getData($this->tableName, null, null, $this->getUserId());
-        return $list ? $list : array();
     }
 
     /**
@@ -149,19 +106,6 @@ class QueryManager extends BaseManager
         );
 
         return $result;
-    }
-
-    /**
-     * @param $id
-     * @return \Eslider\Entity\HKV
-     */
-    public function remove($id)
-    {
-        $queries = $this->getAll();
-        if (isset($queries[ $id ])) {
-            unset($queries[ $id ]);
-        }
-        return $this->db->saveData($this->tableName, $queries, null, null, $this->getUserId());
     }
 
     /**

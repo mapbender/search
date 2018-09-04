@@ -6,10 +6,12 @@ use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class StyleMapManager
  *
- * @package Mapbender\SearchBundle\Component
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
+ *
+ * @method StyleMap getById(integer $id)
+ * @method StyleMap[] getAll()
+ * @method StyleMap save(StyleMap $entity)
  */
 class StyleMapManager extends BaseManager
 {
@@ -44,63 +46,6 @@ class StyleMapManager extends BaseManager
         $styleMap->setUserId($this->getUserId());
         return $styleMap;
     }
-
-
-    /**
-     * Save style.
-     *
-     * @param StyleMap $styleMap
-     * @return StyleMap
-     */
-    public function save($styleMap)
-    {
-        $styleMaps                       = $this->getAll();
-        $styleMaps[ $styleMap->getId() ] = $styleMap;
-        $this->db->saveData($this->tableName, $styleMaps, null, null, $this->getUserId());
-        return $styleMap;
-    }
-
-    /**
-     * Get StyleMap by id
-     *
-     * @param int  $id
-     * @return StyleMap|null
-     */
-    public function getById($id)
-    {
-        $styleMaps = $this->getAll();
-        return isset($styleMaps[ $id ]) ? $styleMaps[ $id ] : null;
-
-    }
-
-    /**
-     * List all StyleMaps
-     *
-     * @return \Mapbender\SearchBundle\Entity\StyleMap[]|null
-     */
-    public function getAll()
-    {
-        /**@var StyleMap[] $styleMaps*/
-        $styleMaps = $this->db->getData($this->tableName, null, null, $this->getUserId());
-        return $styleMaps ? $styleMaps : array();
-    }
-
-    /**
-     * @param string $id
-     * @return bool
-     */
-    public function remove($id)
-    {
-        $list      = $this->getAll();
-        $wasMissed = isset($list[ $id ]);
-        unset($list[ $id ]);
-
-        $this->db->saveData($this->tableName, $list, null, null, $this->getUserId());
-
-        return $wasMissed;
-
-    }
-
 
     /**
      * @param string $styleMapId
