@@ -77,7 +77,7 @@ class StyleManagerTest extends SymfonyTest2
     public function getStyleManager()
     {
         $container = self::$container;
-        return new StyleManager($container);
+        return $container->get('mapbender.style.manager');
     }
 
     /**

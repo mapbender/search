@@ -3,12 +3,14 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
-
+    <parameters>
+            <parameter key="mapbender.search.featuretype.service.id">features</parameter>
+    </parameters>
     <services>
-        <!-- Manager -->
 
         <service class="Mapbender\SearchBundle\Component\QueryManager" id="mapbender.query.manager">
             <argument type="service" id="service_container"/>
+            <argument type="service" id="%mapbender.search.featuretype.service.id%" />
         </service>
         <service class="Mapbender\SearchBundle\Component\StyleManager" id="mapbender.style.manager">
             <argument type="service" id="service_container"/>
@@ -16,11 +18,7 @@
 
         <service class="Mapbender\SearchBundle\Component\StyleMapManager" id="mapbender.stylemap.manager">
             <argument type="service" id="service_container"/>
+            <argument type="service" id="mapbender.style.manager"/>
         </service>
-
-        <service class="Mapbender\DataSourceBundle\Component\FeatureType" id="mapbender.featuretype.manager">
-            <argument type="service" id="service_container"/>
-        </service>
-
     </services>
 </container>

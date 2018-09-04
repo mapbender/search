@@ -2,8 +2,8 @@
 namespace Mapbender\SearchBundle;
 
 use Mapbender\CoreBundle\Component\MapbenderBundle;
-use Mapbender\CoreBundle\Component\SecurityContext;
-use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
+use Mapbender\SearchBundle\DependencyInjection\Compiler\ResolveParametricServiceIdsPass;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
  * Mapbender search bundle
@@ -20,5 +20,12 @@ class MapbenderSearchBundle extends MapbenderBundle
         return array(
             'Mapbender\SearchBundle\Element\Search'
         );
+    }
+
+    public function build(ContainerBuilder $container)
+    {
+        $container->addCompilerPass(new ResolveParametricServiceIdsPass());
+        parent::build($container);
+
     }
 }

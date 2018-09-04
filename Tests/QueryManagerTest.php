@@ -2,6 +2,7 @@
 
 namespace Mapbender\DataSourceBundle\Tests;
 
+use Mapbender\DataSourceBundle\Component\FeatureTypeService;
 use Mapbender\SearchBundle\Entity\StyleMap;
 use Mapbender\SearchBundle\Component\QueryManager;
 use Mapbender\SearchBundle\Entity\QueryCondition;
@@ -76,7 +77,7 @@ class QueryManagerTest extends SymfonyTest2
     public function getQueryManager()
     {
         $container = self::$container;
-        return new QueryManager($container);
+        return new QueryManager($container, $this->getFeatureTypeService());
     }
 
     /**
@@ -104,5 +105,14 @@ class QueryManagerTest extends SymfonyTest2
 
     }
 
-
+    /**
+     * @return FeatureTypeService
+     */
+    private function getFeatureTypeService()
+    {
+        $serviceId = self::$container->getParameter('mapbender.search.featuretype.service.id');
+        /** @var FeatureTypeService $service */
+        $service = self::$container->get($serviceId);
+        return $service;
+    }
 }

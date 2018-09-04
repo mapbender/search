@@ -20,13 +20,14 @@ class StyleMapManager extends BaseManager
      * StyleManager constructor.
      *
      * @param ContainerInterface|null $container
+     * @param StyleManager $styleManager
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
      */
-    public function __construct(ContainerInterface $container = null)
+    public function __construct(ContainerInterface $container, StyleManager $styleManager)
     {
         parent::__construct($container, 'stylemaps');
-        $this->styleManager = $this->container->get('mapbender.style.manager');
+        $this->styleManager = $styleManager;
     }
 
     /**

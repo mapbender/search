@@ -51,7 +51,7 @@ class AllManagerTest extends SymfonyTest2
         $this->styleManager    = $this->getStyleManager();
         $this->queryManager    = $this->getQueryManager();
         $this->styleMapManager = $this->getStyleMapManager();
-        $this->featureManager  = $this->getFeatureTypeManager();
+        $this->featureManager  = $this->getFeatureTypeService();
         $this->styleManager->createDB();
         $this->queryManager->createDB();
         $this->styleMapManager->createDB();
@@ -213,9 +213,12 @@ class AllManagerTest extends SymfonyTest2
     /**
      * @return FeatureTypeService
      */
-    private function getFeatureTypeManager()
+    private function getFeatureTypeService()
     {
-        return self::$container->get("features");
+        $serviceId = self::$container->getParameter('mapbender.search.featuretype.service.id');
+        /** @var FeatureTypeService $service */
+        $service = self::$container->get($serviceId);
+        return $service;
     }
 
     /**

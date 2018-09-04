@@ -20,15 +20,20 @@ class QueryManager extends BaseManager
 {
     /** @var QuerySchema[] Schemas */
     protected $schemas;
+    /** @var FeatureTypeService */
+    protected $featureTypeService;
 
     /**
      * QueryManager constructor.
      *
-     * @param ContainerInterface|null $container
+     * @param ContainerInterface $container
+     * @param FeatureTypeService $featureTypeService
      */
-    public function __construct(ContainerInterface $container = null)
+    public function __construct(ContainerInterface $container, FeatureTypeService $featureTypeService)
     {
+        $this->featureTypeService = $featureTypeService;
         parent::__construct($container, "queries");
+
     }
 
     /**
@@ -316,8 +321,7 @@ class QueryManager extends BaseManager
      */
     public function getQueryFeatureType(Query $query)
     {
-        return $this->container
-            ->get('features')
+        return $this->featureTypeService
             ->get($this
                 ->getSchemaById($query->getSchemaId())
                 ->getFeatureType()
