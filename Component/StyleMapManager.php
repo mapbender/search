@@ -21,12 +21,13 @@ class StyleMapManager extends BaseManager
      *
      * @param ContainerInterface|null $container
      * @param StyleManager $styleManager
+     * @param string $sqlitePath
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
      */
-    public function __construct(ContainerInterface $container, StyleManager $styleManager)
+    public function __construct(ContainerInterface $container, StyleManager $styleManager, $sqlitePath)
     {
-        parent::__construct($container, 'stylemaps');
+        parent::__construct($container, $sqlitePath);
         $this->styleManager = $styleManager;
     }
 

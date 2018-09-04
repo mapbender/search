@@ -28,11 +28,12 @@ class QueryManager extends BaseManager
      *
      * @param ContainerInterface $container
      * @param FeatureTypeService $featureTypeService
+     * @param string $sqlitePath
      */
-    public function __construct(ContainerInterface $container, FeatureTypeService $featureTypeService)
+    public function __construct(ContainerInterface $container, FeatureTypeService $featureTypeService, $sqlitePath)
     {
         $this->featureTypeService = $featureTypeService;
-        parent::__construct($container, "queries");
+        parent::__construct($container, $sqlitePath);
 
     }
 

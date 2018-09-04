@@ -18,10 +18,11 @@ class StyleManager extends BaseManager
      * StyleManager constructor.
      *
      * @param ContainerInterface|null $container
+     * @param string $sqlitePath
      */
-    public function __construct(ContainerInterface $container = null)
+    public function __construct(ContainerInterface $container, $sqlitePath)
     {
-        parent::__construct($container, 'styles');
+        parent::__construct($container, $sqlitePath);
     }
 
     /**

@@ -4,7 +4,6 @@ namespace Mapbender\SearchBundle\Component;
 
 use Eslider\Driver\HKVStorage;
 use Mapbender\CoreBundle\Component\SecurityContext;
-use Monolog\Logger;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -27,26 +26,20 @@ abstract class BaseManager implements ManagerInterface
     /** @var string path */
     protected $path;
 
-    /** @var Logger */
-    protected $logger;
-
     /** @var ContainerInterface */
     protected $container;
 
     /**
-     * BaseManager constructor.
-     *
      * @param ContainerInterface $container
-     * @param string             $tableName
+     * @param string $path full filename for sqlite table
      */
-    public function __construct(ContainerInterface $container = null, $tableName = "default")
+    public function __construct(ContainerInterface $container, $path)
     {
         $this->container = $container;
-        $kernel          = $this->container->get('kernel');
-        $this->path      = $kernel->getRootDir() . "/config/" . $tableName . ".sqlite";
-        $this->tableName = $tableName;
+        $this->path      = $path;
+        $baseName = preg_replace('#^([^/]*/)*#', '', $this->path);
+        $this->tableName = preg_replace('#\..*$#', '', $baseName);
         $this->createDB();
-        $this->logger = $this->container->get('logger');
         $this->setUserId($container->get("security.context")->getUser()->getId());
     }
 

@@ -5,20 +5,23 @@
 
     <parameters>
             <parameter key="mapbender.search.featuretype.service.id">features</parameter>
+            <parameter key="mapbender.search.sqlite.storage_root">%kernel.root_dir%/config</parameter>
     </parameters>
     <services>
 
         <service class="Mapbender\SearchBundle\Component\QueryManager" id="mapbender.search.query.manager">
             <argument type="service" id="service_container"/>
             <argument type="service" id="%mapbender.search.featuretype.service.id%" />
+            <argument>%mapbender.search.sqlite.storage_root%/queries.sqlite</argument>
         </service>
         <service class="Mapbender\SearchBundle\Component\StyleManager" id="mapbender.search.style.manager">
             <argument type="service" id="service_container"/>
+            <argument>%mapbender.search.sqlite.storage_root%/styles.sqlite</argument>
         </service>
-
         <service class="Mapbender\SearchBundle\Component\StyleMapManager" id="mapbender.search.stylemap.manager">
             <argument type="service" id="service_container"/>
             <argument type="service" id="mapbender.search.style.manager"/>
+            <argument>%mapbender.search.sqlite.storage_root%/stylemaps.sqlite</argument>
         </service>
     </services>
 </container>
