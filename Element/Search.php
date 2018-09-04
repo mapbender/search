@@ -201,7 +201,7 @@ class Search extends BaseElement
                 break;
             default:
                 if (isset($request['schema'])) {
-                    $this->setSchema($request);
+                    $this->setSchema($request['schema']);
                 }
                 return parent::httpAction($action);
         }
@@ -250,13 +250,13 @@ class Search extends BaseElement
     /**
      * Set schema (FeatureType)
      *
-     * @param $request
+     * @param mixed $schemaName
      */
-    protected function setSchema($request)
+    protected function setSchema($schemaName)
     {
         $configuration = $this->getConfiguration();
         $schemas       = $configuration['schemes'];
-        $schema        = $schemas[ $request['schema'] ];
+        $schema        = $schemas[$schemaName];
         if (is_array($schema['featureType'])) {
             $this->setFeatureType(new FeatureType($this->container, $schema['featureType']));
         } else {
@@ -604,77 +604,6 @@ class Search extends BaseElement
             ),
         ));
         return new JsonResponse(array_merge($uploadHandler->get_response(), $urlParameters));
-    }
-
-    /**
-     * Save feature
-     *
-     * @param $request
-     * @return JsonResponse
-     */
-    public function saveAction($request)
-    {
-        $results             = array();
-        $configuration       = $this->getConfiguration();
-        $featureType         = $this->getFeatureType();
-        $schemas             = $configuration['schemes'];
-        $debugMode           = $configuration['debug'] || $this->container->get('kernel')->getEnvironment() == 'dev';
-        $schemaName          = $request['schema'];
-        $schemaConfiguration = null;
-
-        if (!empty($schemaName)) {
-            //throw new Exception('For initialization there is no name of the declared scheme');
-            $schemaConfiguration = $schemas[ $schemaName ];
-            if (is_array($schemaConfiguration['featureType'])) {
-                $featureType = new FeatureType($this->container, $schemaConfiguration['featureType']);
-                $this->setFeatureType($featureType);
-            } else {
-                throw new Exception('FeatureType settings not correct');
-            }
-        }
-
-        // save once
-        if (isset($request['feature'])) {
-            $request['features'] = array($request['feature']);
-        }
-
-        $connection = $featureType->getDriver()->getConnection();
-
-        try {
-            // save collection
-            if (isset($request['features']) && is_array($request['features'])) {
-                foreach ($request['features'] as $feature) {
-                    /**
-                     * @var $feature Feature
-                     */
-                    $featureData = $this->prepareQueriedFeatureData($feature, $schemaConfiguration['formItems']);
-
-                    foreach ($featureType->getFileInfo() as $fileConfig) {
-                        if (!isset($fileConfig['field']) || !isset($featureData["properties"][ $fileConfig['field'] ])) {
-                            continue;
-                        }
-                        $url                                               = $featureType->getFileUrl($fileConfig['field']);
-                        $requestUrl                                        = $featureData["properties"][ $fileConfig['field'] ];
-                        $newUrl                                            = str_replace($url . "/", "", $requestUrl);
-                        $featureData["properties"][ $fileConfig['field'] ] = $newUrl;
-                    }
-
-                    $feature = $featureType->save($featureData);
-                    $results = array_merge($featureType->search(array(
-                        'srid'  => $feature->getSrid(),
-                        'where' => $connection->quoteIdentifier($featureType->getUniqueId()) . '=' . $connection->quote($feature->getId()))));
-                }
-            }
-            $results = $featureType->toFeatureCollection($results);
-        } catch (DBALException $e) {
-            $message = $debugMode ? $e->getMessage() : "Feature can't be saved. Maybe something is wrong configured or your database isn't available?\n" .
-                "For more information have a look at the webserver log file. \n Error code: " . $e->getCode();
-            $results = array('errors' => array(
-                array('message' => $message, 'code' => $e->getCode())
-            ));
-        }
-
-        return new JsonResponse($results);
     }
 
     /**
