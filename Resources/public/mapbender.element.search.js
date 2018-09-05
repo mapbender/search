@@ -55,6 +55,7 @@
             var element = widget.element;
             var options = widget.options;
             var target = options.target = $(".olMap").attr("id");
+            var rendered = jQuery.Deferred();
 
             if(!Mapbender.checkTarget("mbSearch", target)) {
                 return;
@@ -130,25 +131,27 @@
                     html: '<div class="queries"></div>'
                 });
 
-                widget._trigger('ready');
 
-                // Check position and react by
-                var containerInfo = new MapbenderContainerInfo(widget, {
-                    onactive:   function() {
-                        widget.enable();
-                    },
-                    oninactive: function() {
-                        widget.disable();
-                    }
-                });
+                rendered.resolveWith(true);
             });
 
-            widget.refreshSchemas().done(function() {
-                widget.refreshStyles().done(function() {
-                    widget.refreshStyleMaps().done(function() {
-                        widget.refreshQueries().done(function(r) {
-                            widget.renderSchemaFilterSelect();
-                        });
+            jQuery.when(
+                widget.refreshSchemas(),
+                widget.refreshStyles(),
+                widget.refreshStyleMaps(),
+                rendered
+            ).done(function() {
+                widget.refreshQueries().done(function(r) {
+                    widget.renderSchemaFilterSelect();
+                    widget._trigger('ready');
+                    // Check position and react by
+                    var containerInfo = new MapbenderContainerInfo(widget, {
+                        onactive:   function() {
+                            widget.enable();
+                        },
+                        oninactive: function() {
+                            widget.disable();
+                        }
                     });
                 });
             });
