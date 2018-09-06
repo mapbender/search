@@ -7,7 +7,7 @@ namespace Mapbender\SearchBundle\Entity;
  * @package Mapbender\SearchBundle\Entity
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
-class Field extends UniqueBase
+class Field extends Base
 {
     /* @var string $name */
     public $name;

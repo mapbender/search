@@ -7,7 +7,7 @@ namespace Mapbender\SearchBundle\Entity;
  * @package Mapbender\SearchBundle\Entity
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
-class QueryCondition extends UniqueBase
+class QueryCondition extends Base
 {
     /** @var string Name */
     public $name;
@@ -20,9 +20,6 @@ class QueryCondition extends UniqueBase
 
     /** @var string Value */
     public $value;
-
-    /** @var string SQL */
-    public $sql;
 
     /**
      * @return string
@@ -95,23 +92,4 @@ class QueryCondition extends UniqueBase
         $this->value = $value;
         return $this;
     }
-
-    /**
-     * @return string
-     */
-    public function getSql()
-    {
-        return $this->sql;
-    }
-
-    /**
-     * @param string $sql
-     * @return QueryCondition
-     */
-    public function setSql($sql)
-    {
-        $this->sql = $sql;
-        return $this;
-    }
-
 }
