@@ -116,7 +116,7 @@ class QueryManager extends BaseManager
      * @param bool   $count Count queries
      * @param null   $fieldNames
      * @param string $tableAliasName
-     * @return array
+     * @return string
      */
     public function buildSql(Query $query, $count = false, $fieldNames = null, $tableAliasName = 't')
     {
