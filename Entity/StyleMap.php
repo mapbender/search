@@ -16,25 +16,6 @@ class StyleMap extends UniqueBase
     /* @var Style[] Style list */
     public $styles = array();
 
-    /** @var string userId * */
-    public $userId;
-
-    /**
-     * @return string
-     */
-    public function getUserId()
-    {
-        return $this->userId;
-    }
-
-    /**
-     * @param string $userId
-     */
-    public function setUserId($userId)
-    {
-        $this->userId = $userId;
-    }
-
     /**
      * @return Style[]
      */

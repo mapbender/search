@@ -19,9 +19,6 @@ class Query extends UniqueBase
     /** @var Field[] Fields */
     public $fields;
 
-    /** @var int $userId */
-    public $userId;
-
     /** @var StyleMap StyleMap */
     public $styleMap;
 
@@ -55,24 +52,6 @@ class Query extends UniqueBase
     public function setName($name)
     {
         $this->name = $name;
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getUserId()
-    {
-        return $this->userId;
-    }
-
-    /**
-     * @param int $userId
-     * @return Query
-     */
-    public function setUserId($userId)
-    {
-        $this->userId = $userId;
         return $this;
     }
 

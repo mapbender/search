@@ -149,9 +149,6 @@ class Style extends UniqueBase
     /** @var String  Symbolizers will have no effect if display is set to “none”.  All other values have no effect. */
     public $display;
 
-    /** @var int User ID */
-    public $userId;
-
     /** @var String[] Style Maps which contain this style */
     public $styleMaps;
 
@@ -160,24 +157,6 @@ class Style extends UniqueBase
 
     /** @var */
     public $schemaName;
-
-    /**
-     * Set user ID
-     *
-     * @param $userId
-     */
-    public function setUserId($userId)
-    {
-        $this->userId = $userId;
-    }
-
-    /**
-     * @return int
-     */
-    public function getUserId()
-    {
-        return $this->userId;
-    }
 
     /**
      * @param \String[] $styleMaps

@@ -2,14 +2,13 @@
 namespace Mapbender\SearchBundle\Component;
 
 use Mapbender\SearchBundle\Entity\Style;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  *
- * @method Style getById(integer $id)
- * @method Style[] getAll()
- * @method Style save(Style $entity)
+ * @method Style getById(integer $id, $userId=null)
+ * @method Style[] getAll($userId)
+ * @method Style save(Style $entity, $userId)
  * @method Style createFiltered(array $data)
  */
 class StyleManager extends BaseManager
@@ -17,12 +16,11 @@ class StyleManager extends BaseManager
     /**
      * StyleManager constructor.
      *
-     * @param ContainerInterface|null $container
      * @param string $sqlitePath
      */
-    public function __construct(ContainerInterface $container, $sqlitePath)
+    public function __construct($sqlitePath)
     {
-        parent::__construct($container, $sqlitePath);
+        parent::__construct($sqlitePath);
     }
 
     /**

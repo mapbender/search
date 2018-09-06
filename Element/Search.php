@@ -160,25 +160,25 @@ class Search extends BaseElement
             default:
                 throw new BadRequestHttpException("Invalid action " . var_export($action, true));
         }
+        $userId = $this->getUserId();
         switch ($action) {
             case 'queries/list':
             case 'style/list':
             case 'stylemap/list':
                 return new JsonResponse(array(
-                    'list' => array_reverse($repository->getAll(), true)
+                    'list' => array_reverse($repository->getAll($userId), true)
                 ));
             case 'query/remove':
                 $requestData = $this->getRequestData();
                 return new JsonResponse(array(
-                    'result' => $repository->remove($requestData['id']),
+                    'result' => $repository->remove($requestData['id'], $userId),
                 ));
             case 'query/save':
             case 'style/save':
             case 'stylemap/save':
                 $requestData = $this->getRequestData();
                 $entity = $repository->createFiltered($requestData[$saveDataKey]);
-                $entity->setUserId($this->getUserId());
-                $repository->save($entity);
+                $repository->save($entity, $userId);
                 // @todo: fix this inconsistency
                 $responseDataKey = ($saveDataKey == 'query') ? 'entity' : $saveDataKey;
                 return new JsonResponse(array(
@@ -207,7 +207,7 @@ class Search extends BaseElement
     {
         $ids             = isset($request['ids']) && is_array($request['ids']) ? $request['ids'] : array();
         $queryManager    = $this->getQueryManager(true);
-        $query           = $queryManager->getById($request['queryId']);
+        $query           = $queryManager->getById($request['queryId'], $this->getUserId());
         $schema          = $this->getSchemaById($query->getSchemaId());
         $featureTypeName = $schema->getFeatureType();
         $featureType     = $this->getFeatureTypeService()->get($featureTypeName);
@@ -296,7 +296,7 @@ class Search extends BaseElement
         $styleMapId   = $request['styleMapId'];
         $styleId      = $request['styleId'];
         return new JsonResponse(array(
-            'result' => $styleManager->removeStyle($styleMapId, $styleId)
+            'result' => $styleManager->removeStyle($styleMapId, $styleId, $this->getUserId())
         ));
     }
 
@@ -312,7 +312,7 @@ class Search extends BaseElement
         $styleMapManager = $this->getStyleMapManager();
         $styleMapId      = isset($request["stylemapid"]) ? $request["stylemapid"] : "UNDEFINED";
         $styleId         = isset($request["styleid"]) ? $request["styleid"] : "UNDEFINED";
-        $style           = $styleMapManager->addStyle($styleMapId, $styleId);
+        $style           = $styleMapManager->addStyle($styleMapId, $styleId, $this->getUserId());
 
         return new JsonResponse(array(
             'stylemap' => HKVStorage::encodeValue($style)

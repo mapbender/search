@@ -6,15 +6,14 @@ use Mapbender\DataSourceBundle\Component\FeatureTypeService;
 use Mapbender\SearchBundle\Entity\Query;
 use Mapbender\SearchBundle\Entity\QueryCondition;
 use Mapbender\SearchBundle\Entity\QuerySchema;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  * @author  Andriy Oblivantsev <eslider@gmail.com>
  *
- * @method Query getById(integer $id)
- * @method Query[] getAll()
- * @method Query save(Query $entity)
+ * @method Query getById(integer $id, $userId=null)
+ * @method Query[] getAll($userId)
+ * @method Query save(Query $entity, $userId)
  * @method Query createFiltered(array $data)
  */
 class QueryManager extends BaseManager
@@ -27,14 +26,13 @@ class QueryManager extends BaseManager
     /**
      * QueryManager constructor.
      *
-     * @param ContainerInterface $container
      * @param FeatureTypeService $featureTypeService
      * @param string $sqlitePath
      */
-    public function __construct(ContainerInterface $container, FeatureTypeService $featureTypeService, $sqlitePath)
+    public function __construct(FeatureTypeService $featureTypeService, $sqlitePath)
     {
         $this->featureTypeService = $featureTypeService;
-        parent::__construct($container, $sqlitePath);
+        parent::__construct($sqlitePath);
 
     }
 

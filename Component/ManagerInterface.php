@@ -2,7 +2,7 @@
 
 namespace Mapbender\SearchBundle\Component;
 
-use Eslider\Entity\UniqueBaseEntity;
+use Mapbender\SearchBundle\Entity\UniqueBase;
 
 /**
  * Interface ManagerInterface
@@ -15,22 +15,24 @@ interface ManagerInterface
     /**
      * Saves the entity
      *
-     * @param UniqueBaseEntity $args
-     * @return UniqueBaseEntity
+     * @param UniqueBase $args
+     * @param string $userId
+     * @return UniqueBase
      */
-    public function save($args);
+    public function save($args, $userId);
 
     /**
      * @param        $id
-     * @return UniqueBaseEntity
+     * @param string $userId
+     * @return UniqueBase
      */
-    public function getById($id);
+    public function getById($id, $userId=null);
 
     /**
      * Returns the entity
      *
      * @param array $args
-     * @return UniqueBaseEntity
+     * @return UniqueBase
      */
     public function create($args);
 }

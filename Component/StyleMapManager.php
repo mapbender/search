@@ -3,15 +3,14 @@ namespace Mapbender\SearchBundle\Component;
 
 use Mapbender\SearchBundle\Entity\StyleMap;
 use Symfony\Component\Config\Definition\Exception\Exception;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  *
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  *
- * @method StyleMap getById(integer $id)
- * @method StyleMap[] getAll()
- * @method StyleMap save(StyleMap $entity)
+ * @method StyleMap getById(integer $id, $userId=null)
+ * @method StyleMap[] getAll($userId)
+ * @method StyleMap save(StyleMap $entity, $userId)
  * @method StyleMap createFiltered(array $data)
  */
 class StyleMapManager extends BaseManager
@@ -22,15 +21,14 @@ class StyleMapManager extends BaseManager
     /**
      * StyleManager constructor.
      *
-     * @param ContainerInterface|null $container
      * @param StyleManager $styleManager
      * @param string $sqlitePath
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
      */
-    public function __construct(ContainerInterface $container, StyleManager $styleManager, $sqlitePath)
+    public function __construct(StyleManager $styleManager, $sqlitePath)
     {
-        parent::__construct($container, $sqlitePath);
+        parent::__construct($sqlitePath);
         $this->styleManager = $styleManager;
     }
 
@@ -46,10 +44,11 @@ class StyleMapManager extends BaseManager
     /**
      * @param string $styleMapId
      * @param string $styleId
+     * @param string $userId
      * @return bool
      * @throws \Symfony\Component\Config\Definition\Exception\Exception
      */
-    public function addStyle($styleMapId, $styleId)
+    public function addStyle($styleMapId, $styleId, $userId)
     {
         $styleMap = $this->getById($styleMapId);
         if ($styleMap) {
@@ -63,8 +62,8 @@ class StyleMapManager extends BaseManager
             $styleMap->addStyle($styleId);
             $style->addStyleMap($styleMapId);
 
-            $this->styleManager->save($style);
-            return $this->save($styleMap) ? true : false;
+            $this->styleManager->save($style, $userId);
+            return $this->save($styleMap, $userId) ? true : false;
         }
 
         return false;
@@ -74,10 +73,11 @@ class StyleMapManager extends BaseManager
     /**
      * @param string $styleMapId
      * @param string $styleId
+     * @param string $userId
      * @return bool
      * @throws \Symfony\Component\Config\Definition\Exception\Exception
      */
-    public function removeStyle($styleMapId, $styleId)
+    public function removeStyle($styleMapId, $styleId, $userId)
     {
         $styleMap = $this->getById($styleMapId);
         if ($styleMap) {
@@ -91,8 +91,8 @@ class StyleMapManager extends BaseManager
             $style->removeStyleMapById($styleMapId);
             $styleMap->removeStyleById($styleId);
 
-            $this->styleManager->save($style);
-            return $this->save($styleMap) ? true : false;
+            $this->styleManager->save($style, $userId);
+            return $this->save($styleMap, $userId) ? true : false;
         }
 
         return false;

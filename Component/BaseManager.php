@@ -3,9 +3,7 @@
 namespace Mapbender\SearchBundle\Component;
 
 use Eslider\Driver\HKVStorage;
-use Mapbender\CoreBundle\Component\SecurityContext;
 use Mapbender\SearchBundle\Entity\UniqueBase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Class BaseManager
@@ -18,30 +16,21 @@ abstract class BaseManager implements ManagerInterface
     /** @var HKVStorage */
     protected $db;
 
-    /* @var string userId */
-    protected $userId = SecurityContext::USER_ANONYMOUS_ID;
-
     /** @var string tableName */
     protected $tableName;
 
     /** @var string path */
     protected $path;
 
-    /** @var ContainerInterface */
-    protected $container;
-
     /**
-     * @param ContainerInterface $container
      * @param string $path full filename for sqlite table
      */
-    public function __construct(ContainerInterface $container, $path)
+    public function __construct($path)
     {
-        $this->container = $container;
         $this->path      = $path;
         $baseName = preg_replace('#^([^/]*/)*#', '', $this->path);
         $this->tableName = preg_replace('#\..*$#', '', $baseName);
         $this->createDB();
-        $this->setUserId($container->get("security.context")->getUser()->getId());
     }
 
     /**
@@ -53,55 +42,59 @@ abstract class BaseManager implements ManagerInterface
     /**
      * List all records
      *
+     * @param string $userId
      * @return UniqueBase[]
      * @internal param int $id
      */
-    public function getAll()
+    public function getAll($userId)
     {
         /** @var UniqueBase[] $list */
-        $list = $this->db->getData($this->tableName, null, null, $this->getUserId());
+        $list = $this->db->getData($this->tableName, null, null, $userId);
         return $list ? $list : array();
     }
 
     /**
+     * @param string $userId
      * @param int $id
      * @return UniqueBase|null
      */
-    public function getById($id)
+    public function getById($id, $userId = null)
     {
-        $allRecords = $this->getAll();
+        $allRecords = $this->getAll($userId);
         return isset($allRecords[$id]) ? $allRecords[$id] : null;
 
     }
 
     /**
+     * @param string $userId
      * @param UniqueBase $entity
      * @return UniqueBase
      */
-    public function save($entity)
+    public function save($entity, $userId)
     {
         if (!$entity->getId()) {
             $entity->setId($this->generateUUID());
         }
-        $all = $this->getAll();
+        $all = $this->getAll($userId);
         $id = $entity->getId();
         $all[$id] = $entity;
-        $this->db->saveData($this->tableName, $all, null, null, $this->getUserId());
+        $this->db->saveData($this->tableName, $all, null, null, $userId);
 
         return $entity;
     }
 
     /**
+     * @param string $userId
      * @param string $id
      * @return bool
      */
-    public function remove($id)
+    public function remove($id, $userId)
     {
-        $list = $this->getAll();
+        $list = $this->getAll($userId);
         $wasMissed = isset($list[$id]);
         unset($list[$id]);
 
-        $this->db->saveData($this->tableName, $list, null, null, $this->getUserId());
+        $this->db->saveData($this->tableName, $list, null, null, $userId);
 
         return $wasMissed;
     }
@@ -157,24 +150,6 @@ abstract class BaseManager implements ManagerInterface
     protected function generateUUID()
     {
         return uniqid("", true);
-    }
-
-    /**
-     * @param int $userId
-     * @return $this
-     */
-    public function setUserId($userId)
-    {
-        $this->userId = $userId;
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getUserId()
-    {
-        return $this->userId;
     }
 
     /**
