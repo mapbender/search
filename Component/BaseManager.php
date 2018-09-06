@@ -122,7 +122,6 @@ abstract class BaseManager implements ManagerInterface
     protected function getBlacklistedFields()
     {
         return array(
-            'id',
         );
     }
 
