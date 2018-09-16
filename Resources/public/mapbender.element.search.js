@@ -54,7 +54,7 @@
             var widget = this;
             var element = widget.element;
             var options = widget.options;
-            var target = options.target = $(".olMap").attr("id");
+            var target = options.target = $('.mb-element-map').attr("id");
             var rendered = jQuery.Deferred();
 
             if(!Mapbender.checkTarget("mbSearch", target)) {
