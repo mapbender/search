@@ -8,7 +8,6 @@ use Eslider\Driver\HKVStorage;
 use FOM\CoreBundle\Component\ExportResponse;
 use Mapbender\DataSourceBundle\Component\DataStore;
 use Mapbender\DataSourceBundle\Component\DataStoreService;
-use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Component\FeatureTypeService;
 use Mapbender\DataSourceBundle\Element\BaseElement;
 use Mapbender\SearchBundle\Component\QueryManager;
@@ -111,7 +110,6 @@ class Search extends BaseElement
     {
         $configuration            = parent::getConfiguration();
         $configuration['debug']   = isset($configuration['debug']) ? $configuration['debug'] : false;
-        $configuration['fileUri'] = $this->container->getParameter('mapbender.uploads_dir') . "/" . FeatureType::UPLOAD_DIR_NAME;
 
         if (isset($configuration['schemes']) && is_array($configuration['schemes'])) {
             foreach ($configuration['schemes'] as $key => &$scheme) {
@@ -125,34 +123,6 @@ class Search extends BaseElement
             }
         }
         return $configuration;
-    }
-
-    /**
-     * Prepare request feautre data by the form definition
-     *
-     * @param $feature
-     * @param $formItems
-     * @return array
-     */
-    protected function prepareQueriedFeatureData($feature, $formItems)
-    {
-        foreach ($formItems as $key => $formItem) {
-            if (isset($formItem['children'])) {
-                $feature = array_merge($feature, $this->prepareQueriedFeatureData($feature, $formItem['children']));
-            } elseif (isset($formItem['type']) && isset($formItem['name'])) {
-                switch ($formItem['type']) {
-                    case 'select':
-                        if (isset($formItem['multiple'])) {
-                            $separator = isset($formItem['separator']) ? $formItem['separator'] : ',';
-                            if (is_array($feature["properties"][ $formItem['name'] ])) {
-                                $feature["properties"][ $formItem['name'] ] = implode($separator, $feature["properties"][ $formItem['name'] ]);
-                            }
-                        }
-                        break;
-                }
-            }
-        }
-        return $feature;
     }
 
     /**
