@@ -32,7 +32,6 @@
         },
         map:                    null,
         currentSettings:        null,
-        featureEditDialogWidth: "423px",
 
         /**
          * Dynamic loaded styles
@@ -445,7 +444,6 @@
          */
         fetchQuery: function(query) {
             var widget = this;
-            var layer = query.layer;
             var map = widget.map;
 
             var request = {
@@ -522,7 +520,6 @@
             var queriesContainer = element.find('> .html-element-container');
             var queriesAccordionView = $('<div class="queries-accordion"/>');
 
-            // ---
             var map = widget.map;
 
             // TODO: clean up, remove/refresh map layers, events, etc...
@@ -742,14 +739,6 @@
 
                 var selectControl = query.selectControl = new OpenLayers.Control.SelectFeature(query.layer, {
                     hover:        true,
-                    clickFeature: function(feature) {
-                        var features = feature.cluster ? feature.cluster : [feature];
-
-                        if(_.find(map.getControlsByClass('OpenLayers.Control.ModifyFeature'), {active: true})) {
-                            return;
-                        }
-                        // widget._openFeatureEditDialog(features[0]);
-                    },
                     overFeature:  function(feature) {
                         widget._highlightSchemaFeature(feature, true, true);
                     },
@@ -885,7 +874,6 @@
                                 tr.addClass('shown');
                             }
                         }
-                        // widget._openFeatureEditDialog(context.feature);
                     });
 
                 queryTitleView

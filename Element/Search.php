@@ -11,12 +11,10 @@ use Mapbender\DataSourceBundle\Component\DataStoreService;
 use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Component\FeatureTypeService;
 use Mapbender\DataSourceBundle\Element\BaseElement;
-use Mapbender\DigitizerBundle\Component\Uploader;
 use Mapbender\SearchBundle\Component\QueryManager;
 use Mapbender\SearchBundle\Component\StyleManager;
 use Mapbender\SearchBundle\Component\StyleMapManager;
 use Mapbender\SearchBundle\Entity\QuerySchema;
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -40,9 +38,6 @@ class Search extends BaseElement
     {
         return 'Object search element';
     }
-
-    /** @var FeatureType Current feature type */
-    protected $featureType;
 
     /** @inheritdoc */
     public function getAssets()
@@ -169,20 +164,13 @@ class Search extends BaseElement
         $action = strtolower($action);
         switch ($action) {
             case 'schemas/list':
+                return $this->listSchemasAction();
             case 'query/fetch':
+                return $this->zumbaResponse($this->fetchQueryAction($this->getRequestData()));
             case 'query/check':
+                return $this->checkQueryAction($this->getRequestData());
             case 'export':
-                $request = $this->getRequestData();
-                if (isset($request['schema'])) {
-                    $this->setSchema($request['schema']);
-                }
-                return parent::httpAction($action);
-            default:
-                break;
-        }
-        /** @todo: defeat redundant json encode in client, then we can do this ourselves */
-        $request = $this->getRequestData();
-        switch ($action) {
+                return $this->exportAction($this->getRequestData());
             case 'queries/list':
             case 'query/save':
             case 'query/remove':
@@ -210,13 +198,15 @@ class Search extends BaseElement
                     'list' => array_reverse($repository->getAll(), true)
                 ));
             case 'query/remove':
+                $requestData = $this->getRequestData();
                 return new JsonResponse(array(
-                    'result' => $repository->remove($request['id']),
+                    'result' => $repository->remove($requestData['id']),
                 ));
             case 'query/save':
             case 'style/save':
             case 'stylemap/save':
-                $entity = $repository->createFiltered($request[$saveDataKey]);
+                $requestData = $this->getRequestData();
+                $entity = $repository->createFiltered($requestData[$saveDataKey]);
                 $entity->setUserId($this->getUserId());
                 $repository->save($entity);
                 // @todo: fix this inconsistency
@@ -235,43 +225,6 @@ class Search extends BaseElement
         $serializer = new JsonSerializer();
         $responseBody = $serializer->serialize($data);
         return new Response($responseBody, 200, array('Content-Type' => 'application/json'));
-    }
-
-    /**
-     * Set feature type
-     *
-     * @param $featureType
-     */
-    private function setFeatureType(FeatureType $featureType)
-    {
-        $this->featureType = $featureType;
-    }
-
-    /**
-     * Set schema (FeatureType)
-     *
-     * @param mixed $schemaName
-     */
-    protected function setSchema($schemaName)
-    {
-        $configuration = $this->getConfiguration();
-        $schemas       = $configuration['schemes'];
-        $schema        = $schemas[$schemaName];
-        if (is_array($schema['featureType'])) {
-            $this->setFeatureType(new FeatureType($this->container, $schema['featureType']));
-        } else {
-            throw new Exception('FeatureType settings not correct');
-        }
-    }
-
-    /**
-     * Get feature type
-     *
-     * @return FeatureType
-     */
-    public function getFeatureType()
-    {
-        return $this->featureType;
     }
 
     /**
@@ -307,14 +260,11 @@ class Search extends BaseElement
     }
 
     /**
-     * Export results
-     *
-     * @param $request
      * @return JsonResponse
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      */
-    public function listSchemasAction($request)
+    public function listSchemasAction()
     {
         $result                  = array();
         $featureTypeManager      = $this->getFeatureTypeService();
@@ -397,24 +347,6 @@ class Search extends BaseElement
         return new JsonResponse(array(
             'stylemap' => HKVStorage::encodeValue($style)
         ));
-    }
-
-    /**
-     * Select features
-     *
-     * @param $request
-     * @return \Mapbender\DataSourceBundle\Entity\Feature[]
-     * @todo: figure out if we can serialize this without Zumba\Utils\JsonSerializer
-     */
-    public function selectFeaturesAction($request)
-    {
-        return $this->getFeatureType()->search(
-            array_merge(
-                array(
-                    'returnType' => 'FeatureCollection',
-                    'maxResults' => 2500
-                ),
-                $request));
     }
 
     /**
@@ -555,55 +487,6 @@ class Search extends BaseElement
             'removed'    => $dataStore->remove($dataItemId),
             'dataItemId' => $dataItemId
         ));
-    }
-
-    /**
-     * Delete feature
-     *
-     * @param $request
-     * @return JsonResponse
-     */
-    public function deleteAction($request)
-    {
-        return new JsonResponse($this->getFeatureType()->remove($request['feature']));
-    }
-
-    /**
-     * Upload file action
-     *
-     * @param $request
-     * @return JsonResponse
-     */
-    public function uploadFileAction($request)
-    {
-        $requestService             = $this->container->get('request');
-        $schemaName                 = isset($request['schema']) ? $request['schema'] : $requestService->get('schema');
-        $featureType                = $this->getFeatureType();
-        $fieldName                  = $requestService->get('field');
-        $urlParameters              = array('schema' => $schemaName,
-                                            'fid'    => $requestService->get('fid'),
-                                            'field'  => $fieldName);
-        $serverUrl                  = preg_replace('/\\?.+$/', "", $_SERVER["REQUEST_URI"]) . "?" . http_build_query($urlParameters);
-        $uploadDir                  = $featureType->getFilePath($fieldName);
-        $uploadUrl                  = $featureType->getFileUrl($fieldName) . "/";
-        $urlParameters['uploadUrl'] = $uploadUrl;
-        $uploadHandler              = new Uploader(array(
-            'upload_dir'                   => $uploadDir . "/",
-            'script_url'                   => $serverUrl,
-            'upload_url'                   => $uploadUrl,
-            'accept_file_types'            => '/\.(gif|jpe?g|png)$/i',
-            'print_response'               => false,
-            'access_control_allow_methods' => array(
-                'OPTIONS',
-                'HEAD',
-                'GET',
-                'POST',
-                'PUT',
-                'PATCH',
-                //'DELETE'
-            ),
-        ));
-        return new JsonResponse(array_merge($uploadHandler->get_response(), $urlParameters));
     }
 
     /**
