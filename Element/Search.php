@@ -31,35 +31,43 @@ use Zumba\Util\JsonSerializer;
  */
 class Search extends BaseElement
 {
-    /** @var string Element title */
-    protected static $title = 'Search';
+    public static function getClassTitle()
+    {
+        return 'Search';
+    }
 
-    /** @var string Element description */
-    protected static $description = 'Object search element';
+    public static function getClassDescription()
+    {
+        return 'Object search element';
+    }
 
     /** @var FeatureType Current feature type */
     protected $featureType;
 
     /** @inheritdoc */
-    static public function listAssets()
+    public function getAssets()
     {
         return array(
-            'js'    =>
-                array(
-                    '../../vendor/blueimp/jquery-file-upload/js/jquery.fileupload.js',
-                    '../../vendor/blueimp/jquery-file-upload/js/jquery.iframe-transport.js',
-                    '/components/jquery-context-menu/jquery-context-menu-built.js',
-                    '/components/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js',
-                    'OpenLayerHelper.js',
-                    'feature-style-editor.js',
-                    'style-map-manager.js',
-                    'query-result-title-bar-view.js',
-                    'query-result-view.js',
-                    'query-manager.js',
-                    'mapbender.element.search.js'
-                ),
-            'css'   => array('sass/element/search.scss'),
-            'trans' => array('MapbenderSearchBundle:Element:search.json.twig'));
+            'js' => array(
+                '../../vendor/blueimp/jquery-file-upload/js/jquery.fileupload.js',
+                '../../vendor/blueimp/jquery-file-upload/js/jquery.iframe-transport.js',
+                '/components/jquery-context-menu/jquery-context-menu-built.js',
+                '/components/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js',
+                'OpenLayerHelper.js',
+                'feature-style-editor.js',
+                'style-map-manager.js',
+                'query-result-title-bar-view.js',
+                'query-result-view.js',
+                'query-manager.js',
+                'mapbender.element.search.js',
+            ),
+            'css' => array(
+                'sass/element/search.scss',
+            ),
+            'trans' => array(
+                'MapbenderSearchBundle:Element:search.json.twig',
+            ),
+        );
     }
 
     /** @inheritdoc */
