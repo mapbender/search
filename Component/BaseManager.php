@@ -2,7 +2,7 @@
 
 namespace Mapbender\SearchBundle\Component;
 
-use Eslider\Driver\HKVStorage;
+use Mapbender\SearchBundle\Component\HKVStorageBetter;
 use Mapbender\CoreBundle\Component\SecurityContext;
 use Mapbender\SearchBundle\Entity\UniqueBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -181,6 +181,6 @@ abstract class BaseManager implements ManagerInterface
      */
     public function createDB()
     {
-        $this->db = new HKVStorage($this->path, $this->tableName);
+        $this->db = new HKVStorageBetter($this->path, $this->tableName);
     }
 }
