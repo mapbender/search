@@ -8,8 +8,10 @@
 
 namespace Mapbender\SearchBundle\Component;
 
+use Eslider\Driver\HKVStorage;
+use Mapbender\SearchBundle\Entity\HKVBetter;
 
-class HKVStorageBetter
+class HKVStorageBetter extends HKVStorage
 {
 
 }
