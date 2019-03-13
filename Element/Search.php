@@ -4,7 +4,7 @@ namespace Mapbender\SearchBundle\Element;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
-use Eslider\Driver\HKVStorage;
+use Mapbender\SearchBundle\Component\HKVStorageBetter;
 use FOM\CoreBundle\Component\ExportResponse;
 use Mapbender\DataSourceBundle\Component\DataStore;
 use Mapbender\DataSourceBundle\Component\DataStoreService;
@@ -315,7 +315,7 @@ class Search extends BaseElement
         $style           = $styleMapManager->addStyle($styleMapId, $styleId);
 
         return new JsonResponse(array(
-            'stylemap' => HKVStorage::encodeValue($style)
+            'stylemap' => HKVStorageBetter::encodeValue($style)
         ));
     }
 
