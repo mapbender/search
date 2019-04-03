@@ -80,4 +80,57 @@ class HKVStorageBetter extends HKVStorage
 
         return $hkv;
     }
+
+    /**
+     * Create SQL query
+     *
+     * @param HKVSearchFilter $filter
+     * @return string SQL
+     */
+    public function createQuery(HKVSearchFilter $filter)
+    {
+        $db     = $this->db();
+        $sql    = array();
+        $where  = array();
+        $fields = $filter->getFields();
+        $sql[]  = 'SELECT ' . ($fields ? implode(',', $fields) : '*');
+        $sql[]  = 'FROM ' . $db->quote($this->tableName);
+
+        $quotedKeyName      = (string)$db->quote('key');
+        $quotedCreationDate = (string)$db->quote('creationDate');
+
+        if ($filter->hasId()) {
+            $where[] = static::ID_FIELD . '=' . intval($filter->getId());
+        } elseif ($filter->getKey()) {
+            $where[] = $quotedKeyName . ' LIKE ' . $db::escapeValue($filter->getKey());
+        }
+
+        if ($filter->getUserId()) {
+            $where[] = $db->quote('userId') . ' LIKE ' . $db::escapeValue($filter->getUserId());
+        }
+
+        if ($filter->getParentId()) {
+            $where[] = static::PARENT_ID_FIELD . '=' . intval($filter->getParentId());
+        }
+
+        if ($filter->getScope()) {
+            $where[] = $db->quote('scope') . ' LIKE ' . $db::escapeValue($filter->getScope());
+        } else {
+            $where[] = $db->quote('scope') . ' IS NULL';
+        }
+
+        if ($filter->getType()) {
+            $where[] = $quotedKeyName . ' LIKE ' . $db::escapeValue($filter->getType());
+        }
+
+        $sql[] = 'WHERE ' . implode(' AND ', $where);
+        //$sql[] = 'GROUP BY ' . $quotedKeyName;
+        $sql[] = 'ORDER BY ' . $quotedCreationDate . ' DESC';
+
+        if ($filter->hasLimit()) {
+            $sql[] = 'LIMIT ' . $filter->getFetchLimit();
+        }
+
+        return implode(' ', $sql);
+    }
 }
