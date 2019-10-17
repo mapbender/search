@@ -155,13 +155,17 @@ $.widget("rw.queryManager", {
                     }],
                     data:         initialFields,
                     buttons:      [{
+                        //otherwise the button would trigger a submit-event
+                        type: "html",
+                        html: '<button type="button" class="button critical icon-remove remove" title="Löschen">Löschen</button>',
                         title:     "Löschen",
                         className: 'remove',
                         cssClass:  'critical',
                         onClick:   function(field, ui) {
                             var form = ui.closest('.popup-dialog');
                             var resultTable = form.find('[name="fields"]');
-                            var tableWidget = resultTable.data('visUiJsResultTable');
+                            // its fucking insane
+                            var tableWidget = resultTable.data('digitizer-result-table');
                             var tableApi = resultTable.resultTable('getApi');
 
                             tableApi.row(tableWidget.getDomRowByData(field)).remove();
@@ -253,13 +257,17 @@ $.widget("rw.queryManager", {
                     }],
                     data:      query && query.conditions ? query.conditions : [],
                     buttons:   [{
+                        //otherwise the button would trigger a submit-event
+                        type: "html",
+                        html: '<button type="button" class="button critical icon-remove remove" title="Löschen">Löschen</button>',
                         title:     "Löschen",
                         className: 'remove',
                         cssClass:  'critical',
                         onClick:   function(condition, ui) {
                             var form = ui.closest('.popup-dialog');
                             var resultTable = form.find('[name="conditions"]');
-                            var tableWidget = resultTable.data('visUiJsResultTable');
+                            // its fucking insane
+                            var tableWidget = resultTable.data('digitizer-result-table');
                             var tableApi = resultTable.resultTable('getApi');
 
                             tableApi.row(tableWidget.getDomRowByData(condition)).remove();
