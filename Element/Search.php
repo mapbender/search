@@ -412,7 +412,7 @@ class Search extends BaseElement
         $id           = $request['id'];
         $dataItemId   = $request['dataItemId'];
         $dataStore    = $this->getDataStoreById($id);
-        $dataItem     = $dataStore->get($dataItemId);
+        $dataItem = $dataStore->getById($dataItemId);
         $dataItemData = null;
         if ($dataItem) {
             $dataItemData = $dataItem->toArray();
