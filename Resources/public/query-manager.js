@@ -122,7 +122,8 @@ $.widget("rw.queryManager", {
                             return false;
                         },
                         css:      {
-                            width: "20%"
+                            width: "20%",
+                            'margin-right': '0'
                         }
                     }]
                 }, {
