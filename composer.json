@@ -18,7 +18,6 @@
   "require": {
     "php": ">=5.3.3",
     "mapbender/vis-ui.js": "@dev",
-    "mapbender/digitizer": "@dev",
     "debugteam/bootstrap-colorpicker": "@dev",
     "mapbender/data-source": "*",
     "eslider/hkv-storage": "*"
