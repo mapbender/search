@@ -194,7 +194,9 @@ $.widget("rw.queryManager", {
                                     title:     "Feld",
                                     type:      "select",
                                     name:      "fieldName",
-                                    options:   fieldNames,
+                                    options:   Object.keys(fieldNames).map(function(key) {
+                                        return { key: key, label: fieldNames[key] }
+                                    }),
                                     mandatory: true,
                                     css:       {width: "100%"}
                                 }]
