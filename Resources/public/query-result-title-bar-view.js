@@ -90,11 +90,11 @@ $.widget("wheregroup.queryResultTitleBarView", {
 
         buttons.push(removeButton);
 
-        element.generateElements({
+        element.generateElements(Mapbender.Util.beautifyGenerateElements({
             cssClass: 'buttons',
             type:     'fieldSet',
             children: buttons
-        });
+        }));
 
         return element;
     },

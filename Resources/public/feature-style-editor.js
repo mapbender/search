@@ -1,5 +1,7 @@
 (function($) {
 
+
+
     /**
      * Style manager widget
      */
@@ -199,11 +201,11 @@
                         title:   "Glättung",
                         name:    "strokeLinecap",
                         type:    "select",
-                        options: {
+                        options: Mapbender.Util.beautifyOptions({
                             round:  "abgerundet",
                             square: "eckig",
                             butt:   "bündig"
-                        },
+                        }),
                         value:   "round",
                         css:     {width: "50%"}
                     }, {
@@ -212,7 +214,7 @@
                         type:    "select",
                         //  strokeDashstyle	{String} Stroke dash style.
                         // Default is “solid”.  [dot | dash | dashdot | longdash | longdashdot | solid]
-                        options: {
+                        options: Mapbender.Util.beautifyOptions({
                             solid:           'Durchgezogen',
                             // shortdash:       'Kurze Striche',
                             // shortdot:        'Kleine Punkte',
@@ -224,7 +226,7 @@
                             dashdot:         'Strichpunkt',
                             longdashdot:     'Strichpunktpunkt'
                             // longdashdotdot:  'Strichpunktpunkt, lang'
-                        },
+                        }),
                         value:   "solid",
                         css:     {width: "50%"}
 
@@ -330,7 +332,7 @@
                             title:   'Fontname',
                             type:    'select',
                             value:   'Arial, Helvetica, sans-serif',
-                            options: {
+                            options: Mapbender.Util.beautifyOptions({
                                 'Arial, Helvetica, sans-serif':                         'Arial, Helvetica, sans-serif',
                                 '"Arial Black", Gadget, sans-serif':                    'Arial Black, Gadget, sans-serif',
                                 '"Comic Sans MS", cursive, sans-serif':                 'Comic Sans MS, cursive, sans-serif',
@@ -342,7 +344,7 @@
                                 'Georgia, serif':                                       'Georgia, serif (nichtproportionale Schrift)',
                                 '"Palatino Linotype", "Book Antiqua", Palatino, serif': 'Palatino Linotype, "Book Antiqua", Palatino, serif (nichtproportionale Schrift)',
                                 '"Times New Roman", Times, serif':                      'Times New Roman, Times, serif (nichtproportionale Schrift)'
-                            },
+                            }),
                             name:     'fontFamily',
                             infoText: 'The font family for the label, to be provided like in CSS.',
                             css:      {width: "50%"}
@@ -352,14 +354,14 @@
                             name:    'fontSize',
                             type:    'select',
                             value:   11,
-                            options: {
+                            options: Mapbender.Util.beautifyOptions({
                                 "9":  9,
                                 "10": 10,
                                 "11": 11,
                                 "12": 12,
                                 "13": 13,
                                 "14": 14
-                            },
+                            }),
                             css:      {width: "20%"},
                             infoText: 'The font size for the label, to be provided like in CSS'
                         }, //     {
@@ -374,11 +376,11 @@
                                 name:     'fontWeight',
                                 type:     'select',
                                 value:    'regular',
-                                options:  {
+                                options:  Mapbender.Util.beautifyOptions({
                                     'regular': 'Normal',
                                     'bold':    'Fett',
                                     'italic':  'Kursive'
-                                },
+                                }),
                                 css:      {width: "30%"},
                                 infoText: 'The font weight for the label, to be provided like in CSS.'
                             }, {
@@ -423,7 +425,7 @@
                     title:   "Zeigersymbol",
                     name:    "cursor",
                     type:    "select",
-                    options: {
+                    options: Mapbender.Util.beautifyOptions({
                         auto:        'Automatisch',
                         'default':   'Vorgabe',
                         crosshair:   'Kreuz',
@@ -440,7 +442,7 @@
                         text:        'Textauswahl',
                         wait:        'Warten',
                         help:        'Hilfe'
-                    },
+                    }),
                     value:   "pointer"
                 }, {
                     title:     "Rotation (°)",
@@ -456,12 +458,12 @@
                     title:   "Anzeige",
                     name:    "display",
                     type:    "select",
-                    options: {
+                    options: Mapbender.Util.beautifyOptions({
                         inline:         "inline",
                         "inline-block": "inline-block",
                         block:          "block",
                         none:           "none"
-                    },
+                    }),
                     value:   "block"
                 }]
             };
@@ -482,10 +484,10 @@
             // tabs.push(backGroundTab);
             // tabs.push(miscTab);
 
-            element.generateElements({
+            element.generateElements(Mapbender.Util.beautifyGenerateElements({
                 type:     "tabs",
                 children: tabs
-            });
+            }));
 
             window.setTimeout(function() {
                 element.formData(options.data);

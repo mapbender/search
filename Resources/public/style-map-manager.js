@@ -70,7 +70,7 @@ $.widget("wheregroup.styleMapManager", {
             });
         }
 
-        element.generateElements({
+        element.generateElements(Mapbender.Util.beautifyGenerateElements({
             type:     'form',
             css:{
                 'margin-left': '10px',
@@ -86,7 +86,7 @@ $.widget("wheregroup.styleMapManager", {
                 children: [{
                     type:    'select',
                     title:   'Standard',
-                    options: styleNames,
+                    options: Mapbender.Util.beautifyOptions(styleNames),
                     name:    'styles[default]',
                     change:  onStyleChange,
                     css:     {width: '75%'}
@@ -96,7 +96,7 @@ $.widget("wheregroup.styleMapManager", {
                 children: [{
                     type:    'select',
                     title:   'Mouseover',
-                    options: styleNames,
+                    options: Mapbender.Util.beautifyOptions(styleNames),
                     name:    'styles[select]',
                     change:  onStyleChange,
                     css:     {width: '75%'}
@@ -114,7 +114,7 @@ $.widget("wheregroup.styleMapManager", {
             //     }, editButton]
             // }
             ]
-        });
+        }));
 
         window.setTimeout(function() {
             if(!data.name) {

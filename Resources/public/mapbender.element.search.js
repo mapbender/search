@@ -65,7 +65,7 @@
 
                 widget.map = $('#' + options.target).data('mapbenderMbMap').map.olMap;
 
-                element.generateElements({
+                element.generateElements(Mapbender.Util.beautifyGenerateElements({
                     type:     'fieldSet',
                     children: [{
                         type:    'select',
@@ -121,14 +121,14 @@
                             widget.openStyleEditor();
                         }
                     }]
-                });
+                }));
 
 
 
-                element.generateElements({
+                element.generateElements(Mapbender.Util.beautifyGenerateElements({
                     type: 'html',
                     html: '<div class="queries"></div>'
-                });
+                }));
 
 
                 rendered.resolveWith(true);

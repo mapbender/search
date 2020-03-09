@@ -48,7 +48,7 @@ $.widget("wheregroup.queryResultView", {
             .attr('data-id', query.id)
             .empty();
 
-        element.generateElements({
+        element.generateElements(Mapbender.Util.beautifyGenerateElements({
             type:     'fieldSet',
             children: [{
                 type:     'checkbox',
@@ -65,7 +65,7 @@ $.widget("wheregroup.queryResultView", {
                     });
                 }
             }]
-        });
+        }));
 
         function escapeHtml(text) {
             'use strict';

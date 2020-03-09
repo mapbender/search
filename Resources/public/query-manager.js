@@ -75,7 +75,7 @@ $.widget("rw.queryManager", {
         //     condition.fieldTitle = fieldNames[condition.fieldName];
         // });
 
-        var formContainer = element.empty().generateElements({
+        var formContainer = element.empty().generateElements( Mapbender.Util.beautifyGenerateElements({
             type:     "tabs",
             children: [{
                 title:    "Allgemein",
@@ -91,7 +91,7 @@ $.widget("rw.queryManager", {
                     name:    "schemaId",
                     title:   "Schema (Objekttyp)",
                     value:   schemaId,
-                    options: schemaOptions,
+                    options: Mapbender.Util.beautifyOptions(schemaOptions),
                     change:  function(e) {
                         var featureTypeId = $('select', e.currentTarget).val();
                         currentSchema = widget.changeSource(featureTypeId)
@@ -103,7 +103,7 @@ $.widget("rw.queryManager", {
                         name:    "styleMap",
                         title:   "Kartenstil",
                         value:   0,
-                        options: _.object(_.pluck(options.styleMaps, 'id'), _.pluck(options.styleMaps, 'name')),
+                        options: Mapbender.Util.beautifyOptions(_.object(_.pluck(options.styleMaps, 'id'), _.pluck(options.styleMaps, 'name'))),
                         css:     {
                             width: "80%"
                         }
@@ -188,19 +188,17 @@ $.widget("rw.queryManager", {
                             var currentSchema = widget.getCurrentSchema();
                             var fieldNames = _.object(_.pluck(currentSchema.fields, 'name'), _.pluck(currentSchema.fields, 'title'));
 
-                            fieldForm.generateElements({
+                            fieldForm.generateElements( Mapbender.Util.beautifyGenerateElements({
                                 type:     'fieldSet',
                                 children: [{
                                     title:     "Feld",
                                     type:      "select",
                                     name:      "fieldName",
-                                    options:   Object.keys(fieldNames).map(function(key) {
-                                        return { key: key, label: fieldNames[key] }
-                                    }),
+                                    options:   Mapbender.Util.beautifyOptions(fieldNames),
                                     mandatory: true,
                                     css:       {width: "100%"}
                                 }]
-                            });
+                            }));
                             fieldForm.popupDialog({
                                 title:   'Feldbenennung',
                                 width:   500,
@@ -292,13 +290,13 @@ $.widget("rw.queryManager", {
                             var currentSchema = widget.getCurrentSchema();
                             var fieldNames = _.object(_.pluck(currentSchema.fields, 'name'), _.pluck(currentSchema.fields, 'title'));
 
-                            conditionForm.generateElements({
+                            conditionForm.generateElements(Mapbender.Util.beautifyGenerateElements({
                                 type:     'fieldSet',
                                 children: [{
                                     title:     "Field",
                                     type:      "select",
                                     name:      "fieldName",
-                                    options:   fieldNames,
+                                    options:   Mapbender.Util.beautifyOptions(fieldNames),
                                     mandatory: true,
                                     css:       {width: "40%"},
                                     change:    function() {
@@ -312,37 +310,37 @@ $.widget("rw.queryManager", {
 
                                         if(fieldDefinition.hasOwnProperty('options')) {
                                             container
-                                                .generateElements({
+                                                .generateElements( Mapbender.Util.beautifyGenerateElements({
                                                     title:     "Operator",
                                                     type:      "select",
                                                     name:      "operator",
-                                                    options:   operators,
+                                                    options:   Mapbender.Util.beautifyOptions(operators),
                                                     mandatory: true,
                                                     css:       {width: "30%"}
-                                                })
-                                                .generateElements({
+                                                }))
+                                                .generateElements( Mapbender.Util.beautifyGenerateElements({
                                                     title:   "Optionen",
                                                     type:    'select',
                                                     name:    'value',
-                                                    options: fieldDefinition.options,
+                                                    options: Mapbender.Util.beautifyOptions(fieldDefinition.options),
                                                     css:     {width: "70%"}
-                                                });
+                                                }));
                                         } else if(fieldDefinition.hasOwnProperty("operators")) {
                                             container
-                                                .generateElements({
+                                                .generateElements(Mapbender.Util.beautifyGenerateElements({
                                                     title:     "Operator",
                                                     type:      "select",
                                                     name:      "operator",
-                                                    options:   operators,
+                                                    options:   Mapbender.Util.beautifyOptions(operators),
                                                     mandatory: true,
                                                     css:       {width: "30%"}
-                                                })
-                                                .generateElements({
+                                                }))
+                                                .generateElements(Mapbender.Util.beautifyGenerateElements({
                                                     title: "Value",
                                                     type:  "input",
                                                     name:  "value",
                                                     css:   {width: "70%"}
-                                                });
+                                                }));
                                         }
                                     }
                                 }, {
@@ -350,7 +348,7 @@ $.widget("rw.queryManager", {
                                     cssClass: 'condition',
                                     css:      {width: "60%"}
                                 }]
-                            });
+                            }));
 
                             conditionForm.popupDialog({
                                 title:   'Bedingung',
@@ -391,7 +389,7 @@ $.widget("rw.queryManager", {
                     }]
                 }]
             }]
-        });
+        }));
 
         setTimeout(function() {
             formContainer.formData(query);

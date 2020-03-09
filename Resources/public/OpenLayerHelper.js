@@ -5,6 +5,30 @@
  */
 var Mapbender = Mapbender || {};
 Mapbender.Util = Mapbender.Util || {};
+Mapbender.Util.beautifyOptions = function(options) {
+
+    if (Array.isArray(options) || typeof options != "object") {
+        return options;
+    }
+
+    var newOptions = [];
+    Object.keys(options).forEach(function(key){
+        newOptions.push({
+           value: key,
+           label: options[key]
+        });
+    });
+
+    return newOptions;
+
+};
+
+Mapbender.Util.beautifyGenerateElements = function(element) {
+
+    return {
+        children: [element]
+    }
+};
 Mapbender.Util.OpenLayers2 = {
     /**
      * Zoom to JSON feature
