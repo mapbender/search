@@ -22,9 +22,6 @@
     "mapbender/data-source": "*",
     "eslider/hkv-storage": "*"
   },
-  "conflict": {
-    "symfony/symfony": ">=3.0"
-  },
   "config": {
     "bin-dir": "bin"
   },
