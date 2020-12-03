@@ -245,8 +245,7 @@ class Search extends BaseElement
             $featureTypeName = $schema->getFeatureType();
             $declaration     = $featureTypeDeclarations[ $featureTypeName ];
             $title           = isset($declaration['title']) ? $declaration['title'] : ucfirst($featureTypeName);
-            $featureType     = $featureTypeManager->get($featureTypeName);
-            $print           = $featureType->getConfiguration('print');
+            $print = isset($declaration['print']) ? $declaration['print'] : null;
             $fields          = $schema->getFields();
 
             foreach ($fields as &$fieldDescription) {
