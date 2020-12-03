@@ -136,7 +136,7 @@ class Search extends BaseElement
             case 'schemas/list':
                 return $this->listSchemasAction();
             case 'query/fetch':
-                return $this->zumbaResponse($this->fetchQueryAction($this->getRequestData()));
+                return new JsonResponse($this->fetchQueryAction($this->getRequestData()));
             case 'query/check':
                 return $this->checkQueryAction($this->getRequestData());
             case 'export':
