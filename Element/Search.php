@@ -16,9 +16,7 @@ use Mapbender\SearchBundle\Component\StyleMapManager;
 use Mapbender\SearchBundle\Entity\QuerySchema;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Zumba\Util\JsonSerializer;
 
 /**
  * Class Search
@@ -136,7 +134,7 @@ class Search extends BaseElement
             case 'schemas/list':
                 return $this->listSchemasAction();
             case 'query/fetch':
-                return $this->zumbaResponse($this->fetchQueryAction($this->getRequestData()));
+                return new JsonResponse($this->fetchQueryAction($this->getRequestData()));
             case 'query/check':
                 return $this->checkQueryAction($this->getRequestData());
             case 'export':
@@ -188,13 +186,6 @@ class Search extends BaseElement
                 break;
         }
         throw new BadRequestHttpException("Invalid action " . var_export($action, true));
-    }
-
-    private function zumbaResponse($data)
-    {
-        $serializer = new JsonSerializer();
-        $responseBody = $serializer->serialize($data);
-        return new Response($responseBody, 200, array('Content-Type' => 'application/json'));
     }
 
     /**
