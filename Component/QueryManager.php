@@ -152,10 +152,25 @@ class QueryManager extends BaseManager
     public function fetchQuery(Query $query, array $args = array())
     {
         $featureType = $this->getQueryFeatureType($query);
-        return $featureType->search(array_merge(array(
+        $features = $featureType->search(array_merge(array(
             'where'      => $this->buildCriteria($query->getConditions(), $featureType),
-            'returnType' => 'FeatureCollection'
         ), $args));
+
+        $geometryField = $featureType->getGeomField();
+
+        $formatted = array();
+        foreach ($features as $feature) {
+            $properties = $feature->toArray();
+            // remove (variable) geometry column from properties
+            unset($properties[$geometryField]);
+            $formatted[] = array(
+                'geometry' => $feature->getGeom(),  // NOTE: WKT format
+                'properties' => $properties,
+            );
+        }
+        return array(
+            'features' => $formatted,
+        );
     }
 
     /**
