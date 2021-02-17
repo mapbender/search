@@ -3,7 +3,6 @@
 namespace Mapbender\SearchBundle\Component;
 
 use Mapbender\SearchBundle\Component\HKVStorageBetter;
-use Mapbender\CoreBundle\Component\SecurityContext;
 use Mapbender\SearchBundle\Entity\UniqueBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -19,7 +18,7 @@ abstract class BaseManager implements ManagerInterface
     protected $db;
 
     /* @var string userId */
-    protected $userId = SecurityContext::USER_ANONYMOUS_ID;
+    protected $userId = 0;
 
     /** @var string tableName */
     protected $tableName;
@@ -41,7 +40,7 @@ abstract class BaseManager implements ManagerInterface
         $baseName = preg_replace('#^([^/]*/)*#', '', $this->path);
         $this->tableName = preg_replace('#\..*$#', '', $baseName);
         $this->createDB();
-        $this->setUserId($container->get("security.context")->getUser()->getId());
+        $this->setUserId($container->get("security.token_storage")->getToken()->getUser()->getId());
     }
 
     /**

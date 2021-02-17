@@ -21,7 +21,7 @@ class ResolveParametricServiceIdsPass implements CompilerPassInterface
             foreach ($arguments as $key => $argument) {
                 if ($argument instanceof Reference && preg_match('/^%.*%$/', $argument->__toString())) {
                     $realServiceId = $container->getParameter(trim($argument->__toString(), '%'));
-                    $argumentsOut[$key] = new Reference($realServiceId, $argument->getInvalidBehavior(), $argument->isStrict());
+                    $argumentsOut[$key] = new Reference($realServiceId, $argument->getInvalidBehavior());
                     $modified = true;
                 } else {
                     $argumentsOut[$key] = $argument;
