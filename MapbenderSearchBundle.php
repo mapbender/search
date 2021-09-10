@@ -2,7 +2,6 @@
 namespace Mapbender\SearchBundle;
 
 use Mapbender\CoreBundle\Component\MapbenderBundle;
-use Mapbender\SearchBundle\DependencyInjection\Compiler\ResolveParametricServiceIdsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
@@ -24,8 +23,6 @@ class MapbenderSearchBundle extends MapbenderBundle
 
     public function build(ContainerBuilder $container)
     {
-        $container->addCompilerPass(new ResolveParametricServiceIdsPass());
         parent::build($container);
-
     }
 }

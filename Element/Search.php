@@ -511,9 +511,8 @@ class Search extends BaseElement
      */
     protected function getFeatureTypeService()
     {
-        $serviceId = $this->container->getParameter('mapbender.search.featuretype.service.id');
         /** @var FeatureTypeService $service */
-        $service = $this->container->get($serviceId);
+        $service = $this->container->get('mapbender.search.featuretype_registry');
         return $service;
     }
 

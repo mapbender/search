@@ -4,14 +4,13 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <parameters>
-            <parameter key="mapbender.search.featuretype.service.id">features</parameter>
-            <parameter key="mapbender.search.sqlite.storage_root">%kernel.root_dir%/config</parameter>
+        <parameter key="mapbender.search.sqlite.storage_root">%kernel.root_dir%/config</parameter>
     </parameters>
     <services>
-
+        <service id="mapbender.search.featuretype_registry" alias="features" />
         <service class="Mapbender\SearchBundle\Component\QueryManager" id="mapbender.search.query.manager">
             <argument type="service" id="service_container"/>
-            <argument type="service" id="%mapbender.search.featuretype.service.id%" />
+            <argument type="service" id="mapbender.search.featuretype_registry" />
             <argument>%mapbender.search.sqlite.storage_root%/queries.sqlite</argument>
         </service>
         <service class="Mapbender\SearchBundle\Component\StyleManager" id="mapbender.search.style.manager">
