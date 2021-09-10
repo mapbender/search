@@ -435,7 +435,14 @@
                 widget.renderQueries(queries);
             });
         },
-
+        parseResponseFeatures_: function(data) {
+            return data.map(function(featureData) {
+                var feature = new OpenLayers.Feature.Vector(OpenLayers.Geometry.fromWKT(featureData.geometry));
+                feature.attributes = feature.data = featureData.properties;
+                feature.fid = featureData.id;
+                return feature;
+            });
+        },
         /**
          * Execute and fetch query results
          *
@@ -465,11 +472,7 @@
 
             if(!query.extendOnly && query._rowFeatures) {
                 setTimeout(function() {
-                    var geoJsonReader = new OpenLayers.Format.GeoJSON();
-                    var featureCollection = geoJsonReader.read({
-                        type:     "FeatureCollection",
-                        features: query._rowFeatures
-                    });
+                    var featureCollection = widget.parseResponseFeatures_(query._rowFeatures);
                     query.resultView.queryResultView('updateList', featureCollection);
                     widget.reloadFeatures(query, featureCollection);
                     query.titleView.queryResultTitleBarView('hidePreloader');
@@ -496,12 +499,7 @@
                 }
 
                 query._rowFeatures = r.features;
-
-                var geoJsonReader = new OpenLayers.Format.GeoJSON();
-                var featureCollection = geoJsonReader.read({
-                    type:     "FeatureCollection",
-                    features: r.features
-                });
+                var featureCollection = widget.parseResponseFeatures_(r.features);
 
                 query.resultView.queryResultView('updateList', featureCollection);
                 widget.reloadFeatures(query, featureCollection);

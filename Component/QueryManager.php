@@ -3,6 +3,7 @@ namespace Mapbender\SearchBundle\Component;
 
 use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Component\FeatureTypeService;
+use Mapbender\DataSourceBundle\Entity\Feature;
 use Mapbender\SearchBundle\Entity\Query;
 use Mapbender\SearchBundle\Entity\QueryCondition;
 use Mapbender\SearchBundle\Entity\QuerySchema;
@@ -152,10 +153,20 @@ class QueryManager extends BaseManager
     public function fetchQuery(Query $query, array $args = array())
     {
         $featureType = $this->getQueryFeatureType($query);
-        return $featureType->search(array_merge(array(
+        $features = $featureType->search(array_merge(array(
             'where'      => $this->buildCriteria($query->getConditions(), $featureType),
-            'returnType' => 'FeatureCollection'
         ), $args));
+        $results = array('features' => array());
+        foreach ($features as $feature) {
+            /** @var Feature $feature */
+
+            $results['features'][] = array(
+                'geometry' => $feature->getGeom(),
+                'id' => $feature->getId(),
+                'properties' => $feature->getAttributes(),
+            );
+        }
+        return $results;
     }
 
     /**
