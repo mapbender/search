@@ -16,6 +16,7 @@ use Mapbender\SearchBundle\Component\StyleMapManager;
 use Mapbender\SearchBundle\Entity\QuerySchema;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Zumba\Util\JsonSerializer;
@@ -125,11 +126,9 @@ class Search extends BaseElement
         return $configuration;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function httpAction($action)
+    public function handleHttpRequest(Request $request)
     {
+        $action = $request->attributes->get('action');
         // action seems to come in lower-case anyway, might be browser dependent
         $action = strtolower($action);
         switch ($action) {
