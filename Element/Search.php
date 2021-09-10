@@ -107,7 +107,7 @@ class Search extends BaseElement
      */
     public function getConfiguration()
     {
-        $configuration            = parent::getConfiguration();
+        $configuration = $this->entity->getConfiguration();
         $configuration['debug']   = isset($configuration['debug']) ? $configuration['debug'] : false;
 
         if (isset($configuration['schemes']) && is_array($configuration['schemes'])) {
