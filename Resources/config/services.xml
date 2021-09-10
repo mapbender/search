@@ -9,16 +9,16 @@
     <services>
         <service id="mapbender.search.featuretype_registry" alias="features" />
         <service class="Mapbender\SearchBundle\Component\QueryManager" id="mapbender.search.query.manager">
-            <argument type="service" id="service_container"/>
+            <argument type="service" id="security.token_storage"/>
             <argument type="service" id="mapbender.search.featuretype_registry" />
             <argument>%mapbender.search.sqlite.storage_root%/queries.sqlite</argument>
         </service>
         <service class="Mapbender\SearchBundle\Component\StyleManager" id="mapbender.search.style.manager">
-            <argument type="service" id="service_container"/>
+            <argument type="service" id="security.token_storage"/>
             <argument>%mapbender.search.sqlite.storage_root%/styles.sqlite</argument>
         </service>
         <service class="Mapbender\SearchBundle\Component\StyleMapManager" id="mapbender.search.stylemap.manager">
-            <argument type="service" id="service_container"/>
+            <argument type="service" id="security.token_storage"/>
             <argument type="service" id="mapbender.search.style.manager"/>
             <argument>%mapbender.search.sqlite.storage_root%/stylemaps.sqlite</argument>
         </service>

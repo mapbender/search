@@ -3,7 +3,7 @@ namespace Mapbender\SearchBundle\Component;
 
 use Mapbender\SearchBundle\Entity\StyleMap;
 use Symfony\Component\Config\Definition\Exception\Exception;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 /**
  *
@@ -22,15 +22,13 @@ class StyleMapManager extends BaseManager
     /**
      * StyleManager constructor.
      *
-     * @param ContainerInterface|null $container
+     * @param TokenStorageInterface $tokenStorage
      * @param StyleManager $styleManager
      * @param string $sqlitePath
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
      */
-    public function __construct(ContainerInterface $container, StyleManager $styleManager, $sqlitePath)
+    public function __construct(TokenStorageInterface $tokenStorage, StyleManager $styleManager, $sqlitePath)
     {
-        parent::__construct($container, $sqlitePath);
+        parent::__construct($tokenStorage, $sqlitePath);
         $this->styleManager = $styleManager;
     }
 

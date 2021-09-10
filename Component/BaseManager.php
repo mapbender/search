@@ -3,9 +3,10 @@
 namespace Mapbender\SearchBundle\Component;
 
 use Mapbender\SearchBundle\Component\HKVStorageBetter;
-use Mapbender\CoreBundle\Component\SecurityContext;
 use Mapbender\SearchBundle\Entity\UniqueBase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\AnonymousToken;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * Class BaseManager
@@ -15,11 +16,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 abstract class BaseManager implements ManagerInterface
 {
+    /** @var TokenStorageInterface */
+    protected $tokenStorage;
+
     /** @var HKVStorage */
     protected $db;
-
-    /* @var string userId */
-    protected $userId = SecurityContext::USER_ANONYMOUS_ID;
 
     /** @var string tableName */
     protected $tableName;
@@ -27,21 +28,17 @@ abstract class BaseManager implements ManagerInterface
     /** @var string path */
     protected $path;
 
-    /** @var ContainerInterface */
-    protected $container;
-
     /**
-     * @param ContainerInterface $container
+     * @param TokenStorageInterface $tokenStorage
      * @param string $path full filename for sqlite table
      */
-    public function __construct(ContainerInterface $container, $path)
+    public function __construct(TokenStorageInterface $tokenStorage, $path)
     {
-        $this->container = $container;
+        $this->tokenStorage = $tokenStorage;
         $this->path      = $path;
         $baseName = preg_replace('#^([^/]*/)*#', '', $this->path);
         $this->tableName = preg_replace('#\..*$#', '', $baseName);
         $this->createDB();
-        $this->setUserId($container->get("security.context")->getUser()->getId());
     }
 
     /**
@@ -160,21 +157,26 @@ abstract class BaseManager implements ManagerInterface
     }
 
     /**
-     * @param int $userId
-     * @return $this
-     */
-    public function setUserId($userId)
-    {
-        $this->userId = $userId;
-        return $this;
-    }
-
-    /**
-     * @return int
+     * @return mixed
      */
     public function getUserId()
     {
-        return $this->userId;
+        $token = $this->tokenStorage->getToken();
+        if (!$token || ($token instanceof AnonymousToken)) {
+            return 'anon.'; // SecurityContext continuity hack
+        } else {
+            $user = $token->getUser();
+            if ($user && \is_object($user) && ($user instanceof UserInterface)) {
+                // @todo: LDAP user id vs user name handling could easily be handled here
+                if (\method_exists($user, 'getId')) {
+                    return $user->getId();
+                } else {
+                    return $user->getUsername();
+                }
+            }
+            // Support objects with __toString or plain string user types
+            return strval($user) ?: null;
+        }
     }
 
     /**

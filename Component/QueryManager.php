@@ -7,7 +7,7 @@ use Mapbender\DataSourceBundle\Entity\Feature;
 use Mapbender\SearchBundle\Entity\Query;
 use Mapbender\SearchBundle\Entity\QueryCondition;
 use Mapbender\SearchBundle\Entity\QuerySchema;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 /**
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
@@ -28,15 +28,14 @@ class QueryManager extends BaseManager
     /**
      * QueryManager constructor.
      *
-     * @param ContainerInterface $container
+     * @param TokenStorageInterface $tokenStorage
      * @param FeatureTypeService $featureTypeService
      * @param string $sqlitePath
      */
-    public function __construct(ContainerInterface $container, FeatureTypeService $featureTypeService, $sqlitePath)
+    public function __construct(TokenStorageInterface $tokenStorage, $featureTypeService, $sqlitePath)
     {
+        parent::__construct($tokenStorage, $sqlitePath);
         $this->featureTypeService = $featureTypeService;
-        parent::__construct($container, $sqlitePath);
-
     }
 
     /**
