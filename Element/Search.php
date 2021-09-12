@@ -187,20 +187,39 @@ class Search extends BaseElement
         $featureType = $this->getFeatureTypeFromConfig($ftConfig);
         $config = $ftConfig['export'];
         $connection      = $featureType->getConnection();
-        $maxResults      = isset($config["maxResults"]) ? $config["maxResults"] : 10000; // TODO: Set max results in export
+        $maxResults = isset($config["maxResults"]) ? $config["maxResults"] : 10000; // TODO: Set max results in export
         $fileName        = $query->getName() . " " . date('Y:m:d H:i:s');
 
-        if (!count($ids)) {
-            $fields  = $featureType->getFields();
-            $sql = $queryManager->buildSql($featureType, $query, false, $fields);
-            $results = $connection->fetchAll($sql . " LIMIT " . $maxResults);
-            $rows    = $featureType->export($results);
+        $sql = $queryManager->buildSql($featureType, $query);
+        if ($ids) {
+            $sql .= ' AND ' . $connection->quoteIdentifier($featureType->getUniqueId()) . ' IN (' . implode(', ', array_map('intval', $ids)) . ')';
         } else {
-            $rows = $featureType->getByIds($ids, false);
-            $rows = $featureType->export($rows);
+            $sql .= ' LIMIT ' . $maxResults;
         }
-
+        $dbRows = $connection->fetchAll($sql);
+        $rows = array();
+        foreach ($dbRows as $dbRow) {
+            if (!empty($config['fields'])) {
+                $exportRow = array();
+                foreach ($config['fields'] as $cellTitle => $cellExpression) {
+                    $exportRow[$cellTitle] = $this->formatExportCell($dbRow, $cellExpression);
+                }
+                $rows[] = $exportRow;
+            } else {
+                $rows[] = $dbRow;
+            }
+        }
         return new ExportResponse($rows, $fileName, $request->request->get('type'));
+    }
+
+    protected static function formatExportCell($row, $code)
+    {
+        // @todo: stop using eval already
+        $result = null;
+        extract($row);
+        eval('$result = ' . $code . ';');
+        /** @noinspection PhpExpressionAlwaysNullInspection */
+        return $result;
     }
 
     /**
