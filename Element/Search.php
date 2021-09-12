@@ -184,7 +184,7 @@ class Search extends BaseElement
     public function exportAction($request)
     {
         $ids             = isset($request['ids']) && is_array($request['ids']) ? $request['ids'] : array();
-        $queryManager    = $this->getQueryManager(true);
+        $queryManager = $this->getQueryManager();
         $query           = $queryManager->getById($request['queryId']);
         $ftConfig = $this->getFeatureTypeConfigForSchema($this->entity, $query->getSchemaId());
         $featureType = $this->getFeatureTypeFromConfig($ftConfig);
@@ -195,7 +195,7 @@ class Search extends BaseElement
 
         if (!count($ids)) {
             $fields  = $featureType->getFields();
-            $sql     = $queryManager->buildSql($query, false, $fields);
+            $sql = $queryManager->buildSql($featureType, $query, false, $fields);
             $results = $connection->fetchAll($sql . " LIMIT " . $maxResults);
             $rows    = $featureType->export($results);
         } else {
@@ -303,12 +303,12 @@ class Search extends BaseElement
      */
     public function checkQueryAction($request)
     {
-        $queryManager = $this->getQueryManager(true);
+        $queryManager = $this->getQueryManager();
         $query        = $queryManager->create($request['query']);
-        $check        = null;
 
         try {
-            $check = $queryManager->check($query, $request['intersectGeometry'], $request['srid']);
+            $featureType = $this->getFeatureTypeForSchema($this->entity, $query->getSchemaId());
+            $check = $queryManager->check($featureType, $query, $request['intersectGeometry'], $request['srid']);
         } catch (DBALException $e) {
             $message = $e->getMessage();
             if (strpos($message, 'ERROR:')) {
@@ -332,18 +332,16 @@ class Search extends BaseElement
      */
     public function fetchQueryAction($request)
     {
-        $queryManager  = $this->getQueryManager(true);
+        $queryManager = $this->getQueryManager();
         $query = $queryManager->getById($request['query']['id']);
-        $configuration = $this->getConfiguration();
 
-        $queryManager->setSchemas($configuration["schemas"]);
-
-        $schema = $queryManager->getSchemaById($query->getSchemaId());
+        $schemaConfig = $this->getSchemaConfigByName($this->entity, $query->getSchemaId());
+        $featureType = $this->getFeatureTypeForSchema($this->entity, $query->getSchemaId());
 
         try {
-            $maxResults            = $schema->getMaxResults();
+            $maxResults = isset($schemaConfig['maxResults']) ? $schemaConfig['maxResults'] : 500;
             $request['maxResults'] = $maxResults;
-            $results               = $queryManager->fetchQuery($query, $request);
+            $results               = $queryManager->fetchQuery($featureType, $query, $request);
             $count                 = count($results["features"]);
 
 
@@ -450,34 +448,12 @@ class Search extends BaseElement
     }
 
     /**
-     * Get element schema by ID
-     *
-     * @param $id
-     * @return QuerySchema
-     */
-    protected function getSchemaById($id)
-    {
-        $schemas = $this->getSchemas();
-        return $schemas[ $id ];
-    }
-
-    /**
-     * @param bool $initSchemas
      * @return QueryManager
      */
-    protected function getQueryManager($initSchemas = true)
+    protected function getQueryManager()
     {
         /** @var QueryManager $queryManager */
         $queryManager = $this->container->get('mapbender.search.query.manager');
-        if ($initSchemas) {
-            /**
-             * @todo: Don't mutate services after container initialization.
-             *        This is a (backwards compatible) violation of expected service usage.
-             *        If we need schemas, we should supply them in the calls to the service, not set them first with
-             *        global side effects.
-             */
-            $queryManager->setSchemas($this->getSchemas());
-        }
         return $queryManager;
     }
 
@@ -501,6 +477,16 @@ class Search extends BaseElement
             $schemaName = $names[$schemaName];
         }
         return $config['schemas'][$schemaName];
+    }
+
+    /**
+     * @param Entity\Element $element
+     * @param string $schemaName
+     * @return \Mapbender\DataSourceBundle\Component\FeatureType
+     */
+    protected function getFeatureTypeForSchema(Entity\Element $element, $schemaName)
+    {
+        return $this->getFeatureTypeFromConfig($this->getFeatureTypeConfigForSchema($element, $schemaName));
     }
 
     /**

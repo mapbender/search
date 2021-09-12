@@ -20,8 +20,6 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
  */
 class QueryManager extends BaseManager
 {
-    /** @var QuerySchema[] Schemas */
-    protected $schemas;
     /** @var FeatureTypeService */
     protected $featureTypeService;
 
@@ -75,17 +73,17 @@ class QueryManager extends BaseManager
     }
 
     /**
+     * @param FeatureType $featureType
      * @param Query       $query
      * @param null|string $intersectGeometry
      * @param null        $srid
      * @return array
      */
-    public function check(Query $query, $intersectGeometry = null, $srid = null)
+    public function check(FeatureType $featureType, Query $query, $intersectGeometry = null, $srid = null)
     {
-        $featureType = $this->getQueryFeatureType($query);
         $connection  = $featureType->getConnection();
         $driver      = $featureType->getDriver();
-        $sql         = $this->buildSql($query, true);
+        $sql = $this->buildSql($featureType, $query, true);
 
         if ($query->isExtendOnly()) {
             $intersectGeometry = $driver::roundGeometry($intersectGeometry, 2);
@@ -112,15 +110,15 @@ class QueryManager extends BaseManager
     }
 
     /**
+     * @param FeatureType $featureType
      * @param Query  $query
      * @param bool   $count Count queries
      * @param null   $fieldNames
      * @param string $tableAliasName
      * @return string
      */
-    public function buildSql(Query $query, $count = false, $fieldNames = null, $tableAliasName = 't')
+    public function buildSql(FeatureType $featureType, Query $query, $count = false, $fieldNames = null, $tableAliasName = 't')
     {
-        $featureType = $this->getQueryFeatureType($query);
         $connection  = $featureType->getConnection();
         $fields      = array();
 
@@ -145,13 +143,13 @@ class QueryManager extends BaseManager
     /**
      * Execute and fetch query results
      *
+     * @param FeatureType $featureType
      * @param Query $query
      * @param array $args
      * @return array
      */
-    public function fetchQuery(Query $query, array $args = array())
+    public function fetchQuery(FeatureType $featureType, Query $query, array $args = array())
     {
-        $featureType = $this->getQueryFeatureType($query);
         $features = $featureType->search(array_merge(array(
             'where'      => $this->buildCriteria($query->getConditions(), $featureType),
         ), $args));
@@ -166,59 +164,5 @@ class QueryManager extends BaseManager
             );
         }
         return $results;
-    }
-
-    /**
-     * Set query schemas
-     *
-     * @param array $schemas
-     * @return QueryManager
-     */
-    public function setSchemas(array $schemas)
-    {
-        $list = array();
-
-        foreach ($schemas as $schemaArgs) {
-            if (!($schemaArgs instanceof QuerySchema)) {
-                $list[] = new QuerySchema($schemaArgs);
-            } else {
-                $list[] = $schemaArgs;
-            }
-        }
-
-        $this->schemas = $list;
-        return $this;
-    }
-
-    /**
-     * @return QuerySchema[]
-     */
-    public function getSchemas()
-    {
-        return $this->schemas;
-    }
-
-    /**
-     * @param $id
-     * @return QuerySchema
-     */
-    public function getSchemaById($id)
-    {
-        return $this->schemas[ $id ];
-    }
-
-    /**
-     * Get query feature type service
-     *
-     * @param Query $query
-     * @return FeatureType
-     */
-    public function getQueryFeatureType(Query $query)
-    {
-        return $this->featureTypeService
-            ->get($this
-                ->getSchemaById($query->getSchemaId())
-                ->getFeatureType()
-            );
     }
 }
