@@ -25,7 +25,7 @@ class FeatureTypeRegistry
     public function get($name)
     {
         if (!\array_key_exists($name, $this->instances)) {
-            $this->instances[$name] = $this->factory->createFeatureType($this->definitions[$name]);
+            $this->instances[$name] = $this->factory->fromConfig($this->definitions[$name]);
         }
         return $this->instances[$name];
     }

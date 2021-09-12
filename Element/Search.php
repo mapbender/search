@@ -491,7 +491,7 @@ class Search extends BaseElement
     {
         /** @var FeatureTypeFactory|\Mapbender\DataSourceBundle\Component\Factory\FeatureTypeFactory $factory */
         $factory = $this->container->get('mapbender.search.featuretype_factory');
-        return $factory->createFeatureType($config);
+        return $factory->fromConfig($config);
     }
 
     /**

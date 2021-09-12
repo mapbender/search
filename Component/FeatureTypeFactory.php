@@ -22,7 +22,11 @@ class FeatureTypeFactory
         $this->container = $container;
     }
 
-    public function createFeatureType(array $config)
+    /**
+     * @param array $config
+     * @return FeatureType
+     */
+    public function fromConfig(array $config)
     {
         return new FeatureType($this->container, $config);
     }
