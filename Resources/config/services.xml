@@ -7,7 +7,17 @@
         <parameter key="mapbender.search.sqlite.storage_root">%kernel.root_dir%/config</parameter>
     </parameters>
     <services>
-        <service id="mapbender.search.featuretype_registry" alias="features" />
+        <!-- NOTE: on data-source >= 0.1.22, this next service will be removed and replaced with an alias
+                   to the predefined mbds.default_featuretype_factory service
+                   see FeatureTypeFactoryProviderPass
+                   -->
+        <service id="mapbender.search.featuretype_factory" class="Mapbender\SearchBundle\Component\FeatureTypeFactory">
+            <argument type="service" id="service_container" />
+        </service>
+        <service id="mapbender.search.featuretype_registry" class="Mapbender\SearchBundle\Component\FeatureTypeRegistry">
+            <argument type="service" id="mapbender.search.featuretype_factory" />
+            <argument>%featureTypes%</argument>
+        </service>
         <service class="Mapbender\SearchBundle\Component\QueryManager" id="mapbender.search.query.manager">
             <argument type="service" id="security.token_storage"/>
             <argument type="service" id="mapbender.search.featuretype_registry" />
