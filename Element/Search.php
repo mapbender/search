@@ -121,7 +121,7 @@ class Search extends BaseElement
             case 'query/check':
                 return $this->checkQueryAction($request);
             case 'export':
-                return $this->exportAction($this->getRequestData());
+                return $this->exportAction($request);
             case 'queries/list':
             case 'query/save':
             case 'query/remove':
@@ -174,14 +174,15 @@ class Search extends BaseElement
     /**
      * Export results
      *
-     * @param $request
+     * @param Request $request
      * @return ExportResponse
      */
-    public function exportAction($request)
+    public function exportAction(Request $request)
     {
-        $ids             = isset($request['ids']) && is_array($request['ids']) ? $request['ids'] : array();
+        $ids = $request->request->get('ids', array());
+
         $queryManager = $this->getQueryManager();
-        $query           = $queryManager->getById($request['queryId']);
+        $query = $queryManager->getById($request->request->get('queryId'));
         $ftConfig = $this->getFeatureTypeConfigForSchema($this->entity, $query->getSchemaId());
         $featureType = $this->getFeatureTypeFromConfig($ftConfig);
         $config = $ftConfig['export'];
@@ -199,7 +200,7 @@ class Search extends BaseElement
             $rows = $featureType->export($rows);
         }
 
-        return new ExportResponse($rows, $fileName, $request["type"]);
+        return new ExportResponse($rows, $fileName, $request->request->get('type'));
     }
 
     /**
