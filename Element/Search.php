@@ -5,6 +5,7 @@ namespace Mapbender\SearchBundle\Element;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
 use Mapbender\CoreBundle\Entity;
+use Mapbender\SearchBundle\Component\FeatureTypeFactory;
 use Mapbender\SearchBundle\Component\HKVStorageBetter;
 use FOM\CoreBundle\Component\ExportResponse;
 use Mapbender\DataSourceBundle\Component\DataStore;
@@ -72,9 +73,7 @@ class Search extends BaseElement
             'featureTypes' => array(),
             'debug'        => false,
             'title'        => 'Search',
-            'css'          => array(),
-            'jsSrc'        => array(),
-            'schemes'      => array()
+            'schemas' => array(),
         );
     }
 
@@ -110,18 +109,6 @@ class Search extends BaseElement
     {
         $configuration = $this->entity->getConfiguration();
         $configuration['debug']   = isset($configuration['debug']) ? $configuration['debug'] : false;
-
-        if (isset($configuration['schemes']) && is_array($configuration['schemes'])) {
-            foreach ($configuration['schemes'] as $key => &$scheme) {
-                if (is_string($scheme['featureType'])) {
-                    $featureTypes          = $this->container->getParameter('featureTypes');
-                    $scheme['featureType'] = $featureTypes[ $scheme['featureType'] ];
-                }
-                if (isset($scheme['formItems'])) {
-                    $scheme['formItems'] = $this->prepareItems($scheme['formItems']);
-                }
-            }
-        }
         return $configuration;
     }
 
@@ -199,10 +186,8 @@ class Search extends BaseElement
         $ids             = isset($request['ids']) && is_array($request['ids']) ? $request['ids'] : array();
         $queryManager    = $this->getQueryManager(true);
         $query           = $queryManager->getById($request['queryId']);
-        $schema          = $this->getSchemaById($query->getSchemaId());
         $ftConfig = $this->getFeatureTypeConfigForSchema($this->entity, $query->getSchemaId());
-        $featureTypeName = $schema->getFeatureType();
-        $featureType     = $this->getFeatureTypeService()->get($featureTypeName);
+        $featureType = $this->getFeatureTypeFromConfig($ftConfig);
         $config = $ftConfig['export'];
         $connection      = $featureType->getConnection();
         $maxResults      = isset($config["maxResults"]) ? $config["maxResults"] : 10000; // TODO: Set max results in export
@@ -516,6 +501,17 @@ class Search extends BaseElement
             $schemaName = $names[$schemaName];
         }
         return $config['schemas'][$schemaName];
+    }
+
+    /**
+     * @param array $config
+     * @return \Mapbender\DataSourceBundle\Component\FeatureType
+     */
+    protected function getFeatureTypeFromConfig(array $config)
+    {
+        /** @var FeatureTypeFactory|\Mapbender\DataSourceBundle\Component\Factory\FeatureTypeFactory $factory */
+        $factory = $this->container->get('mapbender.search.featuretype_factory');
+        return $factory->createFeatureType($config);
     }
 
     /**
