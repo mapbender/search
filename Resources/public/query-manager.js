@@ -163,13 +163,8 @@ $.widget("rw.queryManager", {
                         className: 'remove',
                         cssClass:  'critical',
                         onClick:   function(field, ui) {
-                            var form = ui.closest('.popup-dialog');
-                            var resultTable = form.find('[name="fields"]');
-                            // its fucking insane
-                            var tableWidget = resultTable.data('digitizer-result-table');
-                            var tableApi = resultTable.resultTable('getApi');
-
-                            tableApi.row(tableWidget.getDomRowByData(field)).remove();
+                            var tableApi = ui.closest('table').dataTable().api();
+                            tableApi.row(ui.closest('tr').get(0)).remove();
                             tableApi.draw();
                             return false;
                         }
@@ -265,13 +260,8 @@ $.widget("rw.queryManager", {
                         className: 'remove',
                         cssClass:  'critical',
                         onClick:   function(condition, ui) {
-                            var form = ui.closest('.popup-dialog');
-                            var resultTable = form.find('[name="conditions"]');
-                            // its fucking insane
-                            var tableWidget = resultTable.data('digitizer-result-table');
-                            var tableApi = resultTable.resultTable('getApi');
-
-                            tableApi.row(tableWidget.getDomRowByData(condition)).remove();
+                            var tableApi = ui.closest('table').dataTable().api();
+                            tableApi.row(ui.closest('tr').get(0)).remove();
                             tableApi.draw();
                             return false;
                         }

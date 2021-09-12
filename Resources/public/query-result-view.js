@@ -146,9 +146,13 @@ $.widget("wheregroup.queryResultView", {
             });
         });
 
-        table = widget.table = $("<div class='resultQueries'/>").resultTable(tableOptions = _.extend({
+        table = widget.table = $("<div class='resultQueries'/>").resultTable(_.extend({
             columns: columns,
-            buttons: buttons
+            buttons: buttons,
+            createdRow: function(tr, feature) {
+                $(tr).data({feature: feature});
+                feature.tableRow = tr;
+            }
         }, options.table));
 
         tableApi = table.resultTable('getApi');
@@ -166,9 +170,8 @@ $.widget("wheregroup.queryResultView", {
             },
             build:    function($trigger, e) {
                 var tr = $($trigger);
-                var resultTable = tr.closest('.mapbender-element-result-table');
-                var api = resultTable.resultTable('getApi');
-                var olFeature = api.row(tr).data();
+                var olFeature = tr.data('feature');
+
                 var items = {};
 
                 items['zoomTo'] = {name: "Heranzoomen"};
@@ -177,11 +180,7 @@ $.widget("wheregroup.queryResultView", {
                 return {
                     callback: function(key, options) {
                         widget._trigger(key, null, {
-                            feature: olFeature,
-                            table: resultTable,
-                            tableApi: tableApi,
-                            tr: tr,
-                            options: options
+                            feature: olFeature
                         });
                     },
                     items:    items
@@ -191,69 +190,51 @@ $.widget("wheregroup.queryResultView", {
 
         table.find("tbody")
             .off('click', '> tr')
-            .on('click', '> tr', function(e) {
-                if(!$(e.target).parent().parent().parent().is(".dataTable")) {
-                    return true;
+            .on('click', '> tr[role="row"]', function(e) {
+                if ($(e.target).parentsUntil(this).is('.buttons')) {
+                    return;
                 }
-                var tr = $(this).is('td') ? $(this).parent() : this;
-                var row = tableApi.row(tr);
-                var olFeature = row.data();
-
+                var olFeature = $(this).data('feature');
                 if(!olFeature) {
                     return;
                 }
 
                 widget._trigger('featureClick', null, {
                     feature:  olFeature,
-                    ui:       tr,
-                    query:    query,
-                    tableApi: tableApi
+                    ui: this,
+                    // @ŧodo: reuse dt api instance
+                    tableApi: $(this).closest('table').dataTable().api(),
+                    query: query
                 });
                 return false;
             })
             .off('mouseover', '> tr')
-            .on('mouseover', '> tr', function(e) {
-
-                if(!$(e.target).closest('table').hasClass("dataTable")) {
-                    return true;
+            .on('mouseover', '> tr[role="row"]', function(e) {
+                if ($(e.target).parentsUntil(this).is('.buttons')) {
+                    return;
                 }
-
-                var tr = $(this).is('td') ? $(this).parent() : this;
-                var row = tableApi.row(tr);
-                var olFeature = row.data();
-
+                var olFeature = $(this).data('feature');
                 if(!olFeature) {
                     return false;
                 }
 
                 widget._trigger('featureOver', null, {
-                    feature:  olFeature,
-                    ui:       tr,
-                    query:    query,
-                    widget:   widget,
-                    tableApi: tableApi
+                    feature:  olFeature
                 });
                 return false;
             })
             .off('mouseout', '> tr')
-            .on('mouseout', '> tr', function(e) {
-                if(!$(e.target).closest('table').hasClass("dataTable")) {
-                    return true;
+            .on('mouseout', '> tr[role="row"]', function(e) {
+                if ($(e.target).parentsUntil(this).is('.buttons')) {
+                    return;
                 }
-                var tr = $(this).is('td') ? $(this).parent() : this;
-                var row = tableApi.row(tr);
-                var olFeature = row.data();
-
+                var olFeature = $(this).data('feature');
                 if(!olFeature) {
                     return false;
                 }
 
                 widget._trigger('featureOut', null, {
-                    feature:  olFeature,
-                    ui:       tr,
-                    query:    query,
-                    widget:   widget,
-                    tableApi: tableApi
+                    feature:  olFeature
                 });
                 return false;
             });
@@ -268,12 +249,8 @@ $.widget("wheregroup.queryResultView", {
     },
 
     updateList: function(list) {
-        var widget = this;
-        var element = $(widget.element);
-        var query = element.data('query')
-        var table = widget.table;
-        // var tableWidget = table.data('visUiJsResultTable');
-        var tableApi = table.resultTable('getApi');
+        var $table = $('table:first', this.table);
+        var tableApi = $table.dataTable().api();
         tableApi.clear();
         tableApi.rows.add(list);
         tableApi.draw();
@@ -283,9 +260,6 @@ $.widget("wheregroup.queryResultView", {
 
         // update data item
         // tableApi.row(item).invalidate().draw();
-
-        // get item by DOM
-        // tableWidget.getDomRowByData(feature)
     },
 
     /**

@@ -833,11 +833,8 @@
                         widget._highlightSchemaFeature(context.feature, false);
                         return false;
                     })
-                    .bind('queryresultviewfeatureclick ', function(e, context) {
+                    .bind('queryresultviewfeatureclick', function(e, context) {
                         function format(feature) {
-                            if(!feature || !feature.data) {
-                                return;
-                            }
                             var table = $("<table class='feature-details'/>");
 
                             var query = feature.layer.query;
@@ -861,13 +858,13 @@
                         var table = context.tableApi;
                         var tr = $(context.ui);
                         var row = table.row(tr);
-                        var feature = row.data();
+                        var feature = context.feature;
 
                         if(row.child.isShown()) {
                             row.child.hide();
                             tr.removeClass('shown');
                         } else {
-                            if(feature){
+                            if (feature && feature.data) {
                                 row.child(format(feature)).show();
                                 tr.addClass('shown');
                             }
@@ -1031,18 +1028,18 @@
          */
         _highlightTableRow: function(feature, highlight) {
             var table = feature.layer.query.resultView.find('.mapbender-element-result-table');
-            var tableWidget = table.data('visUiJsResultTable');
             var features = feature.cluster ? feature.cluster : [feature];
-            var domRow;
 
-            for (var k in features) {
-                domRow = tableWidget.getDomRowByData(features[k]);
-                if(domRow && domRow.size()) {
-                    tableWidget.showByRow(domRow);
-                    if(highlight) {
-                        domRow.addClass('hover');
-                    } else {
-                        domRow.removeClass('hover');
+            for (var i = 0; i < features.length; ++i) {
+                if (features[i].tableRow) {
+                    var tr = features[i].tableRow;
+                    $(tr).toggleClass('hover', !!highlight);
+                    if (highlight) {
+                        var tableApi = $('table:first', table).DataTable();
+                        var rowsPerPage = tableApi.page.len();
+                        var rowIndex = tableApi.rows({order: 'current'}).nodes().indexOf(tr);
+                        var pageWithRow = Math.floor(rowIndex / rowsPerPage);
+                        tableApi.page(pageWithRow).draw(false);
                     }
                     break;
                 }
