@@ -117,7 +117,7 @@ class Search extends BaseElement
             case 'schemas/list':
                 return $this->listSchemasAction();
             case 'query/fetch':
-                return new JsonResponse($this->fetchQueryAction($this->getRequestData()));
+                return new JsonResponse($this->fetchQueryAction($request));
             case 'query/check':
                 return $this->checkQueryAction($this->getRequestData());
             case 'export':
@@ -320,22 +320,27 @@ class Search extends BaseElement
 
     /**
      *
-     * @param $request
+     * @param Request $request
      * @return \Mapbender\DataSourceBundle\Entity\Feature[]
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      */
-    public function fetchQueryAction($request)
+    public function fetchQueryAction(Request $request)
     {
         $queryManager = $this->getQueryManager();
-        $query = $queryManager->getById($request['query']['id']);
+        $query = $queryManager->getById($request->query->get('queryId'));
 
         $schemaConfig = $this->getSchemaConfigByName($this->entity, $query->getSchemaId());
         $featureType = $this->getFeatureTypeForSchema($this->entity, $query->getSchemaId());
 
+
         try {
             $maxResults = $schemaConfig['maxResults'];
-            $request['maxResults'] = $maxResults;
-            $results               = $queryManager->fetchQuery($featureType, $query, $request);
+            $params = array_filter(array(
+                'maxResults' => $maxResults,
+                'srid' => $request->query->get('srid'),
+                'intersectGeometry' => $request->query->get('intersectGeometry'),
+            ));
+            $results = $queryManager->fetchQuery($featureType, $query, $params);
             $count                 = count($results["features"]);
 
 

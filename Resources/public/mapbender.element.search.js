@@ -455,9 +455,7 @@
 
             var request = {
                 srid:              map.getProjectionObject().proj.srsProjNumber,
-                query:             {
-                    id: query.id
-                }
+                queryId: query.id
             };
 
             if(query.extendOnly) {
@@ -482,7 +480,7 @@
                 query.resultView.queryResultView('updateList', []);
             }
 
-            return query.fetchXhr = widget.query('query/fetch', request).done(function(r) {
+            return query.fetchXhr = widget.query('query/fetch', request, 'GET').done(function(r) {
 
                 delete query.fetchXhr;
 
