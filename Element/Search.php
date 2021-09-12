@@ -8,8 +8,6 @@ use Mapbender\CoreBundle\Entity;
 use Mapbender\SearchBundle\Component\FeatureTypeFactory;
 use Mapbender\SearchBundle\Component\HKVStorageBetter;
 use FOM\CoreBundle\Component\ExportResponse;
-use Mapbender\DataSourceBundle\Component\DataStore;
-use Mapbender\DataSourceBundle\Component\DataStoreService;
 use Mapbender\DataSourceBundle\Element\BaseElement;
 use Mapbender\SearchBundle\Component\QueryManager;
 use Mapbender\SearchBundle\Component\StyleManager;
@@ -361,74 +359,6 @@ class Search extends BaseElement
     }
 
     /**
-     * Get data store
-     *
-     * @param $request
-     * @return JsonResponse
-     */
-    public function getDatastoreAction($request)
-    {
-        $results = array();
-        // TODO: get request ID and check
-        if (!isset($request['id']) || !isset($request['dataItemId'])) {
-            $results = array(
-                array('errors' => array(
-                    array('message' => "datastore/get: id or dataItemId not defined!")
-                ))
-            );
-        }
-
-        $id           = $request['id'];
-        $dataItemId   = $request['dataItemId'];
-        $dataStore    = $this->getDataStoreById($id);
-        $dataItem = $dataStore->getById($dataItemId);
-        $dataItemData = null;
-        if ($dataItem) {
-            $dataItemData = $dataItem->toArray();
-            $results      = $dataItemData;
-        }
-        return new JsonResponse($results);
-    }
-
-    /**
-     * Save data store
-     *
-     * @param $request
-     * @return JsonResponse
-     */
-    public function saveDatastoreAction($request)
-    {
-        $id          = $request['id'];
-        $dataItem    = $request['dataItem'];
-        $dataStore   = $this->getDataStoreById($id);
-        $uniqueIdKey = $dataStore->getDriver()->getUniqueId();
-        if (empty($request['dataItem'][ $uniqueIdKey ])) {
-            unset($request['dataItem'][ $uniqueIdKey ]);
-        }
-        return new JsonResponse($dataStore->save($dataItem));
-    }
-
-    /**
-     * Remove data store
-     *
-     * @param $request
-     * @return JsonResponse
-     */
-    public function removeDatastoreAction($request)
-    {
-        $id                = $request['id'];
-        $dataStore         = $this->getDataStoreById($id);
-        $uniqueIdKey       = $dataStore->getDriver()->getUniqueId();
-        $dataItemId        = $request['dataItem'][ $uniqueIdKey ];
-        $results["result"] = $dataStore->remove($dataItemId);
-        return new JsonResponse(array(
-            'id'         => $id,
-            'removed'    => $dataStore->remove($dataItemId),
-            'dataItemId' => $dataItemId
-        ));
-    }
-
-    /**
      * @return QueryManager
      */
     protected function getQueryManager()
@@ -510,16 +440,5 @@ class Search extends BaseElement
         /** @var StyleMapManager $service */
         $service = $this->container->get('mapbender.search.stylemap.manager');
         return $service;
-    }
-
-    /**
-     * @param string $id
-     * @return DataStore
-     */
-    protected function getDataStoreById($id)
-    {
-        /** @var DataStoreService $dataStoreService */
-        $dataStoreService = $this->container->get('data.source');
-        return $dataStoreService->get($id);
     }
 }
