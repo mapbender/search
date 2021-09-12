@@ -14,13 +14,8 @@
         <service id="mapbender.search.featuretype_factory" class="Mapbender\SearchBundle\Component\FeatureTypeFactory">
             <argument type="service" id="service_container" />
         </service>
-        <service id="mapbender.search.featuretype_registry" class="Mapbender\SearchBundle\Component\FeatureTypeRegistry">
-            <argument type="service" id="mapbender.search.featuretype_factory" />
-            <argument>%featureTypes%</argument>
-        </service>
         <service class="Mapbender\SearchBundle\Component\QueryManager" id="mapbender.search.query.manager">
             <argument type="service" id="security.token_storage"/>
-            <argument type="service" id="mapbender.search.featuretype_registry" />
             <argument>%mapbender.search.sqlite.storage_root%/queries.sqlite</argument>
         </service>
         <service class="Mapbender\SearchBundle\Component\StyleManager" id="mapbender.search.style.manager">

@@ -2,12 +2,9 @@
 namespace Mapbender\SearchBundle\Component;
 
 use Mapbender\DataSourceBundle\Component\FeatureType;
-use Mapbender\DataSourceBundle\Component\FeatureTypeService;
 use Mapbender\DataSourceBundle\Entity\Feature;
 use Mapbender\SearchBundle\Entity\Query;
 use Mapbender\SearchBundle\Entity\QueryCondition;
-use Mapbender\SearchBundle\Entity\QuerySchema;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 /**
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
@@ -20,22 +17,6 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
  */
 class QueryManager extends BaseManager
 {
-    /** @var FeatureTypeService */
-    protected $featureTypeService;
-
-    /**
-     * QueryManager constructor.
-     *
-     * @param TokenStorageInterface $tokenStorage
-     * @param FeatureTypeService $featureTypeService
-     * @param string $sqlitePath
-     */
-    public function __construct(TokenStorageInterface $tokenStorage, $featureTypeService, $sqlitePath)
-    {
-        parent::__construct($tokenStorage, $sqlitePath);
-        $this->featureTypeService = $featureTypeService;
-    }
-
     /**
      * @param $args
      * @return Query

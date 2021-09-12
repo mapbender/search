@@ -444,7 +444,7 @@ class Search extends BaseElement
     {
         $schemaConfig = $this->getSchemaConfigByName($element, $schemaName);
         if (\is_string($schemaConfig['featureType'])) {
-            $declarations = $this->getFeatureTypeService()->getFeatureTypeDeclarations();
+            $declarations = $this->container->getParameter('featureTypes');
             $ftConfig = $declarations[$schemaConfig['featureType']];
             if (empty($ftConfig['title'])) {
                 $ftConfig['title'] = ucfirst($schemaConfig['featureType']);
@@ -492,16 +492,6 @@ class Search extends BaseElement
         /** @var FeatureTypeFactory|\Mapbender\DataSourceBundle\Component\Factory\FeatureTypeFactory $factory */
         $factory = $this->container->get('mapbender.search.featuretype_factory');
         return $factory->fromConfig($config);
-    }
-
-    /**
-     * @return FeatureTypeService
-     */
-    protected function getFeatureTypeService()
-    {
-        /** @var FeatureTypeService $service */
-        $service = $this->container->get('mapbender.search.featuretype_registry');
-        return $service;
     }
 
     /**
