@@ -214,15 +214,13 @@ class Search extends BaseElement
     public function listSchemasAction()
     {
         $result                  = array();
-        $featureTypeManager      = $this->getFeatureTypeService();
-        $featureTypeDeclarations = $featureTypeManager->getFeatureTypeDeclarations();
-        $schemas                 = $this->getSchemas();
+        $config = $this->entity->getConfiguration();
+        $schemaNames = \array_keys($config['schemas']);
 
-        foreach ($schemas as $schemaId => $schema) {
-            $featureTypeName = $schema->getFeatureType();
-            $declaration     = $featureTypeDeclarations[ $featureTypeName ];
-            $title           = isset($declaration['title']) ? $declaration['title'] : ucfirst($featureTypeName);
-            $fields          = $schema->getFields();
+        foreach ($schemaNames as $schemaId) {
+            $schemaConfig = $this->getSchemaConfigByName($this->entity, $schemaId);
+            $declaration = $this->getFeatureTypeConfigForSchema($this->entity, $schemaId);
+            $fields = $schemaConfig['fields'];
 
             foreach ($fields as &$fieldDescription) {
                 if (isset($fieldDescription["sql"])) {
@@ -242,10 +240,10 @@ class Search extends BaseElement
             }
 
             $result[ $schemaId ] = array(
-                'title'       => $title,
+                'title' => $declaration['title'],
                 'fields'      => $fields,
                 'print' => !empty($declaration['print']) ? $declaration['print'] : null,
-                'featureType' => $featureTypeName
+                'featureType' => $schemaConfig['featureType'],
             );
         }
 
@@ -339,7 +337,7 @@ class Search extends BaseElement
         $featureType = $this->getFeatureTypeForSchema($this->entity, $query->getSchemaId());
 
         try {
-            $maxResults = isset($schemaConfig['maxResults']) ? $schemaConfig['maxResults'] : 500;
+            $maxResults = $schemaConfig['maxResults'];
             $request['maxResults'] = $maxResults;
             $results               = $queryManager->fetchQuery($featureType, $query, $request);
             $count                 = count($results["features"]);
@@ -433,21 +431,6 @@ class Search extends BaseElement
     }
 
     /**
-     * Get element schemas
-     *
-     * @return QuerySchema[]
-     */
-    protected function getSchemas()
-    {
-        $configuration = $this->getConfiguration();
-        $schemas       = array();
-        foreach ($configuration["schemas"] as $schemaDefinition) {
-            $schemas[] = new QuerySchema($schemaDefinition);
-        }
-        return $schemas;
-    }
-
-    /**
      * @return QueryManager
      */
     protected function getQueryManager()
@@ -462,10 +445,17 @@ class Search extends BaseElement
         $schemaConfig = $this->getSchemaConfigByName($element, $schemaName);
         if (\is_string($schemaConfig['featureType'])) {
             $declarations = $this->getFeatureTypeService()->getFeatureTypeDeclarations();
-            return $declarations[$schemaConfig['featureType']];
+            $ftConfig = $declarations[$schemaConfig['featureType']];
+            if (empty($ftConfig['title'])) {
+                $ftConfig['title'] = ucfirst($schemaConfig['featureType']);
+            }
         } else {
-            return $schemaConfig['featureType'];
+            $ftConfig = $schemaConfig['featureType'];
+            if (empty($ftConfig['title'])) {
+                $ftConfig['title'] = \is_numeric($schemaName) ? "#{$schemaName}" : ucfirst($schemaName);
+            }
         }
+        return $ftConfig;
     }
 
     protected function getSchemaConfigByName(Entity\Element $element, $schemaName)
@@ -476,7 +466,11 @@ class Search extends BaseElement
             $names = \array_keys($config['schemas']);
             $schemaName = $names[$schemaName];
         }
-        return $config['schemas'][$schemaName];
+        $defaults = array(
+            'maxResults' => 500,
+            'fields' => array(),
+        );
+        return $config['schemas'][$schemaName] + $defaults;
     }
 
     /**
