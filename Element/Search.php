@@ -119,7 +119,7 @@ class Search extends BaseElement
             case 'query/fetch':
                 return new JsonResponse($this->fetchQueryAction($request));
             case 'query/check':
-                return $this->checkQueryAction($this->getRequestData());
+                return $this->checkQueryAction($request);
             case 'export':
                 return $this->exportAction($this->getRequestData());
             case 'queries/list':
@@ -289,20 +289,19 @@ class Search extends BaseElement
     }
 
     /**
-     * List queries
-     *
-     * @param $request
+     * @param Request $request
      * @return JsonResponse
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      */
-    public function checkQueryAction($request)
+    public function checkQueryAction(Request $request)
     {
+        $requestData = \json_decode($request->getContent(), true);
         $queryManager = $this->getQueryManager();
-        $query        = $queryManager->create($request['query']);
+        $query = $queryManager->create($requestData['query']);
 
         try {
             $featureType = $this->getFeatureTypeForSchema($this->entity, $query->getSchemaId());
-            $check = $queryManager->check($featureType, $query, $request['intersectGeometry'], $request['srid']);
+            $check = $queryManager->check($featureType, $query, $requestData['intersectGeometry'], $requestData['srid']);
         } catch (DBALException $e) {
             $message = $e->getMessage();
             if (strpos($message, 'ERROR:')) {
