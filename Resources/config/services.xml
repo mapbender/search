@@ -5,6 +5,7 @@
 
     <parameters>
         <parameter key="mapbender.search.sqlite.storage_root">%kernel.root_dir%/config</parameter>
+        <parameter key="featureTypes" type="collection" /><!-- NOTE: parameters.yml always wins -->
     </parameters>
     <services>
         <!-- NOTE: on data-source >= 0.1.22, this next service will be removed and replaced with an alias
