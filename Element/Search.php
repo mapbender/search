@@ -4,6 +4,7 @@ namespace Mapbender\SearchBundle\Element;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
+use Mapbender\CoreBundle\Entity;
 use Mapbender\SearchBundle\Component\HKVStorageBetter;
 use FOM\CoreBundle\Component\ExportResponse;
 use Mapbender\DataSourceBundle\Component\DataStore;
@@ -199,9 +200,10 @@ class Search extends BaseElement
         $queryManager    = $this->getQueryManager(true);
         $query           = $queryManager->getById($request['queryId']);
         $schema          = $this->getSchemaById($query->getSchemaId());
+        $ftConfig = $this->getFeatureTypeConfigForSchema($this->entity, $query->getSchemaId());
         $featureTypeName = $schema->getFeatureType();
         $featureType     = $this->getFeatureTypeService()->get($featureTypeName);
-        $config          = $featureType->getConfiguration('export');
+        $config = $ftConfig['export'];
         $connection      = $featureType->getConnection();
         $maxResults      = isset($config["maxResults"]) ? $config["maxResults"] : 10000; // TODO: Set max results in export
         $fileName        = $query->getName() . " " . date('Y:m:d H:i:s');
@@ -235,8 +237,6 @@ class Search extends BaseElement
             $featureTypeName = $schema->getFeatureType();
             $declaration     = $featureTypeDeclarations[ $featureTypeName ];
             $title           = isset($declaration['title']) ? $declaration['title'] : ucfirst($featureTypeName);
-            $featureType     = $featureTypeManager->get($featureTypeName);
-            $print           = $featureType->getConfiguration('print');
             $fields          = $schema->getFields();
 
             foreach ($fields as &$fieldDescription) {
@@ -259,7 +259,7 @@ class Search extends BaseElement
             $result[ $schemaId ] = array(
                 'title'       => $title,
                 'fields'      => $fields,
-                'print'       => $print,
+                'print' => !empty($declaration['print']) ? $declaration['print'] : null,
                 'featureType' => $featureTypeName
             );
         }
@@ -494,6 +494,28 @@ class Search extends BaseElement
             $queryManager->setSchemas($this->getSchemas());
         }
         return $queryManager;
+    }
+
+    protected function getFeatureTypeConfigForSchema(Entity\Element $element, $schemaName)
+    {
+        $schemaConfig = $this->getSchemaConfigByName($element, $schemaName);
+        if (\is_string($schemaConfig['featureType'])) {
+            $declarations = $this->getFeatureTypeService()->getFeatureTypeDeclarations();
+            return $declarations[$schemaConfig['featureType']];
+        } else {
+            return $schemaConfig['featureType'];
+        }
+    }
+
+    protected function getSchemaConfigByName(Entity\Element $element, $schemaName)
+    {
+        $config = $element->getConfiguration() + array('schemas' => array());
+        if (\is_numeric($schemaName)) {
+            // Uh-oh. Schema "id" passed in.
+            $names = \array_keys($config['schemas']);
+            $schemaName = $names[$schemaName];
+        }
+        return $config['schemas'][$schemaName];
     }
 
     /**
