@@ -164,7 +164,7 @@ class Search extends BaseElement
                     'list' => array_reverse($repository->getAll(), true)
                 ));
             case 'query/remove':
-                $requestData = $this->getRequestData();
+                $requestData = \json_decode($request->getContent(), true);
                 return new JsonResponse(array(
                     'result' => $repository->remove($requestData['id']),
                 ));
