@@ -68,7 +68,12 @@ $.widget("rw.queryManager", {
                             return false;
         });
         this.element.on('change', 'select[name="schemaId"]', function() {
-            widget.changeSource($(this).val());
+            var taFields = $('.fields table', element).dataTable().api();
+            taFields.clear();
+            taFields.draw();
+            var taConditions = $('.conditions table', element).dataTable().api();
+            taConditions();
+            taConditions.draw();
         });
 
         $('.fields', this.element).resultTable({
