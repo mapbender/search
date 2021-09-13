@@ -2,11 +2,11 @@
 
 namespace Mapbender\SearchBundle\Component;
 
+use FOM\UserBundle\Entity\User;
 use Mapbender\SearchBundle\Component\HKVStorageBetter;
 use Mapbender\SearchBundle\Entity\UniqueBase;
 use Symfony\Component\Security\Core\Authentication\Token\AnonymousToken;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * Class BaseManager
@@ -163,19 +163,16 @@ abstract class BaseManager implements ManagerInterface
     {
         $token = $this->tokenStorage->getToken();
         if (!$token || ($token instanceof AnonymousToken)) {
-            return 'anon.'; // SecurityContext continuity hack
+            return 0;   // BaseElement continuity hack
         } else {
             $user = $token->getUser();
-            if ($user && \is_object($user) && ($user instanceof UserInterface)) {
+            if ($user && \is_object($user)) {
                 // @todo: LDAP user id vs user name handling could easily be handled here
-                if (\method_exists($user, 'getId')) {
+                if ($user instanceof User) {
                     return $user->getId();
-                } else {
-                    return $user->getUsername();
                 }
             }
-            // Support objects with __toString or plain string user types
-            return strval($user) ?: null;
+            return $token->getUsername();
         }
     }
 

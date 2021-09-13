@@ -158,7 +158,7 @@ class Search extends BaseElement
             case 'stylemap/save':
                 $requestData = $this->expandArrayInputs(\json_decode($request->getContent(), true));
                 $entity = $repository->createFiltered($requestData[$saveDataKey]);
-                $entity->setUserId($this->getUserId());
+                $entity->setUserId($repository->getUserId());
                 $repository->save($entity);
                 // @todo: fix this inconsistency
                 $responseDataKey = ($saveDataKey == 'query') ? 'entity' : $saveDataKey;
