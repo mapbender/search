@@ -65,13 +65,7 @@
 
                 widget.map = $('#' + options.target).data('mapbenderMbMap').map.olMap;
 
-                element.generateElements(Mapbender.Util.beautifyGenerateElements({
-                    type:     'fieldSet',
-                    children: [{
-                        type:    'select',
-                        name:    'typeFilter',
-                        css:    {width: '55%'},
-                        change: function(e) {
+                $('select[name="typeFilter"]', element).on('change', function() {
                             var select = $(e.target);
                             var schemaId = select.val();
 
@@ -95,41 +89,17 @@
                                     queryLayer.setVisibility(false);
                                 }
                             });
-                        }
-                    }, {
-                        type:     'button',
-                        title:    'Abfrage',
-                        cssClass: 'btn new-query',
-                        css:      {width: '15%'},
-                        click:    function() {
-                            widget.openCreateDialog();
-                        }
-                    }, {
-                        type:     'button',
-                        title:    'Thema',
-                        cssClass: 'btn new-query',
-                        css:      {width: '15%'},
-                        click:    function() {
-                            widget.openStyleMapManager({id: null}, widget._styles);
-                        }
-                    }, {
-                        type:     'button',
-                        title:    'Stil',
-                        cssClass: 'btn new-query',
-                        css:      {width: '15%'},
-                        click:    function() {
-                            widget.openStyleEditor();
-                        }
-                    }]
-                }));
+                });
 
-
-
-                element.generateElements(Mapbender.Util.beautifyGenerateElements({
-                    type: 'html',
-                    html: '<div class="queries"></div>'
-                }));
-
+                element.on('click', '.new-query', function() {
+                    widget.openCreateDialog();
+                });
+                element.on('click', '.new-stylemap', function() {
+                    widget.openStyleMapManager({id: null}, widget._styles);
+                });
+                element.on('click', '.new-style', function() {
+                    widget.openStyleEditor();
+                });
 
                 rendered.resolveWith(true);
             });

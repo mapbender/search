@@ -11,14 +11,13 @@
     font: normal normal normal 14px/1 FontAwesome;
   }
 
-  .new-query {
+  .new-query, .new-stylemap, .new-style {
     margin-bottom: 10px;
     &:before {
       font-family: FontAwesome;
       content: "\f067";
       padding-right: 3px;
     }
-
   }
 
   .mapbender-element-result-table {
