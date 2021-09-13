@@ -7,17 +7,14 @@
   //  margin-left: 15px;
   //  margin-right: 15px;
   //}
-  [class^="fa-"]:before, [class*=" fa-"]:before {
-    font: normal normal normal 14px/1 FontAwesome;
+  .ui-accordion-header .buttons {
+    .fa:before {
+      font-family: FontAwesome;
+    }
   }
 
   .new-query, .new-stylemap, .new-style {
     margin-bottom: 10px;
-    &:before {
-      font-family: FontAwesome;
-      content: "\f067";
-      padding-right: 3px;
-    }
   }
 
   .mapbender-element-result-table {
