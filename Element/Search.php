@@ -340,7 +340,7 @@ class Search extends BaseElement
     /**
      *
      * @param Request $request
-     * @return \Mapbender\DataSourceBundle\Entity\Feature[]
+     * @return array
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      */
     public function fetchQueryAction(Request $request)
