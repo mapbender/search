@@ -4,7 +4,7 @@ namespace Mapbender\SearchBundle\Element;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
-use Mapbender\CoreBundle\Entity;
+use Mapbender\CoreBundle\Entity\Element;
 use Mapbender\SearchBundle\Component\FeatureTypeFactory;
 use Mapbender\SearchBundle\Component\HKVStorageBetter;
 use FOM\CoreBundle\Component\ExportResponse;
@@ -406,7 +406,7 @@ class Search extends \Mapbender\CoreBundle\Component\Element
         return $queryManager;
     }
 
-    protected function getFeatureTypeConfigForSchema(Entity\Element $element, $schemaName)
+    protected function getFeatureTypeConfigForSchema(Element $element, $schemaName)
     {
         $schemaConfig = $this->getSchemaConfigByName($element, $schemaName);
         if (\is_string($schemaConfig['featureType'])) {
@@ -424,7 +424,7 @@ class Search extends \Mapbender\CoreBundle\Component\Element
         return $ftConfig;
     }
 
-    protected function getSchemaConfigByName(Entity\Element $element, $schemaName)
+    protected function getSchemaConfigByName(Element $element, $schemaName)
     {
         $config = $element->getConfiguration() + array('schemas' => array());
         if (\is_numeric($schemaName)) {
@@ -440,11 +440,11 @@ class Search extends \Mapbender\CoreBundle\Component\Element
     }
 
     /**
-     * @param Entity\Element $element
+     * @param Element $element
      * @param string $schemaName
      * @return \Mapbender\DataSourceBundle\Component\FeatureType
      */
-    protected function getFeatureTypeForSchema(Entity\Element $element, $schemaName)
+    protected function getFeatureTypeForSchema(Element $element, $schemaName)
     {
         return $this->getFeatureTypeFromConfig($this->getFeatureTypeConfigForSchema($element, $schemaName));
     }
