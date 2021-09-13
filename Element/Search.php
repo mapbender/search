@@ -73,6 +73,21 @@ class Search extends BaseElement
         );
     }
 
+    public function getWidgetName()
+    {
+        return 'mapbender.mbSearch';
+    }
+
+    public function getFrontendTemplatePath($suffix = '.html.twig')
+    {
+        return 'MapbenderSearchBundle:Element:search.html.twig';
+    }
+
+    public function getFrontendTemplateVars()
+    {
+        return array();
+    }
+
     /**
      * Get the element configuration form type.
      *
