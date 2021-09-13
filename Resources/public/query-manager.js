@@ -334,21 +334,7 @@ $.widget("rw.queryManager", {
             buttons:     [{
                 text:  "Prüfen",
                 click: function() {
-                    var form = $(this).closest('.popup-dialog');
-                    var conditions = form.find('[name=conditions]').resultTable('getApi').rows().data().toArray();
-                    var fields = form.find('[name=fields]').resultTable('getApi').rows().data().toArray();
-
-                    widget._trigger('check', null, {
-                        dialog: element,
-                        widget: widget,
-                        data:   $.extend({
-                            id:         widget.options.data.id,
-                            conditions: conditions,
-                            fields:     fields
-                        }, form.formData())
-                    });
-
-                    return false;
+                    return widget.submitData_($(this).closest('.popup-dialog'), true);
                 }
             }, {
                 text:  "Abbrechen",
@@ -359,24 +345,27 @@ $.widget("rw.queryManager", {
             }, {
                 text:  "Speichern",
                 click: function() {
-                    var form = $(this).closest('.popup-dialog');
-                    var conditions = form.find('[name=conditions]').resultTable('getApi').rows().data().toArray();
-                    var fields = form.find('[name=fields]').resultTable('getApi').rows().data().toArray();
+                    return widget.submitData_($(this).closest('.popup-dialog'), false);
+                }
+            }]
+        });
+    },
+    submitData_: function(form, isCheck) {
+                    var conditions = $('.conditions table', form).dataTable().api().rows().data().toArray();
+                    var fields = form.find('.fields table', form).dataTable().api().rows().data().toArray();
+                    var eventName = isCheck && 'check' || 'submit';
 
-                    widget._trigger('submit', null, {
-                        dialog: element,
-                        widget: widget,
+                    this._trigger(eventName, null, {
+                        dialog: this.element,
+                        widget: this,
                         data:   $.extend({
-                            id:         widget.options.data.id,
+                            id:         this.options.data.id,
                             conditions: conditions,
                             fields:     fields
                         }, form.formData())
                     });
 
                     return false;
-                }
-            }]
-        });
     },
 
     updateStyleMapList: function(styleMaps) {
