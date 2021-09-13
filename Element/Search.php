@@ -336,7 +336,7 @@ class Search extends \Mapbender\CoreBundle\Component\Element
         try {
             $featureType = $this->getFeatureTypeForSchema($this->entity, $query->getSchemaId());
             $check = $queryManager->check($featureType, $query, $requestData['intersectGeometry'], $requestData['srid']);
-        } catch (DBALException $e) {
+        } /** @noinspection PhpRedundantCatchClauseInspection */ catch (DBALException $e) {
             $message = $e->getMessage();
             if (strpos($message, 'ERROR:')) {
                 preg_match("/\\s+ERROR:\\s+(.+)/", $message, $found);
@@ -382,7 +382,7 @@ class Search extends \Mapbender\CoreBundle\Component\Element
             }
 
             return $results;
-        } catch (DBALException $e) {
+        } /** @noinspection PhpRedundantCatchClauseInspection */ catch (DBALException $e) {
             $message = $e->getMessage();
             if (strpos($message, 'ERROR:')) {
                 preg_match("/\\s+ERROR:\\s+(.+)/", $message, $found);
