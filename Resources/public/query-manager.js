@@ -13,11 +13,6 @@ $.widget("rw.queryManager", {
     },
 
     /**
-     * Current source (Feature type description)
-     */
-    currentSchema: null,
-
-    /**
      * Constructor
      *
      * @private
@@ -32,28 +27,14 @@ $.widget("rw.queryManager", {
             widget.popup();
         }
     },
-
-    changeSource: function(schemaId) {
-        var widget = this;
-        var schemas = widget.option('schemas');
-        var currentSource = widget.currentSchema = schemas[schemaId];
-
-        widget._trigger('changeSource', null, {
-            widget:                 widget,
-            featureTypeDeclaration: currentSource
-        });
-
-        return currentSource;
-    },
-
     /**
      * Get current schema
      * @param schemaId
      * @returns {null}
      */
     getCurrentSchema: function() {
-        var widget = this;
-        return  widget.currentSchema;
+        var schemaId = $('select[name="schemaId"]', this.element).val();
+        return this.options.schemas[schemaId];
     },
 
     /**
@@ -63,17 +44,7 @@ $.widget("rw.queryManager", {
         var widget = this;
         var element = $(widget.element);
         var options = widget.options;
-        var schemas = options.schemas;
-        var schemaId = query.hasOwnProperty("schemaId") ? query.schemaId : _.keys(schemas)[0];
-        var currentSchema = widget.changeSource(schemaId);
-        var schemaOptions = _.object(_.keys(schemas), _.pluck(schemas, 'title'));
         var initialFields = query && query.fields ? query.fields : [];
-        var fieldNames = _.object(_.pluck(currentSchema.fields, 'name'), _.pluck(currentSchema.fields, 'title'));
-
-        // Add field titles
-        // _.each(query.conditions, function(condition) {
-        //     condition.fieldTitle = fieldNames[condition.fieldName];
-        // });
 
         this.element.append($(this.options.template).html());
         $('select[name="schemaId"]', this.element).empty().append(_.map(this.options.schemas, function(schema, key) {
