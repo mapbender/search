@@ -237,17 +237,18 @@ $.widget("rw.queryManager", {
                                         var operators = _.object(fieldDefinition.operators, fieldDefinition.operators);
 
                                         container.empty();
+                                        container.generateElements( Mapbender.Util.beautifyGenerateElements({
+                                            title:     "Operator",
+                                            type:      "select",
+                                            name:      "operator",
+                                            options:   Mapbender.Util.beautifyOptions(operators),
+                                            mandatory: true,
+                                            css:       {width: "30%"}
+                                        }));
+
 
                                         if(fieldDefinition.hasOwnProperty('options')) {
                                             container
-                                                .generateElements( Mapbender.Util.beautifyGenerateElements({
-                                                    title:     "Operator",
-                                                    type:      "select",
-                                                    name:      "operator",
-                                                    options:   Mapbender.Util.beautifyOptions(operators),
-                                                    mandatory: true,
-                                                    css:       {width: "30%"}
-                                                }))
                                                 .generateElements( Mapbender.Util.beautifyGenerateElements({
                                                     title:   "Optionen",
                                                     type:    'select',
@@ -257,14 +258,6 @@ $.widget("rw.queryManager", {
                                                 }));
                                         } else if(fieldDefinition.hasOwnProperty("operators")) {
                                             container
-                                                .generateElements(Mapbender.Util.beautifyGenerateElements({
-                                                    title:     "Operator",
-                                                    type:      "select",
-                                                    name:      "operator",
-                                                    options:   Mapbender.Util.beautifyOptions(operators),
-                                                    mandatory: true,
-                                                    css:       {width: "30%"}
-                                                }))
                                                 .generateElements(Mapbender.Util.beautifyGenerateElements({
                                                     title: "Value",
                                                     type:  "input",
