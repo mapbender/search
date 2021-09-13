@@ -323,7 +323,7 @@
                 if(incompleteFields.size()) {
                     $.notify("Bitte vervollständigen sie die Daten.");
                 } else {
-                    widget.query('styleMap/save', {
+                    widget.query('stylemap/save', {
                         styleMap: _.extend(formData, {id: styleMapId})
                     }).done(function(r) {
                         var styleMap = r.styleMap;
@@ -361,7 +361,7 @@
          */
         refreshStyleMaps: function() {
             var widget = this;
-            return widget.query('styleMap/list').done(function(r) {
+            return widget.query('stylemap/list').done(function(r) {
                 widget._styleMaps = r.list;
                 widget._trigger('stylesMapsUpdated', null, r.list);
             });
