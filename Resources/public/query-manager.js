@@ -318,9 +318,7 @@ $.widget("rw.queryManager", {
                 "ui-tabs-panel": "ui-tabs-panel tab-content"
             }
         });
-        setTimeout(function() {
-            element.formData(query);
-        }, 300);
+        element.formData(query);
         return element;
     },
 
