@@ -238,22 +238,11 @@
                     widget.openStyleMapManager(context.styleMap, widget._styles);
                 })
                 .bind('querymanagersubmit', function(event, context) {
-                    var errorInputs = $(".has-error", context.form);
-                    var hasErrors = errorInputs.size() > 0;
-
-                    if(hasErrors) {
-                        return false;
-                    }
-
                     widget.query('query/save', {query: context.data}).done(function(r) {
                         var queryManagerWidget = context.widget;
-                        var query = $.extend(queryManagerWidget.options.data, r.entity);
+                        $.extend(query, r.entity);
                         queryManagerWidget.close();
                         $.notify("Erfolgreich gespeichert!", "info");
-
-                        if(!query){
-                            return;
-                        }
 
                         widget.refreshQueries().done(function() {
                             var updatedQuery = _.findWhere( widget._queries, {id: query.id});
@@ -281,9 +270,6 @@
                         // $.notify(_.toArray(r.explainInfo).join("\n"), 'info');
                         queryDialog.enableForm();
                     });
-                })
-                .bind('querymanagerclose', function(e, styleMaps) {
-                    // WORKS
                 });
 
             element.bind('mbsearchstylesmapsupdated', function(e, styleMaps) {

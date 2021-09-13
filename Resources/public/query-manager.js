@@ -351,18 +351,19 @@ $.widget("rw.queryManager", {
         });
     },
     submitData_: function(form, isCheck) {
-                    var conditions = $('.conditions table', form).dataTable().api().rows().data().toArray();
-                    var fields = form.find('.fields table', form).dataTable().api().rows().data().toArray();
                     var eventName = isCheck && 'check' || 'submit';
+                    var formData = form.formData();
+                    if (!formData || (!isCheck && $('.has-error', form).length)) {
+                        return false;
+                    }
+                    formData.conditions = $('.conditions table', form).dataTable().api().rows().data().toArray();
+                    formData.fields = $('.fields table', form).dataTable().api().rows().data().toArray();
+                    formData.id = this.options.data.id;
 
                     this._trigger(eventName, null, {
                         dialog: this.element,
                         widget: this,
-                        data:   $.extend({
-                            id:         this.options.data.id,
-                            conditions: conditions,
-                            fields:     fields
-                        }, form.formData())
+                        data: formData
                     });
 
                     return false;
