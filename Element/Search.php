@@ -8,7 +8,6 @@ use Mapbender\CoreBundle\Entity;
 use Mapbender\SearchBundle\Component\FeatureTypeFactory;
 use Mapbender\SearchBundle\Component\HKVStorageBetter;
 use FOM\CoreBundle\Component\ExportResponse;
-use Mapbender\DataSourceBundle\Element\BaseElement;
 use Mapbender\SearchBundle\Component\QueryManager;
 use Mapbender\SearchBundle\Component\StyleManager;
 use Mapbender\SearchBundle\Component\StyleMapManager;
@@ -23,7 +22,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  * @package Mapbender\SearchBundle\Element
  * @author  Andriy Oblivantsev <eslider@gmail.com>
  */
-class Search extends BaseElement
+class Search extends \Mapbender\CoreBundle\Component\Element
 {
     public static function getClassTitle()
     {
