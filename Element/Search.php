@@ -156,7 +156,7 @@ class Search extends BaseElement
             case 'query/save':
             case 'style/save':
             case 'stylemap/save':
-                $requestData = $this->getRequestData();
+                $requestData = $this->expandArrayInputs(\json_decode($request->getContent(), true));
                 $entity = $repository->createFiltered($requestData[$saveDataKey]);
                 $entity->setUserId($this->getUserId());
                 $repository->save($entity);
@@ -444,6 +444,24 @@ class Search extends BaseElement
         /** @var FeatureTypeFactory|\Mapbender\DataSourceBundle\Component\Factory\FeatureTypeFactory $factory */
         $factory = $this->container->get('mapbender.search.featuretype_factory');
         return $factory->fromConfig($config);
+    }
+
+    protected function expandArrayInputs($data)
+    {
+        $nested = array();
+        foreach ($data as $key => $value) {
+            if (\is_array($value)) {
+                $value = $this->expandArrayInputs($value);
+            }
+            $matches = array();
+            if (\preg_match('#^([^[]*)\[(.*?)\]$#', $key, $matches)) {
+                $nested += array($matches[1] => array());
+                $nested[$matches[1]][$matches[2]] = $value;
+            } else {
+                $nested[$key] = $value;
+            }
+        }
+        return $nested;
     }
 
     /**
