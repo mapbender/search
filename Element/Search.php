@@ -56,7 +56,7 @@ class Search extends BaseElement
                 'sass/element/search.scss',
             ),
             'trans' => array(
-                'MapbenderSearchBundle:Element:search.json.twig',
+                'mb.search.*'
             ),
         );
     }
