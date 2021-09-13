@@ -1,0 +1,48 @@
+<div class="mapbender-element-tab-navigator">
+    <ul>
+        <li>
+            <a href="#sqm-general">Allgemein</a>
+        </li>
+        <li>
+            <a href="#sqm-fields">Felder</a>
+        </li>
+        <li>
+            <a href="#sqm-conditions">Bedingungen</a>
+        </li>
+    </ul>
+    <div id="sqm-general">
+        <div style="padding: 10px;">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input name="name" type="text" required="required" class="form-control" placeholder="Eindeutiger Name">
+            </div>
+            <div class="form-group select-container">
+                <label for="schemaId">Schema (Objekttyp)</label>
+                <select class="form-control" name="schemaId"></select>
+            </div>
+            <div class="form-group select-container">
+                <label for="styleMap">Kartenstil</label>
+                <div class="input-group">
+                    <select class="form-control" name="styleMap"></select>
+                    <div class="input-group-btn">
+                        <button type="button" class="btn button -fn-edit-stylemap" title="Ändern">Ändern</button>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group checkbox"><label for="extendOnly"><input type="checkbox" name="extendOnly" checked="checked">Nur Kartenausschnitt</label></div>
+            <div class="form-group checkbox"><label for="exportOnly"><input type="checkbox" name="exportOnly">Nur Export</label></div>
+        </div>
+    </div>
+    <div id="sqm-fields">
+        <div style="padding: 10px;">
+            <div name="fields" class="fields"></div>
+            <button type="button" class="button btn -fn-add-field">Neues Feld</button>
+        </div>
+    </div>
+    <div id="sqm-conditions">
+        <div style="padding: 10px;">
+            <div name="conditions" class="conditions"></div>
+            <button type="button" class="button btn -fn-add-condition">Neue Bedingung</button>
+        </div>
+    </div>
+</div>

@@ -75,43 +75,18 @@ $.widget("rw.queryManager", {
         //     condition.fieldTitle = fieldNames[condition.fieldName];
         // });
 
-        var formContainer = element.empty().generateElements( Mapbender.Util.beautifyGenerateElements({
-            type:     "tabs",
-            children: [{
-                title:    "Allgemein",
-                type:     'form',
-                children: [{
-                    type:        "input",
-                    name:        "name",
-                    placeholder: "Eindeutiger Name",
-                    title:       "Name",
-                    mandatory:   true
-                }, {
-                    type:    "select",
-                    name:    "schemaId",
-                    title:   "Schema (Objekttyp)",
-                    value:   schemaId,
-                    options: Mapbender.Util.beautifyOptions(schemaOptions),
-                    change:  function(e) {
-                        var featureTypeId = $('select', e.currentTarget).val();
-                        currentSchema = widget.changeSource(featureTypeId)
-                    }
-                }, {
-                    type:     "fieldSet",
-                    children: [{
-                        type:    "select",
-                        name:    "styleMap",
-                        title:   "Kartenstil",
-                        value:   0,
-                        options: Mapbender.Util.beautifyOptions(_.object(_.pluck(options.styleMaps, 'id'), _.pluck(options.styleMaps, 'name'))),
-                        css:     {
-                            width: "80%"
-                        }
-                    }, {
-                        type:     "button",
-                        cssClass: "bars",
-                        title:    "Ändern",
-                        click:    function(e) {
+        this.element.append($(this.options.template).html());
+        $('select[name="schemaId"]', this.element).empty().append(_.map(this.options.schemas, function(schema, key) {
+            var option = document.createElement('option');
+            $(option).text(schema.title).attr('value', key);
+            return option;
+        }));
+        $('select[name="styleMap"]', this.element).empty().append(_.map(this.options.styleMaps, function(styleMap) {
+            var option = document.createElement('option');
+            $(option).text(styleMap.name).attr('value', styleMap.id);
+            return option;
+        }));
+        this.element.on('click', '.-fn-edit-stylemap', function() {
                             var styleMapId = element.find('[name=styleMap]').val();
                             var styleMap = _.findWhere(options.styleMaps, {id: styleMapId});
                             widget._trigger('styleMapChange', null, {
@@ -120,36 +95,18 @@ $.widget("rw.queryManager", {
                                 styleMap: styleMap
                             });
                             return false;
-                        },
-                        css:      {
-                            width: "20%",
-                            'margin-right': '0'
-                        }
-                    }]
-                }, {
-                    type:    "checkbox",
-                    name:    "extendOnly",
-                    title:   "Nur Kartenausschnitt",
-                    value:   true,
-                    checked: true
-                }, {
-                    type:  "checkbox",
-                    name:  "exportOnly",
-                    title: "Nur Export",
-                    checked: false
-                }]
-            }, {
-                type:     "form",
-                title:    "Felder",
-                children: [{
-                    type:         'resultTable',
-                    name:         'fields',
-                    cssClass:     'fields',
+        });
+        this.element.on('change', 'select[name="schemaId"]', function() {
+            widget.changeSource($(this).val());
+        });
+
+        $('.fields', this.element).resultTable({
                     lengthChange: false,
                     searching:    false,
                     info:         false,
                     paging:       false,
                     ordering:     false,
+                    autoWidth: false,
                     columns:      [{
                         data:  'title',
                         title: 'Feldname'
@@ -169,16 +126,10 @@ $.widget("rw.queryManager", {
                             return false;
                         }
                     }]
-                }, {
-                    type:     'fieldSet',
-                    children: [{
-                        type:     "button",
-                        cssClass: "plus",
-                        title:    "Neues Feld",
-                        css:      {'margin-top': '10px'},
-                        click: function(e) {
-                            var el = $(e.currentTarget);
-                            var form = el.closest('.popup-dialog');
+        });
+
+        this.element.on('click', '.-fn-add-field', function() {
+                            var form = $(this).closest('.popup-dialog');
                             var fieldForm = $("<div style='overflow: initial'/>");
                             var currentSchema = widget.getCurrentSchema();
                             var fieldNames = _.object(_.pluck(currentSchema.fields, 'name'), _.pluck(currentSchema.fields, 'title'));
@@ -226,21 +177,16 @@ $.widget("rw.queryManager", {
                             });
 
                             return false;
-                        }
-                    }]
-                }]
-            }, {
-                type:     "form",
-                title:    "Bedingungen",
-                children: [{
-                    type:         'resultTable',
-                    name:         'conditions',
-                    cssClass:     'conditions',
+        });
+
+
+        $('.conditions', this.element).resultTable({
                     lengthChange: false,
                     searching: false,
                     info:      false,
                     paging:    false,
                     ordering:  false,
+                    autoWidth: false,
                     columns:   [{
                         data:  'fieldName',
                         title: 'Feldname'
@@ -266,16 +212,10 @@ $.widget("rw.queryManager", {
                             return false;
                         }
                     }]
-                }, {
-                    type:     'fieldSet',
-                    children: [{
-                        type:     "button",
-                        cssClass: "plus",
-                        title:    "Neue Bedingung",
-                        css:      {'margin-top': '10px'},
-                        click:    function(e) {
-                            var el = $(e.currentTarget);
-                            var form = el.closest('.popup-dialog');
+        });
+
+        this.element.on('click', '.-fn-add-condition', function() {
+                            var form = $(this).closest('.popup-dialog');
                             var conditionForm = $("<div style='overflow: initial'/>");
                             var currentSchema = widget.getCurrentSchema();
                             var fieldNames = _.object(_.pluck(currentSchema.fields, 'name'), _.pluck(currentSchema.fields, 'title'));
@@ -375,16 +315,20 @@ $.widget("rw.queryManager", {
                             });
 
                             return false;
-                        }
-                    }]
-                }]
-            }]
-        }));
+        });
 
+        $('.mapbender-element-tab-navigator', element).tabs({
+            active: 0,
+            classes: {
+                "ui-tabs": "ui-tabs mapbender-element-tab-navigator",
+                "ui-tabs-nav": "ui-tabs-nav nav nav-tabs",
+                "ui-tabs-panel": "ui-tabs-panel tab-content"
+            }
+        });
         setTimeout(function() {
-            formContainer.formData(query);
+            element.formData(query);
         }, 300);
-        return formContainer;
+        return element;
     },
 
     popup: function() {

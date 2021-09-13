@@ -32,6 +32,7 @@
         },
         map:                    null,
         currentSettings:        null,
+        templates_: {},
 
         /**
          * Dynamic loaded styles
@@ -55,6 +56,7 @@
             var options = widget.options;
             var target = options.target = $('.mb-element-map').attr("id");
             var rendered = jQuery.Deferred();
+            this.templates_['query-manager'] = $('.-tpl-query-manager', this.element).remove().css({display: null});
 
             if(!Mapbender.checkTarget("mbSearch", target)) {
                 return;
@@ -227,7 +229,8 @@
             queryManager.queryManager({
                 data:      query,
                 schemas:   schemas,
-                styleMaps: styleMaps
+                styleMaps: styleMaps,
+                template: this.templates_['query-manager']
             });
 
             queryManager
