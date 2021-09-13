@@ -127,10 +127,10 @@ $.widget("rw.queryManager", {
                         }
                     }]
         });
+        var fieldsTableApi = $('.fields table', this.element).dataTable().api();
 
         this.element.on('click', '.-fn-add-field', function() {
-                            var form = $(this).closest('.popup-dialog');
-                            var fieldForm = $("<div style='overflow: initial'/>");
+                            var fieldForm = $("<div>");
                             var currentSchema = widget.getCurrentSchema();
                             var fieldNames = _.object(_.pluck(currentSchema.fields, 'name'), _.pluck(currentSchema.fields, 'title'));
 
@@ -152,8 +152,6 @@ $.widget("rw.queryManager", {
                                 buttons: [{
                                     text:  "Speichern",
                                     click: function() {
-                                        var resultTable = form.find('[name="fields"]');
-                                        var tableApi = resultTable.resultTable('getApi');
                                         var data = fieldForm.formData();
 
                                         var errorInputs = $(".has-error", fieldForm);
@@ -164,11 +162,11 @@ $.widget("rw.queryManager", {
                                         }
 
                                         var title = _.object(_.pluck(currentSchema.fields, 'name'), _.pluck(currentSchema.fields, 'title'))[data.fieldName];
-                                        tableApi.rows.add([{
+                                        fieldsTableApi.rows.add([{
                                             fieldName: data.fieldName,
                                             title:     title
                                         }]);
-                                        tableApi.draw();
+                                        fieldsTableApi.draw();
                                         fieldForm.popupDialog('close');
 
                                         return false;
@@ -213,10 +211,10 @@ $.widget("rw.queryManager", {
                         }
                     }]
         });
+        var conditionsTableApi = $('.conditions table', this.element).dataTable().api();
 
         this.element.on('click', '.-fn-add-condition', function() {
-                            var form = $(this).closest('.popup-dialog');
-                            var conditionForm = $("<div style='overflow: initial'/>");
+                            var conditionForm = $("<div>");
                             var currentSchema = widget.getCurrentSchema();
                             var fieldNames = _.object(_.pluck(currentSchema.fields, 'name'), _.pluck(currentSchema.fields, 'title'));
 
@@ -280,8 +278,6 @@ $.widget("rw.queryManager", {
                                 buttons: [{
                                     text:  "Speichern",
                                     click: function() {
-                                        var resultTable = form.find('[name="conditions"]');
-                                        var tableApi = resultTable.resultTable('getApi');
                                         var data = conditionForm.formData();
                                         var errorInputs = $(".has-error", conditionForm);
                                         var hasErrors = errorInputs.size() > 0;
@@ -291,14 +287,14 @@ $.widget("rw.queryManager", {
                                             return false;
                                         }
 
-                                        tableApi.rows.add([{
+                                        conditionsTableApi.rows.add([{
                                             fieldName:  data.fieldName,
                                             fieldTitle: fieldDefinition.title,
                                             operator:   data.operator,
                                             value:      data.value
                                         }]);
 
-                                        tableApi.draw();
+                                        conditionsTableApi.draw();
 
                                         conditionForm.popupDialog('close');
 
