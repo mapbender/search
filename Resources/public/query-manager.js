@@ -61,8 +61,6 @@ $.widget("rw.queryManager", {
                             var styleMapId = element.find('[name=styleMap]').val();
                             var styleMap = _.findWhere(options.styleMaps, {id: styleMapId});
                             widget._trigger('styleMapChange', null, {
-                                widget:   widget,
-                                form:     element,
                                 styleMap: styleMap
                             });
                             return false;

@@ -17,6 +17,7 @@ $.widget("wheregroup.styleMapManager", {
             name: null,
             id:   null
         },
+        template: '',
         asPopup:  true
     },
 
@@ -31,79 +32,37 @@ $.widget("wheregroup.styleMapManager", {
         }
     },
 
+    updateStyleSelects_: function(styles) {
+        var $selects = $('select[name^="styles"]', this.element);
+
+        for (var i = 0; i < $selects.length; ++i) {
+            var $select = $selects.eq(i);
+            var currentValue = $select.val();
+            $select.empty().append('<option value=""></option>');
+            $select.append(_.map(styles, function(style) {
+                var option = document.createElement('option');
+                $(option).text(style.name).attr('value', style.id);
+                return option;
+            }));
+            $select.val(currentValue || '');
+        }
+    },
+
     render: function(data) {
         var widget = this;
         var element = widget.element;
         var options = widget.options;
-        var styles = options.styles;
-        var styleNames = _.object(_.pluck(styles, 'id'), _.pluck(styles, 'name'));
-        var editButton = {
-            type:  'button',
-            title: 'Editieren',
-            css:   {width: '25%'},
-            click: function() {
-                var button = $(this);
-                var fieldSet = button.parent();
-                var styleId = fieldSet.find("[name]").val();
-                var style = styles[styleId]
+        this.element.empty().append(this.options.template);
+        this.updateStyleSelects_(this.options.styles);
 
-                widget._trigger('editStyle', null, {
-                    widget: widget,
-                    style:  style
-                });
-
-                return false;
-            }
-        };
-
-        element.html('');
-
-        function onStyleChange(e) {
-            var selectElement = $(this).find('select');
-            var currentValue = selectElement.val();
-            var selectElements = selectElement.closest("form").find("select");
-            _.each(selectElements, function(element) {
-                element = $(element);
-                if(element.val() == null) {
-                    element.val(currentValue);
-                }
+        this.element.on('click', '.-fn-edit-style[data-style-name]', function() {
+            var styleId = $('select[name="styles[' + $(this).attr('data-style-name') + ']"]', element).val();
+            var style = options.styles[styleId];
+            widget._trigger('editstyle', null, {
+                widget: widget,
+                style: style
             });
-        }
-
-        element.generateElements(Mapbender.Util.beautifyGenerateElements({
-            type:     'form',
-            css:{
-                'margin-left': '10px',
-                'margin-right': '10px'
-            },
-            children: [{
-                type:        'input',
-                title:       'Name',
-                placeholder: 'Name',
-                name:        'name'
-            }, {
-                type:     'fieldSet',
-                children: [{
-                    type:    'select',
-                    title:   'Standard',
-                    options: Mapbender.Util.beautifyOptions(styleNames),
-                    name:    'styles[default]',
-                    change:  onStyleChange,
-                    css:     {width: '75%'}
-                }, editButton]
-            }, {
-                type:     'fieldSet',
-                children: [{
-                    type:    'select',
-                    title:   'Mouseover',
-                    options: Mapbender.Util.beautifyOptions(styleNames),
-                    name:    'styles[select]',
-                    change:  onStyleChange,
-                    css:     {width: '75%'}
-                }, editButton]
-            }
-            ]
-        }));
+        });
 
         window.setTimeout(function() {
             if(!data.name) {
@@ -117,12 +76,8 @@ $.widget("wheregroup.styleMapManager", {
     },
 
     updateStyleList: function(styles) {
-        var widget = this;
-        var element = widget.element;
-        var formData = element.formData();
-        widget._setOption("styles", styles);
-        widget._trigger('stylesUpdated');
-        widget.render(formData);
+        this.options.styles = styles;
+        this.updateStyleSelects_(styles);
     },
 
     popup: function() {

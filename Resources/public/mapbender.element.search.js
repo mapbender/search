@@ -57,6 +57,7 @@
             var target = options.target = $('.mb-element-map').attr("id");
             var rendered = jQuery.Deferred();
             this.templates_['query-manager'] = $('.-tpl-query-manager', this.element).remove().css({display: null}).html();
+            this.templates_['style-map-manager'] = $('.-tpl-style-map-manager', this.element).remove().css({display: null}).html();
 
             if(!Mapbender.checkTarget("mbSearch", target)) {
                 return;
@@ -330,7 +331,8 @@
 
             return styleMapManager.styleMapManager({
                 styles: styles,
-                data:   data
+                data: data,
+                template: this.templates_['style-map-manager']
             })
         },
 
