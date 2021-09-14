@@ -75,35 +75,13 @@ $.widget("rw.queryManager", {
             taConditions();
             taConditions.draw();
         });
-
-        $('.fields', this.element).resultTable({
-                    lengthChange: false,
-                    searching:    false,
-                    info:         false,
-                    paging:       false,
-                    ordering:     false,
-                    autoWidth: false,
-                    columns:      [{
-                        data:  'title',
-                        title: 'Feldname'
-                    }],
-                    data:         initialFields,
-                    buttons:      [{
-                        //otherwise the button would trigger a submit-event
-                        type: "html",
-                        html: '<button type="button" class="button critical icon-remove remove" title="Löschen">Löschen</button>',
-                        title:     "Löschen",
-                        className: 'remove',
-                        cssClass:  'critical',
-                        onClick:   function(field, ui) {
-                            var tableApi = ui.closest('table').dataTable().api();
-                            tableApi.row(ui.closest('tr').get(0)).remove();
-                            tableApi.draw();
-                            return false;
-                        }
-                    }]
+        var fieldsTableApi = this.initCollection_($('.fields', this.element), {
+            columns: [{
+                data:  'title',
+                title: 'Feldname'
+            }],
+            data: initialFields
         });
-        var fieldsTableApi = $('.fields table', this.element).dataTable().api();
 
         this.element.on('click', '.-fn-add-field', function() {
                             var fieldForm = $("<div>");
@@ -154,40 +132,21 @@ $.widget("rw.queryManager", {
         });
 
 
-        $('.conditions', this.element).resultTable({
-                    lengthChange: false,
-                    searching: false,
-                    info:      false,
-                    paging:    false,
-                    ordering:  false,
-                    autoWidth: false,
-                    columns:   [{
-                        data:  'fieldName',
-                        title: 'Feldname'
-                    }, {
-                        data:  'operator',
-                        title: 'Operator'
-                    }, {
-                        data:  'value',
-                        title: 'Wert'
-                    }],
-                    data:      query && query.conditions ? query.conditions : [],
-                    buttons:   [{
-                        //otherwise the button would trigger a submit-event
-                        type: "html",
-                        html: '<button type="button" class="button critical icon-remove remove" title="Löschen">Löschen</button>',
-                        title:     "Löschen",
-                        className: 'remove',
-                        cssClass:  'critical',
-                        onClick:   function(condition, ui) {
-                            var tableApi = ui.closest('table').dataTable().api();
-                            tableApi.row(ui.closest('tr').get(0)).remove();
-                            tableApi.draw();
-                            return false;
-                        }
-                    }]
+        var conditionsTableApi = this.initCollection_($('.conditions', this.element), {
+            columns: [
+                {
+                    data:  'fieldName',
+                    title: 'Feldname'
+                }, {
+                    data:  'operator',
+                    title: 'Operator'
+                }, {
+                    data:  'value',
+                    title: 'Wert'
+                }
+            ],
+            data: query && query.conditions ? query.conditions : []
         });
-        var conditionsTableApi = $('.conditions table', this.element).dataTable().api();
 
         this.element.on('click', '.-fn-add-condition', function() {
                             var conditionForm = $("<div>");
@@ -370,6 +329,32 @@ $.widget("rw.queryManager", {
         }
 
         widget._trigger('close');
+    },
+    initCollection_: function($target, options) {
+        var options_ = $.extend({}, options, {
+            lengthChange: false,
+            searching:    false,
+            info:         false,
+            paging:       false,
+            ordering:     false,
+            autoWidth: false
+        });
+        options_.buttons = options_.buttons || [];
+        options_.buttons.push({
+            type: "html",
+            html: '<button type="button" class="button icon-remove remove" title="Löschen">Löschen</button>',
+            title:     "Löschen",
+            className: 'remove',
+            cssClass:  'critical',
+            onClick:   function(field, ui) {
+                var tableApi = ui.closest('table').dataTable().api();
+                tableApi.row(ui.closest('tr').get(0)).remove();
+                tableApi.draw();
+                return false;
+            }
+        });
+        $target.resultTable(options_);
+        return $('table', $target).dataTable().api();
     }
 });
 
