@@ -255,15 +255,13 @@ $.widget("rw.queryManager", {
 
     popup: function() {
         var widget = this;
-        var options = widget.options;
         var element = widget.element;
         return element.popupDialog({
             title:       "Abfrage",
             maximizable: true,
             modal:       true,
             width:       "500px",
-            close: function(e,a,u) {
-                widget._trigger('close');
+            close: function() {
                 return false;
             },
             buttons:     [{
