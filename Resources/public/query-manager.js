@@ -68,14 +68,14 @@ $.widget("rw.queryManager", {
                             return false;
         });
         this.element.on('change', 'select[name="schemaId"]', function() {
-            var taFields = $('.fields table', element).dataTable().api();
+            var taFields = $('.table.-js-fields-collection', element).dataTable().api();
             taFields.clear();
             taFields.draw();
-            var taConditions = $('.conditions table', element).dataTable().api();
+            var taConditions = $('table.-js-conditions-collection table', element).dataTable().api();
             taConditions();
             taConditions.draw();
         });
-        var fieldsTableApi = this.initCollection_($('.fields', this.element), {
+        var fieldsTableApi = this.initCollection_($('table.-js-fields-collection', this.element), {
             columns: [{
                 data:  'title',
                 title: 'Feldname'
@@ -132,7 +132,7 @@ $.widget("rw.queryManager", {
         });
 
 
-        var conditionsTableApi = this.initCollection_($('.conditions', this.element), {
+        var conditionsTableApi = this.initCollection_($('.-js-conditions-collection', this.element), {
             columns: [
                 {
                     data:  'fieldName',
@@ -241,6 +241,14 @@ $.widget("rw.queryManager", {
                             return false;
         });
 
+        this.element.on('click', 'table .-fn-collection-remove', function() {
+            var $tr = $(this).closest('tr');
+            var tableApi = $tr.closest('table').dataTable().api();
+            tableApi.row($tr.get(0)).remove();
+            tableApi.draw();
+            return false;
+        });
+
         $('.mapbender-element-tab-navigator', element).tabs({
             active: 0,
             classes: {
@@ -289,8 +297,8 @@ $.widget("rw.queryManager", {
                     if (!formData || (!isCheck && $('.has-error', form).length)) {
                         return false;
                     }
-                    formData.conditions = $('.conditions table', form).dataTable().api().rows().data().toArray();
-                    formData.fields = $('.fields table', form).dataTable().api().rows().data().toArray();
+                    formData.conditions = $('table.-js-conditions-collection', form).dataTable().api().rows().data().toArray();
+                    formData.fields = $('table.-js-fields-collection', form).dataTable().api().rows().data().toArray();
                     formData.id = this.options.data.id;
 
                     this._trigger(eventName, null, {
@@ -337,22 +345,12 @@ $.widget("rw.queryManager", {
             ordering:     false,
             autoWidth: false
         });
-        options_.buttons = options_.buttons || [];
-        options_.buttons.push({
-            type: "html",
-            html: '<button type="button" class="button icon-remove remove" title="Löschen">Löschen</button>',
-            title:     "Löschen",
-            className: 'remove',
-            cssClass:  'critical',
-            onClick:   function(field, ui) {
-                var tableApi = ui.closest('table').dataTable().api();
-                tableApi.row(ui.closest('tr').get(0)).remove();
-                tableApi.draw();
-                return false;
-            }
+        options_.columns.push({
+            targets: -1,
+            width: '1%',
+            defaultContent: '<button type="button" class="-fn-collection-remove button" title="Löschen"><i class="fa fas fa-times"></i><span class="sr-only">Löschen</span></button>'
         });
-        $target.resultTable(options_);
-        return $('table', $target).dataTable().api();
+        $target.dataTable(options_);
+        return $target.dataTable().api();
     }
 });
-
