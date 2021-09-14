@@ -46,7 +46,7 @@ $.widget("rw.queryManager", {
         var options = widget.options;
         var initialFields = query && query.fields ? query.fields : [];
 
-        this.element.append($(this.options.template).html());
+        this.element.append(this.options.template);
         $('select[name="schemaId"]', this.element).empty().append(_.map(this.options.schemas, function(schema, key) {
             var option = document.createElement('option');
             $(option).text(schema.title).attr('value', key);

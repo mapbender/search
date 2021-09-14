@@ -56,7 +56,7 @@
             var options = widget.options;
             var target = options.target = $('.mb-element-map').attr("id");
             var rendered = jQuery.Deferred();
-            this.templates_['query-manager'] = $('.-tpl-query-manager', this.element).remove().css({display: null});
+            this.templates_['query-manager'] = $('.-tpl-query-manager', this.element).remove().css({display: null}).html();
 
             if(!Mapbender.checkTarget("mbSearch", target)) {
                 return;
