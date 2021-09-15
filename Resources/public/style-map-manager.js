@@ -17,8 +17,7 @@ $.widget("wheregroup.styleMapManager", {
             name: null,
             id:   null
         },
-        template: '',
-        asPopup:  true
+        template: ''
     },
 
     _create: function() {
@@ -26,10 +25,7 @@ $.widget("wheregroup.styleMapManager", {
         var options = widget.options;
 
         widget.render(options.data);
-
-        if(options.asPopup) {
-            widget.popup();
-        }
+        widget.popup();
     },
 
     updateStyleSelects_: function(styles) {
