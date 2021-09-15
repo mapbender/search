@@ -80,9 +80,15 @@ $.widget("wheregroup.styleMapManager", {
         var widget = this;
         var element = widget.element;
 
-        return element.popupDialog({
+        return element.dialog({
             title:   'Kartenstil',
             modal:   true,
+            classes: {
+                'ui-dialog': 'ui-dialog mb-search-dialog'
+            },
+            closeText: '',
+            resizable: false,
+
             buttons: [{
                 text:  'Abbrechen',
                 click: function(e) {
