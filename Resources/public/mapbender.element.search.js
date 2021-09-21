@@ -72,8 +72,7 @@
             var element = widget.element;
 
                 $('select[name="typeFilter"]', element).on('change', function() {
-                            var select = $(e.target);
-                            var schemaId = select.val();
+                    var schemaId = $(this).val();
 
                             widget._typeFilter = schemaId;
 
