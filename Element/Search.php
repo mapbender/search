@@ -5,6 +5,8 @@ namespace Mapbender\SearchBundle\Element;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
 use Mapbender\CoreBundle\Entity\Element;
+use Mapbender\DataSourceBundle\Component\FeatureType;
+use Mapbender\DataSourceBundle\Component\RepositoryRegistry;
 use Mapbender\SearchBundle\Component\FeatureTypeFactory;
 use Mapbender\SearchBundle\Component\HKVStorageBetter;
 use FOM\CoreBundle\Component\ExportResponse;
@@ -451,13 +453,15 @@ class Search extends \Mapbender\CoreBundle\Component\Element
 
     /**
      * @param array $config
-     * @return \Mapbender\DataSourceBundle\Component\FeatureType
+     * @return FeatureType
      */
     protected function getFeatureTypeFromConfig(array $config)
     {
-        /** @var FeatureTypeFactory|\Mapbender\DataSourceBundle\Component\Factory\FeatureTypeFactory $factory */
-        $factory = $this->container->get('mapbender.search.featuretype_factory');
-        return $factory->fromConfig($config);
+        /** @var RepositoryRegistry $registry */
+        $registry = $this->container->get('mapbender.search.featuretype_registry');
+        /** @var FeatureType $ft */
+        $ft = $registry->dataStoreFactory($config);
+        return $ft;
     }
 
     protected function expandArrayInputs($data)

@@ -2,7 +2,6 @@
 namespace Mapbender\SearchBundle;
 
 use Mapbender\CoreBundle\Component\MapbenderBundle;
-use Mapbender\SearchBundle\DependencyInjection\Compiler\FeatureTypeFactoryProviderPass;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
@@ -29,8 +28,6 @@ class MapbenderSearchBundle extends MapbenderBundle
         $configLocator = new FileLocator(__DIR__ . '/Resources/config');
         $loader = new XmlFileLoader($container, $configLocator);
         $loader->load('services.xml');
-
-        $container->addCompilerPass(new FeatureTypeFactoryProviderPass());
     }
 
     public function getContainerExtension()
