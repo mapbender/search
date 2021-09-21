@@ -119,15 +119,6 @@
                 widget.refreshQueries().done(function(r) {
                     widget.renderSchemaFilterSelect();
                     widget._trigger('ready');
-                    // Check position and react by
-                    var containerInfo = new MapbenderContainerInfo(widget, {
-                        onactive:   function() {
-                            widget.enable();
-                        },
-                        oninactive: function() {
-                            widget.disable();
-                        }
-                    });
                 });
             });
         },
@@ -161,6 +152,14 @@
                 },10);
             }
 
+        },
+
+        // Sidepane integration api
+        hide: function() {
+            this.disable();
+        },
+        reveal: function() {
+            this.enable();
         },
 
         /**
