@@ -472,18 +472,24 @@
          */
         renderQueries: function(queries) {
             var widget = this;
-            var options = widget.options;
             var element = widget.element;
             var queriesContainer = element.find('> .html-element-container');
             var queriesAccordionView = $('<div class="queries-accordion"/>');
 
-            var map = widget.map;
+            var queriesArray = _.toArray(queries);
 
             // TODO: clean up, remove/refresh map layers, events, etc...
             queriesContainer.empty();
-
-            _.each(queries, function(query) {
-
+            for (var i = 0; i < queriesArray.length; ++i) {
+                queriesContainer.append(this.renderQuery(queriesAccordionView, queriesArray[i]));
+            }
+            this.initAccordion(queriesAccordionView, queries);
+            queriesContainer.append(queriesAccordionView);
+        },
+        renderQuery: function(queriesAccordionView, query) {
+            var widget = this;
+            var map = this.map;
+            var options = this.options;
                 var schema = widget._schemas[query.schemaId];
                 schema.clustering =  options.clustering; // schema.clustering ? schema.clustering : options.clustering;
                 var queryTitleView = query.titleView = $('<h3/>').data('query', query).queryResultTitleBarView();
@@ -720,7 +726,14 @@
                 // widget.query('query/check', {query: query}).done(function(r) {
                 //     queryTitleView.find(".titleText").html(query.name + " (" + r.count + ", "+r.executionTime+")")
                 // });
-
+            this.initQueryViewEvents(queryView);
+            this.initTitleEvents(queryTitleView);
+                queriesAccordionView
+                    .append(queryTitleView)
+                    .append(queryView);
+        },
+        initQueryViewEvents: function(queryView) {
+            var widget = this;
                 queryView
                     .bind('queryresultviewchangeextend', function(e, context) {
                         var query = context.query;
@@ -829,7 +842,9 @@
                             }
                         }
                     });
-
+        },
+        initTitleEvents: function(queryTitleView) {
+            var widget = this;
                 queryTitleView
                     .bind('queryresulttitlebarviewexport', function(e, context) {
                         var query = context.query;
@@ -885,11 +900,10 @@
                         });
                     });
 
-                queriesAccordionView
-                    .append(queryTitleView)
-                    .append(queryView);
-            });
-
+        },
+        initAccordion: function(queriesAccordionView, queries) {
+            var widget = this;
+            var map = this.map;
             queriesAccordionView.togglepanels({
                 onChange: function(e, context) {
                     var isActive = $(e.currentTarget).is('.ui-state-active');
@@ -940,8 +954,6 @@
             });
 
             widget.updateClusterStrategies();
-
-            queriesContainer.append(queriesAccordionView);
         },
 
         /**
