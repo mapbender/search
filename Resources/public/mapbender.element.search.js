@@ -53,20 +53,23 @@
         _create: function() {
             var widget = this;
             var element = widget.element;
-            var options = widget.options;
-            var target = options.target = $('.mb-element-map').attr("id");
             var rendered = jQuery.Deferred();
             this.templates_['query-manager'] = $('.-tpl-query-manager', this.element).remove().css({display: null}).html();
             this.templates_['style-map-manager'] = $('.-tpl-style-map-manager', this.element).remove().css({display: null}).html();
 
-            if(!Mapbender.checkTarget("mbSearch", target)) {
-                return;
-            }
-
             widget.elementUrl = Mapbender.configuration.application.urls.element + '/' + element.attr('id') + '/';
-            Mapbender.elementRegistry.onElementReady(target, function() {
-
-                widget.map = $('#' + options.target).data('mapbenderMbMap').map.olMap;
+            Mapbender.elementRegistry.waitReady('.mb-element-map').then(function(mbMap) {
+                widget.map = mbMap.map.olMap;
+                widget._setup();
+                rendered.resolveWith(true);
+            }, function() {
+                Mapbender.checkTarget("mbSearch");
+            });
+            this.postSetup_(rendered);
+        },
+        _setup: function() {
+            var widget = this;
+            var element = widget.element;
 
                 $('select[name="typeFilter"]', element).on('change', function() {
                             var select = $(e.target);
@@ -103,9 +106,9 @@
                 element.on('click', '.new-style', function() {
                     widget.openStyleEditor();
                 });
-
-                rendered.resolveWith(true);
-            });
+            },
+        postSetup_: function(rendered) {
+            var widget = this;
 
             jQuery.when(
                 widget.refreshSchemas(),
