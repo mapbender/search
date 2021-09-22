@@ -906,35 +906,36 @@
         initAccordion: function(queriesAccordionView, queries) {
             var widget = this;
             var map = this.map;
-            queriesAccordionView.togglepanels({
-                onChange: function(e, context) {
-                    var isActive = $(e.currentTarget).is('.ui-state-active');
-                    var title = context.title;
-                    var content = context.content;
-                    var query = title.data('query');
-                    var layer = query.layer;
-
-
-                    if(query.exportOnly) {
-                        content.hide(0);
+            queriesAccordionView.accordion({
+                // see https://api.jqueryui.com/accordion/
+                header: ".query-header",
+                collapsible: true,
+                active: false,
+                beforeActivate: function(event, ui) {
+                    var query = ui.newHeader && ui.newHeader.data('query');
+                    var oldQuery = ui.oldHeader && ui.oldHeader.data('query');
+                    if (oldQuery) {
+                        oldQuery.isActive = false;
+                        oldQuery.selectControl.deactivate();
+                        oldQuery.layer.setVisibility(false);
+                    }
+                    if (query && query.exportOnly) {
                         return false;
                     }
-
-                    query.isActive = isActive;
-                    layer.setVisibility(isActive);
-
-                    if(isActive){
+                    if (query) {
+                        $('.preloader', ui.newHeader).show();
+                    }
+                },
+                activate: function(event, ui) {
+                    var query = ui.newHeader && ui.newHeader.data('query');
+                    if (query) {
+                        query.isActive = true;
                         query.selectControl.activate();
-                    }else{
-                        query.selectControl.deactivate();
+                        query.layer.setVisibility(true);
+                        widget.fetchQuery(query).always(function() {
+                            $('.preloader', ui.newHeader).hide();
+                        });
                     }
-
-
-                    if(!isActive) {
-                        return;
-                    }
-
-                    widget.fetchQuery(query);
                 }
             });
 

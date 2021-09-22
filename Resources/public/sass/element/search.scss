@@ -2,17 +2,35 @@
 @import "../vendor/mapbender/vis-ui.js/src/styles/modal";
 @import "../vendor/mapbender/digitizer/Resources/public/sass/element/context-menu";
 
-.mb-element-search.modal-body {
-  //.form-group > button.btn {
-  //  margin-left: 15px;
-  //  margin-right: 15px;
-  //}
-  .ui-accordion-header .buttons {
-    .fa:before {
-      font-family: FontAwesome;
+.mb-element-search {
+  font-size: 12px;
+  .queries-accordion {
+    .ui-accordion-header {
+      padding: 0 0 0 1em !important;  // @todo: fix collateral CSS spill from Digitizer 1.3
+      line-height: 2 !important;    // @todo: fix collateral CSS spill from Digitizer 1.3
+      font-size: inherit !important; // @todo: fix collateral CSS spill from Digitizer 1.3
+      .ui-icon {
+        display: none;
+      }
+      .header-buttons .btn {
+        font-size: inherit;
+        line-height: inherit;
+        padding: 0 0.5em;
+        height: auto;
+      }
+      .preloader {
+        display: none;
+        margin-right: 0.5em;
+      }
+      &:focus {
+        outline: none;
+      }
     }
   }
+}
 
+
+.mb-element-search.modal-body {
   .new-query, .new-stylemap, .new-style {
     margin-bottom: 10px;
   }

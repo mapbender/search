@@ -23,7 +23,7 @@ $.widget("wheregroup.queryResultTitleBarView", {
         };
 
         element.attr('data-id', query.id);
-        var $buttons = $('>.buttons', this.element);    // Match only within header
+        var $buttons = $('.header-buttons', this.element);
         $('.-fn-zoomtolayer, .-fn-visibility', $buttons).toggle(!query.exportOnly);
         $buttons.on('click', '.-fn-edit', function() {
             widget._trigger('edit', null, context);
