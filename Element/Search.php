@@ -55,6 +55,7 @@ class Search extends \Mapbender\CoreBundle\Component\Element
             ),
             'css' => array(
                 'sass/element/search.scss',
+                '/components/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css',
             ),
             'trans' => array(
                 'mb.search.*'
