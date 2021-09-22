@@ -35,7 +35,6 @@ $.widget("wheregroup.queryResultView", {
         var widget = this;
         var element = $(widget.element);
         var options = widget.options;
-        var progressBar = $("<div class='progressBar'/>");
         var table, tableApi;
 
         element
@@ -199,7 +198,6 @@ $.widget("wheregroup.queryResultView", {
             });
 
         element.append(table);
-        element.append(progressBar);
 
         // Add placeholder to result table filter search input
         $('input[type="search"]', table).attr('placeholder', _.pluck(query.fields, 'title').join(', '));
