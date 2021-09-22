@@ -16,7 +16,7 @@ class Query extends UniqueBase
     /** @var QueryCondition[] Conditions */
     public $conditions;
 
-    /** @var Field[] Fields */
+    /** @var array */
     public $fields;
 
     /** @var int $userId */
@@ -182,7 +182,7 @@ class Query extends UniqueBase
     }
 
     /**
-     * @param Field[] $fields
+     * @param array $fields
      */
     public function setFields($fields)
     {
@@ -190,7 +190,7 @@ class Query extends UniqueBase
     }
 
     /**
-     * @return Field[]
+     * @return array
      */
     public function getFields()
     {
