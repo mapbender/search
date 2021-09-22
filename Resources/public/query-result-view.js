@@ -92,11 +92,7 @@ $.widget("wheregroup.queryResultView", {
         table = this.table = $('.resultQueries', this.element).resultTable(tableOptions);
 
         table.find("tbody")
-            .off('click', '> tr')
             .on('click', '> tr[role="row"]', function(e) {
-                if ($(e.target).parentsUntil(this).is('.buttons')) {
-                    return;
-                }
                 var olFeature = $(this).data('feature');
                 if(!olFeature) {
                     return;
@@ -109,11 +105,7 @@ $.widget("wheregroup.queryResultView", {
                 });
                 return false;
             })
-            .off('mouseover', '> tr')
             .on('mouseover', '> tr[role="row"]', function(e) {
-                if ($(e.target).parentsUntil(this).is('.buttons')) {
-                    return;
-                }
                 var olFeature = $(this).data('feature');
                 if(!olFeature) {
                     return false;
@@ -124,11 +116,7 @@ $.widget("wheregroup.queryResultView", {
                 });
                 return false;
             })
-            .off('mouseout', '> tr')
             .on('mouseout', '> tr[role="row"]', function(e) {
-                if ($(e.target).parentsUntil(this).is('.buttons')) {
-                    return;
-                }
                 var olFeature = $(this).data('feature');
                 if(!olFeature) {
                     return false;
