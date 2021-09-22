@@ -943,10 +943,9 @@
 
             var mapChangeHandler = function(e) {
                 _.each(queries, function(query) {
-                    if(!query.layer.getVisibility()) {
+                    if (query.layer && query.layer.getVisibility() && !query.extendOnly) {
                         return
                     }
-
 
                     widget.fetchQuery(query);
                 });
