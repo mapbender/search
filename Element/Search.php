@@ -339,7 +339,7 @@ class Search extends \Mapbender\CoreBundle\Component\Element
             $featureType = $this->getFeatureTypeForSchema($this->entity, $query->getSchemaId());
             $params = array_filter(array(
                 'srid' => $requestData['srid'],
-                'intersect' => $requestData['intersectGeometry'],
+                'intersect' => $requestData['intersect'],
             ));
             $check = $queryManager->check($featureType, $query, $params);
         } /** @noinspection PhpRedundantCatchClauseInspection */ catch (DBALException $e) {
@@ -377,7 +377,7 @@ class Search extends \Mapbender\CoreBundle\Component\Element
             $params = array_filter(array(
                 'maxResults' => $maxResults,
                 'srid' => $request->query->get('srid'),
-                'intersect' => $request->query->get('intersectGeometry'),
+                'intersect' => $request->query->get('intersect'),
             ));
             $results = $queryManager->fetchQuery($featureType, $query, $params);
             $count                 = count($results["features"]);
