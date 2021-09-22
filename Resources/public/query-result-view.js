@@ -139,47 +139,15 @@ $.widget("wheregroup.queryResultView", {
             });
         });
 
-        table = widget.table = $("<div class='resultQueries'/>").resultTable(_.extend({
+        var tableOptions = _.extend({
             columns: columns,
             buttons: buttons,
             createdRow: function(tr, feature) {
                 $(tr).data({feature: feature});
                 feature.tableRow = tr;
             }
-        }, options.table));
-
-        tableApi = table.resultTable('getApi');
-
-        table.contextMenu({
-            selector: 'table > tbody > tr[role="row"]',
-            events:   {
-                // show: function(options) {
-                //     // var tr = $(options.$trigger);
-                //     // var resultTable = tr.closest('.mapbender-element-result-table');
-                //     // var api = resultTable.resultTable('getApi');
-                //     // var olFeature = api.row(tr).data();
-                //     return true;
-                // }
-            },
-            build:    function($trigger, e) {
-                var tr = $($trigger);
-                var olFeature = tr.data('feature');
-
-                var items = {};
-
-                items['zoomTo'] = {name: "Heranzoomen"};
-
-
-                return {
-                    callback: function(key, options) {
-                        widget._trigger(key, null, {
-                            feature: olFeature
-                        });
-                    },
-                    items:    items
-                };
-            }
-        });
+        }, this.tableDefaults)
+        table = this.table = $("<div class='resultQueries'/>").resultTable(tableOptions);
 
         table.find("tbody")
             .off('click', '> tr')
