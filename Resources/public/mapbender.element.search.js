@@ -12,16 +12,10 @@
     $.widget("mapbender.mbSearch", {
         options: {
             // Default option values
-            allowDigitize:     false,
-            allowDelete:       false,
-            allowEditData:     true,
-            openFormAfterEdit: true,
             maxResults:        5001,
             pageLength:        10,
-            oneInstanceEdit:   true,
             searchType:        "currentExtent",
             inlineSearch:      true,
-            useContextMenu:    true,
             clustering:        [{
                 scale:    25000,
                 distance: 30
@@ -31,7 +25,6 @@
             }]
         },
         map:                    null,
-        currentSettings:        null,
         templates_: {},
 
         /**
