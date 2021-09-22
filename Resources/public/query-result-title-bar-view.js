@@ -1,15 +1,13 @@
 $.widget("wheregroup.queryResultTitleBarView", {
-    options: {},
+    options: {
+        query: null
+    },
 
     /**
      * Constructor
      */
     _create: function() {
-        var widget = this;
-        var element = $(widget.element);
-        var query = element.data('query');
-
-        widget.render(query);
+        this.render(this.options.query);
     },
 
     /**
@@ -18,84 +16,35 @@ $.widget("wheregroup.queryResultTitleBarView", {
     render: function(query) {
         var widget = this;
         var element = $(widget.element);
-        var title = $("<span class='titleText' />").text(query.name);
+        $('.title-text', this.element).text(query.name);
         var context = {
             widget: widget,
             query:  query
         };
-        var buttons = [];
 
-        element
-            .empty()
-            .attr('data-id', query.id)
-            .append(title);
-
-        var editButton = {
-            type:     'button',
-            cssClass: 'fa fa-edit',
-            title:    'Abfrage bearbeiten',
-            click:    function(e) {
-                widget._trigger("edit", null, context);
-                return false;
-            }
-        };
-        var removeButton = {
-            cssClass: 'fa fa-remove',
-            type:     'button',
-            title:    'Abfrage löschen',
-            click:    function(e) {
-                widget._trigger("remove", null, context);
-                return false;
-            }
-        };
-        var exportButton = {
-            type:     'button',
-            cssClass: 'fa fa-download',
-            title:    'Exportieren',
-            click:    function(e) {
-                widget._trigger("export", null, context);
-                return false;
-            }
-        };
-        var zoomToButton = {
-            type:     'button',
-            cssClass: 'fa fa-map-o',
-            title:    'Heranzoomen (Nur wenn Treffer vorhanden sind.)',
-            click:    function(e) {
-                widget._trigger("zoomToLayer", null, context);
-                return false;
-            }
-        };
-        var showButton = {
-            type:     'button',
-            cssClass: 'fa fa-eye',
-            title:    'Abfrageergebnisse Anzeigen',
-            click:    function(e) {
-                widget._trigger("visibility", null, context);
-                // return false;
-            }
-        };
-
-        buttons.push('<i class="fa-li fa fa-spinner fa-spin preloader" style="margin-top: 2px; display: none"></i>');
-
-        buttons.push(editButton);
-        buttons.push(exportButton);
-
-        if(!query.exportOnly) {
-
-            buttons.push(zoomToButton);
-            buttons.push(showButton);
-        }
-
-        buttons.push(removeButton);
-
-        element.generateElements(Mapbender.Util.beautifyGenerateElements({
-            cssClass: 'buttons',
-            type:     'fieldSet',
-            children: buttons
-        }));
-
-        return element;
+        element.attr('data-id', query.id);
+        var $buttons = $('>.buttons', this.element);    // Match only within header
+        $('.-fn-zoomtolayer, .-fn-visibility', $buttons).toggle(!query.exportOnly);
+        $buttons.on('click', '.-fn-edit', function() {
+            widget._trigger('edit', null, context);
+            return false;
+        });
+        $buttons.on('click', '.-fn-delete', function() {
+            widget._trigger('remove', null, context);
+            return false;
+        });
+        $buttons.on('click', '.-fn-export', function() {
+            widget._trigger('export', null, context);
+            return false;
+        });
+        $buttons.on('click', '.-fn-zoomtolayer', function() {
+            widget._trigger('zoomToLayer', null, context);
+            return false;
+        });
+        $buttons.on('click', '.-fn-visibility', function() {
+            widget._trigger('visibility', null, context);
+            return false;
+        });
     },
 
     showPreloader: function() {

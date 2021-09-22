@@ -56,6 +56,7 @@
             var rendered = jQuery.Deferred();
             this.templates_['query-manager'] = $('.-tpl-query-manager', this.element).remove().css({display: null}).html();
             this.templates_['style-map-manager'] = $('.-tpl-style-map-manager', this.element).remove().css({display: null}).html();
+            this.templates_['query'] = $('.-tpl-query', this.element).remove().css({display: null}).html();
 
             widget.elementUrl = Mapbender.configuration.application.urls.element + '/' + element.attr('id') + '/';
             Mapbender.elementRegistry.waitReady('.mb-element-map').then(function(mbMap) {
@@ -492,7 +493,8 @@
             var options = this.options;
                 var schema = widget._schemas[query.schemaId];
                 schema.clustering =  options.clustering; // schema.clustering ? schema.clustering : options.clustering;
-                var queryTitleView = query.titleView = $('<h3/>').data('query', query).queryResultTitleBarView();
+                var queryTitleView = query.titleView = $(widget.templates_['query']).queryResultTitleBarView({query: query});
+                queryTitleView.data('query', query);        // for accordion change event
                 var queryView = query.resultView = $('<div/>').data('query', query).queryResultView({query: query});
                 var layerName = 'query-' + query.id;
                 var isClustered = schema.isClustered = schema.hasOwnProperty('clustering');
