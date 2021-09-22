@@ -56,34 +56,24 @@ class QueryManager extends BaseManager
     /**
      * @param FeatureType $featureType
      * @param Query       $query
-     * @param null|string $intersectGeometry
-     * @param null        $srid
+     * @param mixed[] $params
      * @return array
      */
-    public function check(FeatureType $featureType, Query $query, $intersectGeometry = null, $srid = null)
+    public function check(FeatureType $featureType, Query $query, $params)
     {
-        $connection  = $featureType->getConnection();
-        $driver      = $featureType->getDriver();
-        $sql = $this->buildSql($featureType, $query, true);
-
-        if ($query->isExtendOnly()) {
-            $intersectGeometry = $driver::roundGeometry($intersectGeometry, 2);
-            $sql .= ' AND ' . $driver->getIntersectCondition($intersectGeometry, $featureType->getGeomField(), $srid, $featureType->getSrid());
+        if (!$query->isExtendOnly()) {
+            unset($params['intersect']);
         }
+        $t0 = (microtime(true) * 1000);
+        $count = $featureType->count(array_merge(array(
+            'where' => $this->buildCriteria($query->getConditions(), $featureType),
+        ), $params));
 
-        $runningTime = (microtime(true) * 1000);
-        $count       = $connection->fetchColumn($sql);
-        $runningTime = (microtime(true) * 1000) - $runningTime;
-        $explainInfo = array();
+        $runningTime = (microtime(true) * 1000) - $t0;
 
-
-        foreach ($connection->fetchAll("EXPLAIN " . $sql) as $info) {
-            $explainInfo[] = current($info);
-        }
 
         $result = array(
             'count'         => $count,
-            'explainInfo'   => $explainInfo,
             'executionTime' => round($runningTime) . 'ms',
         );
 
@@ -93,23 +83,18 @@ class QueryManager extends BaseManager
     /**
      * @param FeatureType $featureType
      * @param Query  $query
-     * @param bool   $count Count queries
      * @param null   $fieldNames
      * @param string $tableAliasName
      * @return string
      */
-    public function buildSql(FeatureType $featureType, Query $query, $count = false, $fieldNames = null, $tableAliasName = 't')
+    public function buildSql(FeatureType $featureType, Query $query, $fieldNames = null, $tableAliasName = 't')
     {
         $connection  = $featureType->getConnection();
         $fields      = array();
 
-        if ($count) {
-            $fields[] = 'count(*)';
-        } else {
-            $fieldNames = $fieldNames ? $fieldNames : $featureType->getFields();
-            foreach ($fieldNames as $fieldName) {
-                $fields[] = $connection->quoteIdentifier($fieldName);
-            }
+        $fieldNames = $fieldNames ? $fieldNames : $featureType->getFields();
+        foreach ($fieldNames as $fieldName) {
+            $fields[] = $connection->quoteIdentifier($fieldName);
         }
 
         $sql = 'SELECT ' . implode(', ', $fields) . ' FROM ' . $connection->quoteIdentifier($featureType->getTableName()) . ' ' . $tableAliasName . ' WHERE 1=1 ';

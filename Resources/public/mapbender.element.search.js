@@ -269,7 +269,6 @@
                         }
 
                         $.notify("Anzahl der Ergebnisse : " + r.count + "\nAusführungsdauer: " + r.executionTime, 'info');
-                        // $.notify(_.toArray(r.explainInfo).join("\n"), 'info');
                         queryDialog.enableForm();
                     });
                 });
