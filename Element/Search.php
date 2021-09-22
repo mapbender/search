@@ -41,9 +41,6 @@ class Search extends \Mapbender\CoreBundle\Component\Element
     {
         return array(
             'js' => array(
-                '../../vendor/blueimp/jquery-file-upload/js/jquery.fileupload.js',
-                '../../vendor/blueimp/jquery-file-upload/js/jquery.iframe-transport.js',
-                '/components/jquery-context-menu/jquery-context-menu-built.js',
                 '/components/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js',
                 'OpenLayerHelper.js',
                 'feature-style-editor.js',
