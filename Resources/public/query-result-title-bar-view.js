@@ -1,13 +1,10 @@
 $.widget("wheregroup.queryResultTitleBarView", {
-    options: {
-        query: null
-    },
 
     /**
      * Constructor
      */
     _create: function() {
-        this.render(this.options.query);
+        this.render(this.element.data('query'));
     },
 
     /**

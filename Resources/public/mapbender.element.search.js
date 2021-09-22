@@ -495,9 +495,13 @@
             var options = this.options;
                 var schema = widget._schemas[query.schemaId];
                 schema.clustering =  options.clustering; // schema.clustering ? schema.clustering : options.clustering;
-                var queryTitleView = query.titleView = $(widget.templates_['query']).queryResultTitleBarView({query: query});
-                queryTitleView.data('query', query);        // for accordion change event
-                var queryView = query.resultView = $('<div/>').data('query', query).queryResultView({query: query});
+            var $query = $(widget.templates_['query']);
+            var queryTitleView = query.titleView = $query.filter('.query-header');
+            queryTitleView.data('query', query);
+                queryTitleView.queryResultTitleBarView();
+            var queryView = query.resultView = $query.filter('.query-content-panel');
+            queryView.data('query', query);
+            queryView.queryResultView();
                 var layerName = 'query-' + query.id;
                 var isClustered = schema.isClustered = schema.hasOwnProperty('clustering');
 
@@ -732,9 +736,8 @@
                 // });
             this.initQueryViewEvents(queryView);
             this.initTitleEvents(queryTitleView);
-                queriesAccordionView
-                    .append(queryTitleView)
-                    .append(queryView);
+            queriesAccordionView.append(queryTitleView);
+            queriesAccordionView.append(queryView);
         },
         initQueryViewEvents: function(queryView) {
             var widget = this;

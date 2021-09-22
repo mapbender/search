@@ -1,7 +1,4 @@
 $.widget("wheregroup.queryResultView", {
-    options: {
-        query: null
-    },
     tableDefaults: {
         lengthChange: false,
         pageLength:   15,
@@ -25,7 +22,7 @@ $.widget("wheregroup.queryResultView", {
      * Constructor
      */
     _create: function() {
-        this.render(this.options.query);
+        this.render(this.element.data('query'));
     },
 
     /**
@@ -34,31 +31,17 @@ $.widget("wheregroup.queryResultView", {
     render: function(query) {
         var widget = this;
         var element = $(widget.element);
-        var options = widget.options;
-        var table, tableApi;
+        var table;
 
-        element
-            .attr('data-id', query.id)
-            .empty();
-
-        element.generateElements(Mapbender.Util.beautifyGenerateElements({
-            type:     'fieldSet',
-            children: [{
-                type:     'checkbox',
-                cssClass: 'onlyExtent',
-                title:    Mapbender.trans("mb.search.onlyMapSection"),
-                checked:  query.extendOnly,
-                change:   function() {
-                    var input = $('input', this);
-                    widget._trigger('changeExtend', null, {
-                        query:   query,
-                        widget:  widget,
-                        element: element,
-                        checked: input.is(":checked")
-                    });
-                }
-            }]
-        }));
+        this.element.attr('data-id', query.id);
+        $('input[name="extent-only"]', this.element).on('change', function() {
+            widget._trigger('changeExtend', null, {
+                query:   query,
+                widget:  widget,
+                element: element,
+                checked: $(this).prop('checked')
+            });
+        }).prop('checked', !!query.extendOnly);
 
         function escapeHtml(text) {
             'use strict';
@@ -146,7 +129,7 @@ $.widget("wheregroup.queryResultView", {
                 feature.tableRow = tr;
             }
         }, this.tableDefaults)
-        table = this.table = $("<div class='resultQueries'/>").resultTable(tableOptions);
+        table = this.table = $('.resultQueries', this.element).resultTable(tableOptions);
 
         table.find("tbody")
             .off('click', '> tr')
