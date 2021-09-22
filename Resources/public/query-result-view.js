@@ -7,7 +7,14 @@ $.widget("wheregroup.queryResultView", {
         processing:   false,
         ordering:     true,
         paging:       true,
-        autoWidth:    false
+        autoWidth:    false,
+        oLanguage: {
+            sInfo: '_START_ / _END_ (_TOTAL_)',
+            oPaginate: {
+                sNext: 'Weiter',
+                sPrevious: 'Zurück'
+            }
+        }
     },
 
     /**
@@ -30,15 +37,11 @@ $.widget("wheregroup.queryResultView", {
      */
     render: function(query) {
         var widget = this;
-        var element = $(widget.element);
-        var table;
 
         this.element.attr('data-id', query.id);
         $('input[name="extent-only"]', this.element).on('change', function() {
             widget._trigger('changeExtend', null, {
                 query:   query,
-                widget:  widget,
-                element: element,
                 checked: $(this).prop('checked')
             });
         }).prop('checked', !!query.extendOnly);
@@ -89,9 +92,10 @@ $.widget("wheregroup.queryResultView", {
             title: ''
         });
 
-        table = this.table = $('.resultQueries', this.element).resultTable(tableOptions);
 
-        table.find("tbody")
+        $('.resultQueries table', this.element).dataTable(tableOptions);
+
+        $('table tbody', this.element)
             .on('click', '> tr[role="row"]', function(e) {
                 var olFeature = $(this).data('feature');
                 if(!olFeature) {
@@ -129,32 +133,31 @@ $.widget("wheregroup.queryResultView", {
             })
             .on('click', '.-fn-zoomto', function() {
                 widget._trigger('zoomTo', null, {
-                    feature: $(this).closest('tr').data('feature'),
+                    feature: $(this).closest('tr').data('feature')
                 });
+                return false;
             })
             .on('click', '.-fn-toggle-visibility', function() {
                 widget._trigger('toggleVisibility', null, {
                     feature: $(this).closest('tr').data('feature'),
                     ui:      $(this)
                 });
+                return false;
             })
             .on('click', '.-fn-bookmark', function() {
                 widget._trigger('mark', null, {
                     ui: this
                 });
+                return false;
             })
         ;
 
-        element.append(table);
-
         // Add placeholder to result table filter search input
-        $('input[type="search"]', table).attr('placeholder', _.pluck(query.fields, 'title').join(', '));
-
-        return element;
+        $('input[type="search"]', this.element).attr('placeholder', _.pluck(query.fields, 'title').join(', '));
     },
 
     updateList: function(list) {
-        var $table = $('table:first', this.table);
+        var $table = $('table:first', this.element);
         var tableApi = $table.dataTable().api();
         tableApi.clear();
         tableApi.rows.add(list);
