@@ -57,17 +57,6 @@ $.widget("wheregroup.queryResultTitleBarView", {
         var widget = this;
         var element = $(widget.element);
         $('.preloader', element).hide();
-    },
-
-    /**
-     * Close and remove widget
-     */
-    close: function() {
-        var widget = this;
-        var element = $(widget.element);
-        var options = widget.optionás;
-
-        widget.element.remove();
     }
 });
 

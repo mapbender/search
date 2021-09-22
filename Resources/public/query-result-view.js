@@ -213,23 +213,6 @@ $.widget("wheregroup.queryResultView", {
         tableApi.clear();
         tableApi.rows.add(list);
         tableApi.draw();
-
-        // Redraw page
-        // tableApi.draw({"paging": "page"});
-
-        // update data item
-        // tableApi.row(item).invalidate().draw();
-    },
-
-    /**
-     * Close and remove widget
-     */
-    close: function() {
-        var widget = this;
-        var element = $(widget.element);
-        var options = widget.optionás;
-
-        widget.element.remove();
     }
 });
 
