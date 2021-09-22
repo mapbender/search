@@ -799,7 +799,6 @@
 
                         layer.drawFeature(feature, featureStyle);
 
-                        context.ui.toggleClass("icon-invisibility");
                         context.ui.closest('tr').toggleClass('invisible-feature');
 
                         return false;

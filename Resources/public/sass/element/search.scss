@@ -27,6 +27,14 @@
       }
     }
   }
+  .query-content-panel {
+    .buttons {
+      white-space: nowrap;
+      button {
+        padding: 0 4px;
+      }
+    }
+  }
 }
 
 
@@ -36,36 +44,6 @@
   }
 
   .mapbender-element-result-table {
-
-    .bookmark {
-      &:before {
-        font-family: FontAwesome;
-        content: "\f005";
-        padding-right: 3px;
-      }
-    }
-    .print {
-      &:before {
-        font-family: FontAwesome;
-        content: "\f02f";
-        padding-right: 3px;
-      }
-    }
-    .zoomTo {
-      &:before {
-        font-family: FontAwesome;
-        content: "\f05b";
-        padding-right: 3px;
-      }
-    }
-    .visibility {
-      &:before {
-        font-family: FontAwesome;
-        content: "\f06e";
-        padding-right: 3px;
-      }
-    }
-
     table.dataTable {
       tbody > tr {
         &.mark{

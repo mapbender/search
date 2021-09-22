@@ -54,59 +54,6 @@ $.widget("wheregroup.queryResultView", {
         }
 
         var columns = [];
-        var buttons = [];
-
-        buttons.push({
-            title:     Mapbender.trans("mb.search.feature.zoomTo"),
-            className: 'zoomTo',
-            onClick:   function(olFeature, ui) {
-                widget._trigger('zoomTo', null, {
-                    feature: olFeature,
-                    ui:      ui,
-                    query:   query,
-                    widget:  widget
-                })
-            }
-        });
-
-        buttons.push({
-            title:     Mapbender.trans("mb.search.feature.bookmark"),
-            className: 'bookmark',
-            onClick:   function(olFeature, ui) {
-                widget._trigger('mark', null, {
-                    feature: olFeature,
-                    ui:      ui,
-                    query:   query,
-                    widget:  widget
-                })
-            }
-        });
-
-        buttons.push({
-            title:     Mapbender.trans("mb.search.feature.toggleVisibility"),
-            className: 'visibility',
-            onClick:   function(olFeature, ui) {
-                widget._trigger('toggleVisibility', null, {
-                    feature: olFeature,
-                    ui:      ui,
-                    query:   query,
-                    widget:  widget
-                })
-            }
-        });
-
-       /* buttons.push({
-            title:     "Druck",
-            className: 'print',
-            onClick:   function(olFeature, ui) {
-                widget._trigger('print', null, {
-                    feature: olFeature,
-                    ui:      ui,
-                    query:   query,
-                    widget:  widget
-                })
-            }
-        }); */
 
         _.each(query.fields, function(definition) {
             columns.push({
@@ -123,12 +70,25 @@ $.widget("wheregroup.queryResultView", {
 
         var tableOptions = _.extend({
             columns: columns,
-            buttons: buttons,
             createdRow: function(tr, feature) {
                 $(tr).data({feature: feature});
                 feature.tableRow = tr;
             }
         }, this.tableDefaults)
+
+        // Add buttons column
+        tableOptions.columnDefs = [{
+            targets: -1,
+            width: '1%',
+            orderable: false,
+            searchable: false,
+            defaultContent: $('.-tpl-query-table-buttons', this.element).remove().html()
+        }];
+        tableOptions.columns.push({
+            data: null,
+            title: ''
+        });
+
         table = this.table = $('.resultQueries', this.element).resultTable(tableOptions);
 
         table.find("tbody")
@@ -178,7 +138,24 @@ $.widget("wheregroup.queryResultView", {
                     feature:  olFeature
                 });
                 return false;
-            });
+            })
+            .on('click', '.-fn-zoomto', function() {
+                widget._trigger('zoomTo', null, {
+                    feature: $(this).closest('tr').data('feature'),
+                });
+            })
+            .on('click', '.-fn-toggle-visibility', function() {
+                widget._trigger('toggleVisibility', null, {
+                    feature: $(this).closest('tr').data('feature'),
+                    ui:      $(this)
+                });
+            })
+            .on('click', '.-fn-bookmark', function() {
+                widget._trigger('mark', null, {
+                    ui: this
+                });
+            })
+        ;
 
         element.append(table);
 
