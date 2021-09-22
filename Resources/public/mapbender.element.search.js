@@ -493,7 +493,7 @@
                 var schema = widget._schemas[query.schemaId];
                 schema.clustering =  options.clustering; // schema.clustering ? schema.clustering : options.clustering;
                 var queryTitleView = query.titleView = $('<h3/>').data('query', query).queryResultTitleBarView();
-                var queryView = query.resultView = $('<div/>').data('query', query).queryResultView();
+                var queryView = query.resultView = $('<div/>').data('query', query).queryResultView({query: query});
                 var layerName = 'query-' + query.id;
                 var isClustered = schema.isClustered = schema.hasOwnProperty('clustering');
 

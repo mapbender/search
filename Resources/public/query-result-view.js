@@ -1,17 +1,16 @@
 $.widget("wheregroup.queryResultView", {
     options: {
-
-        // Result table settings
-        table: {
-            lengthChange: false,
-            pageLength:   15,
-            searching:    true,
-            info:         true,
-            processing:   false,
-            ordering:     true,
-            paging:       true,
-            autoWidth:    false
-        }
+        query: null
+    },
+    tableDefaults: {
+        lengthChange: false,
+        pageLength:   15,
+        searching:    true,
+        info:         true,
+        processing:   false,
+        ordering:     true,
+        paging:       true,
+        autoWidth:    false
     },
 
     /**
@@ -26,12 +25,7 @@ $.widget("wheregroup.queryResultView", {
      * Constructor
      */
     _create: function() {
-        var widget = this;
-        var options = this.options;
-        var element = $(widget.element);
-        var query = element.data('query');
-
-        widget.render(query);
+        this.render(this.options.query);
     },
 
     /**
