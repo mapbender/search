@@ -1153,10 +1153,6 @@
                 features = _.flatten(_.pluck(layer.features, "cluster"));
             }
 
-            // layer.options
-
-            var featuresWithoutDrawElements = _.difference(features, _.where(features, {_sketch: true}));
-
             layer.removeAllFeatures();
             layer.addFeatures(features);
 
@@ -1170,7 +1166,7 @@
             layer.redraw();
 
             tableApi.clear();
-            tableApi.rows.add(featuresWithoutDrawElements);
+            tableApi.rows.add(features);
             tableApi.draw();
         },
 
