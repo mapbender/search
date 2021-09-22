@@ -95,8 +95,7 @@ $.widget("wheregroup.queryResultView", {
                     feature: olFeature,
                     ui:      ui,
                     query:   query,
-                    widget:  widget,
-                    tableApi: tableApi
+                    widget:  widget
                 })
             }
         });
@@ -196,8 +195,6 @@ $.widget("wheregroup.queryResultView", {
                 widget._trigger('featureClick', null, {
                     feature:  olFeature,
                     ui: this,
-                    // @ŧodo: reuse dt api instance
-                    tableApi: $(this).closest('table').dataTable().api(),
                     query: query
                 });
                 return false;

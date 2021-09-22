@@ -765,9 +765,9 @@
                         return false;
                     })
                     .bind('queryresultviewmark', function(e, context) {
-
                         var tr = $(context.ui).closest("tr");
-                        var row = context.tableApi.row(tr);
+                        var tableApi = tr.closest('table').dataTable().api();
+                        var row = tableApi.row(tr);
                         var feature = row.data();
 
                         if(tr.is(".mark")) {
@@ -827,10 +827,10 @@
                             return table;
                         }
 
-                        var table = context.tableApi;
                         var tr = $(context.ui);
-                        var row = table.row(tr);
-                        var feature = context.feature;
+                        var tableApi = tr.closest('table').dataTable().api();
+                        var row = tableApi.row(tr);
+                        var feature = tr.data('feature');
 
                         if(row.child.isShown()) {
                             row.child.hide();
@@ -1143,8 +1143,7 @@
             var widget = this;
             var schema = widget._schemas[query.schemaId];
             var layer = query.layer;
-            var table = query.resultView.find('.mapbender-element-result-table');
-            var tableApi = table.resultTable('getApi');
+            var tableApi = $('table', query.resultView).dataTable().api();
             var features = _features ? _features : layer.features;
 
             if(features.length && features[0].cluster) {
