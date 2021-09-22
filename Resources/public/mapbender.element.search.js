@@ -430,7 +430,7 @@
 
             query.titleView.queryResultTitleBarView('showPreloader');
 
-            if(!query.extendOnly && query._rowFeatures) {
+            if (!query.extendOnly && query._rowFeatures) {
                 setTimeout(function() {
                     var featureCollection = widget.parseResponseFeatures_(query._rowFeatures);
                     query.resultView.queryResultView('updateList', featureCollection);
@@ -458,7 +458,9 @@
                     });
                 }
 
-                query._rowFeatures = r.features;
+                if (!query.extendOnly) {
+                    query._rowFeatures = r.features;
+                }
                 var featureCollection = widget.parseResponseFeatures_(r.features);
 
                 query.resultView.queryResultView('updateList', featureCollection);
