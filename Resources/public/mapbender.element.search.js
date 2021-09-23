@@ -27,6 +27,26 @@
         map:                    null,
         templates_: {},
 
+        customStyles_: {
+            'boris_ipe': {
+                strokeColor:     "#e8c02f",
+                strokeWidth:     5,
+                strokeOpacity:   1,
+                strokeDashstyle: "dashdot"
+            },
+            'segment': {
+                strokeColor:     "#e50c24",
+                strokeWidth:     5,
+                strokeOpacity:   1,
+                strokeDashstyle: "dashdot"
+            },
+            'flur': {
+                fillColor:   "#0c7e00",
+                pointRadius: 7
+            }
+        },
+
+
         /**
          * Dynamic loaded styles
          */
@@ -217,7 +237,6 @@
         openQueryManager: function(query) {
             var widget = this;
             var element = widget.element;
-            var styleMaps = widget._styleMaps;
             var schemas = widget._schemas;
             var queryManager = $("<div/>");
             var map = widget.map;
@@ -225,7 +244,7 @@
             queryManager.queryManager({
                 data:      query,
                 schemas:   schemas,
-                styleMaps: styleMaps,
+                styleMaps: this._styleMaps,
                 template: this.templates_['query-manager']
             });
 
@@ -501,22 +520,15 @@
                  * Create query layer and style maps
                  */
                 query.layer = function createQueryLayer(query) {
-                    var styleMaps = widget._styleMaps;
                     var styleDefinitions = widget._styles;
-                    var styleMapDefinition = _.extend({}, styleMaps[query.styleMap] ? styleMaps[query.styleMap] : _.first(_.toArray(styleMaps)));
+                    var styleMapDefinition = _.extend({}, widget._styleMaps[query.styleMap] || _.first(_.toArray(widget._styleMaps)));
                     var styleMapConfig = {};
                     var strategies = [];
 
                     _.each(styleMapDefinition.styles, function(styleId, key) {
                         if(styleDefinitions[styleId]) {
                             var styleDefinition = _.extend({}, styleDefinitions[styleId]);
-
-                            styleMapConfig[key] = new OpenLayers.Style(styleDefinition, {
-                                context: {
-                                    'customFillColor': function() {
-                                    }
-                                }
-                            })
+                            styleMapConfig[key] = new OpenLayers.Style(styleDefinition);
                         } else {
                             delete styleMapDefinition.styles[key];
                         }
@@ -594,97 +606,43 @@
                     });
 
                     styleMapConfig.clusterInvisible = styleMapConfig.featureInvisible.defaultStyle;
-
-                    if(schema.featureType == "boris_ipe" && !hasDefaultStyle) {
-                        /**
-                         * Darstellung mit orange-farbigem Umring aus einer Punkt-Strich-Linie
-                         * Vorgabe (durch Nutzer änderbar): Rand/Umring-Farbe: #e8c02f, Breite 5, Style: Strichpunkt
-                         */
-                        var restrictedStyle = {
-                            strokeColor:     "#e8c02f",
-                            strokeWidth:     5,
-                            strokeOpacity:   1,
-                            strokeDashstyle: "dashdot"
-                        };
-
+                    if (!hasDefaultStyle && schema.featureType && (typeof schema.featureType) === 'string' && widget.customStyles_[schema.featureType]) {
+                        var customFtStyle = widget.customStyles_[schema.featureType];
                         _.each(['featureDefault', 'clusterDefault'], function(styleMapConfigName) {
-                            _.extend(styleMapConfig[styleMapConfigName].defaultStyle, restrictedStyle);
-                        });
-
-                    }
-                    if(schema.featureType == "segment" && !hasDefaultStyle) {
-                        /**
-                         * Darstellung mit rotem Umring aus einer Punkt-Strich-Linie
-                         Vorgabe (durch Nutzer änderbar): Rand/Umring-Farbe: #e50c24, Breite 5, Style: Strichpunkt
-                         */
-                        var restrictedStyle = {
-                            strokeColor:     "#e50c24",
-                            strokeWidth:     5,
-                            strokeOpacity:   1,
-                            strokeDashstyle: "dashdot"
-                        };
-                        _.each(['featureDefault', 'clusterDefault'], function(styleMapConfigName) {
-                            _.extend(styleMapConfig[styleMapConfigName].defaultStyle, restrictedStyle);
+                            _.extend(styleMapConfig[styleMapConfigName].defaultStyle, customFtStyle);
                         });
                     }
-
-                    if(schema.featureType == "flur" && !hasDefaultStyle) {
-                        /** Vorgabe (durch Nutzer änderbar): Punkt-Objekt, Durchmesser 7, Farbe #0c7e00 */
-                        var restrictedStyle = {
-                            fillColor:   "#0c7e00",
-                            pointRadius: 7
-                        };
-                        _.each(['featureDefault', 'clusterDefault'], function(styleMapConfigName) {
-                            _.extend(styleMapConfig[styleMapConfigName].defaultStyle, restrictedStyle);
-                        });
-                    }
-
-                    if(schema.featureType == "be") {
-                        var restrictedStyle = {
-                        };
-                        _.extend(styleMapConfig['featureDefault'].defaultStyle, restrictedStyle);
-                        _.extend(styleMapConfig['featureSelect'].defaultStyle, restrictedStyle);
-                        _.extend(styleMapConfig['featureInvisible'].defaultStyle, restrictedStyle);
-                        _.extend(styleMapConfig['clusterDefault'].defaultStyle, restrictedStyle);
-                        _.extend(styleMapConfig['clusterSelect'].defaultStyle, restrictedStyle);
-                        _.extend(styleMapConfig['clusterInvisible'].defaultStyle, restrictedStyle);
-
-                        var rawRules = [
-                            {value: "DB Netz AG (BK09)", fillColor: "#2ca9a9"},
-                            {value: "DB Netz AG (BK16)", fillColor: "#adfcfc"},
-                            {value: "DB Station & Service AG", fillColor: "#ffb0be"},
-                            {value: "Usedomer Bäderbahn GmbH (UBB)", fillColor: "#ff80c0"},
-                            {value: "DB Energie GmbH", fillColor: "#f2f2f2"},
-                            {value: "DB Fernverkehr AG", fillColor: "#d5aaff"},
-                            {value: "DB Regio AG", fillColor: "#ffb76f"},
-                            {value: "DB Schenker Rail AG", fillColor: "#793f96"},
-                            {value: "DB Fahrzeuginstandhaltung GmbH", fillColor: "#46c426"},
-                            {value: "DB AG", fillColor: "#d8fcd8"},
-                            {value: "DB Systel GmbH", fillColor: "#ad7b10"},
-                            {value: "Stinnes Immobiliendienst (alt)", fillColor: "#c90070"},
-                            {value: "DB Mobility Logistics AG", fillColor: "#e83096"},
-                            {value: "Stinnes ID GmbH & Co. KG", fillColor: "#e73165"},
-                            {value: "2. KG Stinnes Immobiliendienst", fillColor: "#e2007f"},
-                            {value: "Schenker AG", fillColor: "#793f96"}
+                    if (schema.featureType == "be") {
+                        var fillMap = [
+                            {value: 'DB Netz AG (BK09)', fillColor: '#2ca9a9'},
+                            {value: 'DB Netz AG (BK16)', fillColor: '#adfcfc'},
+                            {value: 'DB Station & Service AG', fillColor: '#ffb0be'},
+                            {value: 'Usedomer Bäderbahn GmbH (UBB)', fillColor: '#ff80c0'},
+                            {value: 'DB Energie GmbH', fillColor: '#f2f2f2'},
+                            {value: 'DB Fernverkehr AG', fillColor: '#d5aaff'},
+                            {value: 'DB Regio AG', fillColor: '#ffb76f'},
+                            {value: 'DB Schenker Rail AG', fillColor: '#793f96'},
+                            {value: 'DB Fahrzeuginstandhaltung GmbH', fillColor: '#46c426'},
+                            {value: 'DB AG', fillColor: '#d8fcd8'},
+                            {value: 'DB Systel GmbH', fillColor: '#ad7b10'},
+                            {value: 'Stinnes Immobiliendienst (alt)', fillColor: '#c90070'},
+                            {value: 'DB Mobility Logistics AG', fillColor: '#e83096'},
+                            {value: 'Stinnes ID GmbH & Co. KG', fillColor: '#e73165'},
+                            {value: '2. KG Stinnes Immobiliendienst', fillColor: '#e2007f'},
+                            {value: 'Schenker AG', fillColor: '#793f96'}
                         ];
-
-                        _.each(rawRules,function(rule) {
-                            styleMapConfig['featureDefault'].rules.push(new OpenLayers.Rule({
-                                filter:     new OpenLayers.Filter.Comparison({
-                                    type:     OpenLayers.Filter.Comparison.EQUAL_TO,
-                                    property: "eigentuemer",
-                                    value:    rule.value
-                                }),
-                                symbolizer: {
-                                    fillColor: rule.fillColor
-                                }
-                            }));
+                        var styleOptions = _.extend({}, styleMapConfig['featureDefault'].defaultStyle, {
+                            'fillColor': '${customBeFillColor}'
                         });
-
-                        styleMapConfig['featureDefault'].rules.push( new OpenLayers.Rule({
-                            elseFilter: true,
-                            symbolizer: styleMapConfig.featureDefault.defaultStyle
-                        }));
+                        var fallbackColor = styleMapConfig['featureDefault'].defaultStyle.fillColor;
+                        styleMapConfig['featureDefault'] = new OpenLayers.Style(styleOptions, {
+                            context: {
+                                customBeFillColor: function(feature) {
+                                    var match = _.findWhere(fillMap, {value: feature.attributes.eigentuemer});
+                                    return match && match.fillColor || fallbackColor;
+                                }
+                            }
+                        });
                     }
 
                     var layer = new OpenLayers.Layer.Vector(layerName, {
