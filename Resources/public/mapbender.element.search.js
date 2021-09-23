@@ -487,7 +487,7 @@
             var map = this.map;
             var options = this.options;
                 var schema = widget._schemas[query.schemaId];
-                schema.clustering =  options.clustering; // schema.clustering ? schema.clustering : options.clustering;
+                schema.clustering =  options.clustering;
             var $query = $(widget.templates_['query']);
             var queryTitleView = query.titleView = $query.filter('.query-header');
             queryTitleView.data('query', query);
@@ -496,7 +496,6 @@
             queryView.data('query', query);
             queryView.queryResultView();
                 var layerName = 'query-' + query.id;
-                var isClustered = schema.isClustered = schema.hasOwnProperty('clustering');
 
                 /**
                  * Create query layer and style maps
@@ -541,7 +540,7 @@
                         });
                     }
 
-                    if(isClustered) {
+                    if (schema.clustering && schema.clustering.length) {
                         var clusterStrategy = new OpenLayers.Strategy.Cluster({
                             threshold: 1,
                             distance:  -1
@@ -1169,87 +1168,45 @@
          * Update cluster strategies
          */
         updateClusterStrategies: function() {
-
+            var scale = Mapbender.Model.getCurrentScale(false);
             var widget = this;
-            var options = widget.options;
-            var scale = Math.round(widget.map.getScale());
-            var map = widget.map;
-            var clusterSettings;
-            var closestClusterSettings;
-
-            _.each(widget._queries, function(query) {
+            _.each(this._queries, function(query) {
                 var schema = widget._schemas[query.schemaId];
-                var layer = query.layer;
-                var styleMap = layer.options.styleMap;
-                var styles = styleMap.styles;
-                var features = layer.features;
-
-                clusterSettings = null;
-
-                if(!schema.clustering) {
-                    return
-                }
-
-                _.each(schema.clustering, function(_clusterSettings) {
-                    if(_clusterSettings.scale == scale) {
-                        clusterSettings = _clusterSettings;
-                        return false;
-                    }
-
-                    if(_clusterSettings.scale < scale) {
-                        if(closestClusterSettings && _clusterSettings.scale > closestClusterSettings.scale) {
-                            closestClusterSettings = _clusterSettings;
-                        } else {
-                            if(!closestClusterSettings) {
-                                closestClusterSettings = _clusterSettings;
-                            }
-                        }
-                    }
-                });
-
-                if(!clusterSettings && closestClusterSettings) {
-                    clusterSettings = closestClusterSettings
-                }
-
-                if(!clusterSettings) {
-                    clusterSettings = {'disable': true};
-                }
-
-                if(clusterSettings) {
-                    if(clusterSettings.hasOwnProperty('disable') && clusterSettings.disable) {
-                        styles['default'] = styles.featureDefault;
-                        styles['select'] = styles.featureSelect;
-                        styles['invisible'] = styles.featureInvisible;
-
-                        // query.layer.options.
-                        query.clusterStrategy.distance = -1;
-
-                        widget.reloadFeatures(query, []);
-                        query.clusterStrategy.deactivate();
-                        //schema.layer.redraw();
-                        schema.isClustered = false;
-                        widget.reloadFeatures(query, features);
-                        // layer.redraw();
-
-                    } else {
-                        styles['default'] = styles.clusterDefault;
-                        styles['select'] = styles.clusterSelect;
-                        styles['invisible'] = styles.clusterInvisible;
-
-                        query.clusterStrategy.activate();
-                        schema.isClustered = true;
-                        // layer.redraw();
-                    }
-
-                    if(clusterSettings.hasOwnProperty('distance')) {
-                        query.clusterStrategy.distance = clusterSettings.distance;
-                    }
-                } else {
-                    //schema.clusterStrategy.deactivate();
+                if (schema.clustering && schema.clustering.length) {
+                    var clusterSettings = widget.pickClusterSettings(schema, scale);
+                    widget.applyClusterSettings(query, clusterSettings);
                 }
             });
+        },
+        pickClusterSettings: function(schema, scale) {
+            if (!schema.clustering || !schema.clustering.length) {
+                return false;
+            }
+            for (var i = 0; i < schema.clustering.length; ++i) {
+                var clusterSetting = schema.clustering[i];
+                if (scale >= clusterSetting.scale) {
+                    return !clusterSetting.disable && clusterSetting;
+                }
+            }
+            return false;
+        },
+        applyClusterSettings: function(query, clusterSettings) {
+            var styles = query.layer.options.styleMap.styles;
+            if (clusterSettings) {
+                if (clusterSettings.distance) {
+                    query.clusterStrategy.distance = clusterSettings.distance;
+                }
+                styles['default'] = styles.clusterDefault;
+                styles['select'] = styles.clusterSelect;
+                styles['invisible'] = styles.clusterInvisible;
+                query.clusterStrategy.activate();
+            } else {
+                styles['default'] = styles.featureDefault;
+                styles['select'] = styles.featureSelect;
+                styles['invisible'] = styles.featureInvisible;
+                query.clusterStrategy.deactivate();
+            }
         }
-
     });
 
 })(jQuery);
