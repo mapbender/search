@@ -55,7 +55,6 @@
         _styleMaps:       null,
         _queries:         {},
         _originalQueries: {},
-        _typeFilter:      null,
         /**
          * Constructor.
          *
@@ -87,9 +86,6 @@
 
                 $('select[name="typeFilter"]', element).on('change', function() {
                     var schemaId = $(this).val();
-
-                            widget._typeFilter = schemaId;
-
                             _.each(widget._queries, function(query) {
                                 var titleView = query.titleView;
                                 var resultView = query.resultView;
@@ -145,6 +141,7 @@
             var schemas = widget._schemas;
             var element = widget.element;
             var filterSelect = element.find('[name="typeFilter"]');
+            var oldValue = filterSelect.val() || '-1';
 
             element.find('option').remove();
 
@@ -154,17 +151,10 @@
                 filterSelect.append('<option value="' + schemaId + '">' + schema.title + '</option>');
             });
 
-            filterSelect.val(-1);
-
-            // Restore previous value
-            if(widget._typeFilter != null){
-                console.log("Rerender filter",widget._typeFilter);
-                window.setTimeout(function() {
-                    filterSelect.val(widget._typeFilter);
-                    filterSelect.trigger("change")
-                },10);
+            filterSelect.val(oldValue);
+            if (filterSelect.val() !== oldValue) {
+                filterSelect.trigger('change');
             }
-
         },
 
         // Sidepane integration api
