@@ -395,7 +395,6 @@
                 _.each(queries, function(query, id) {
                     widget._originalQueries[id] = _.clone(query);
                 });
-                widget._trigger('queriesUpdate', null, queries);
                 widget.renderQueries(queries);
             });
         },
