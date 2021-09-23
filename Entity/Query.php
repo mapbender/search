@@ -13,7 +13,7 @@ class Query extends UniqueBase
     /** @var string Name */
     public $name;
 
-    /** @var QueryCondition[] Conditions */
+    /** @var array[]|null */
     public $conditions;
 
     /** @var array */
@@ -49,16 +49,6 @@ class Query extends UniqueBase
     }
 
     /**
-     * @param mixed $name
-     * @return Query
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-        return $this;
-    }
-
-    /**
      * @return int
      */
     public function getUserId()
@@ -85,31 +75,11 @@ class Query extends UniqueBase
     }
 
     /**
-     * @param StyleMap $styleMap
-     * @return Query
-     */
-    public function setStyleMap($styleMap)
-    {
-        $this->styleMap = $styleMap;
-        return $this;
-    }
-
-    /**
      * @return string
      */
     public function getSchemaId()
     {
         return $this->schemaId;
-    }
-
-    /**
-     * @param string $schemaId
-     * @return Query
-     */
-    public function setSchemaId($schemaId)
-    {
-        $this->schemaId = $schemaId;
-        return $this;
     }
 
     /**
@@ -121,16 +91,6 @@ class Query extends UniqueBase
     }
 
     /**
-     * @param string $sql
-     * @return Query
-     */
-    public function setSql($sql)
-    {
-        $this->sql = $sql;
-        return $this;
-    }
-
-    /**
      * @return string
      */
     public function getWhere()
@@ -139,54 +99,12 @@ class Query extends UniqueBase
     }
 
     /**
-     * @param string $where
-     * @return Query
-     */
-    public function setWhere($where)
-    {
-        $this->where = $where;
-        return $this;
-    }
-
-
-    /**
-     * @return QueryCondition[]
+     * @return array[]|null
      */
     public function getConditions()
     {
         $queryConditions = $this->conditions;
         return $queryConditions;
-    }
-
-    /**
-     * @param QueryCondition $condition
-     */
-    public function addCondition(QueryCondition $condition)
-    {
-        $this->conditions[ $condition->getId() ] = $condition;
-    }
-
-
-    /**
-     * @param $id
-     * @return QueryCondition|boolean
-     */
-    public function removeCondition($id)
-    {
-        if (isset($this->conditions[ $id ])) {
-            $queryCondition = $this->conditions[ $id ];
-            unset($this->conditions[ $id ]);
-            return $queryCondition;
-        }
-        return false;
-    }
-
-    /**
-     * @param array $fields
-     */
-    public function setFields($fields)
-    {
-        $this->fields = $fields;
     }
 
     /**
@@ -203,21 +121,5 @@ class Query extends UniqueBase
     public function isExtendOnly()
     {
         return $this->extendOnly;
-    }
-
-    /**
-     * @param boolean $extendOnly
-     */
-    public function setExtendOnly($extendOnly)
-    {
-        $this->extendOnly = $extendOnly;
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasConditions()
-    {
-        return count($this->conditions) > 0;
     }
 }

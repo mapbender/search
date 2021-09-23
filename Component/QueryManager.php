@@ -43,12 +43,9 @@ class QueryManager extends BaseManager
         $connection      = $featureType->getConnection();
         $whereConditions = array();
         foreach ($queryConditions as $condition) {
-            if (is_array($condition)) {
-                $condition = new QueryCondition($condition);
-            }
-            $whereConditions[] = $connection->quoteIdentifier($condition->getFieldName())
-                . ' ' . $condition->getOperator()
-                . ' ' . $connection->quote($condition->getValue());
+            $whereConditions[] = $connection->quoteIdentifier($condition['fieldName'])
+                . ' ' . $condition['operator']
+                . ' ' . $connection->quote($condition['value']);
         }
         return implode(' AND ', $whereConditions);
     }
@@ -99,8 +96,8 @@ class QueryManager extends BaseManager
 
         $sql = 'SELECT ' . implode(', ', $fields) . ' FROM ' . $connection->quoteIdentifier($featureType->getTableName()) . ' ' . $tableAliasName . ' WHERE 1=1 ';
 
-        if ($query->hasConditions()) {
-            $sql .= ' AND ' . $this->buildCriteria($query->getConditions(), $featureType);
+        if ($conditions = $query->getConditions()) {
+            $sql .= ' AND ' . $this->buildCriteria($conditions, $featureType);
         }
 
         return $sql;
