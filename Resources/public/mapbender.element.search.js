@@ -752,7 +752,7 @@
                     })
                     .bind('queryresultviewfeatureclick', function(e, context) {
                         function format(feature) {
-                            var table = $("<table class='feature-details'/>");
+                            var table = $('<table>');
 
                             var query = feature.layer.query;
                             var schema = widget._schemas[query.schemaId];
@@ -765,8 +765,8 @@
                                 }
 
                                 table.append($("<tr/>")
-                                    .append($('<td class="key"/>').html(title + ": "))
-                                    .append($('<td class="value"/>').text(feature.data[key])));
+                                    .append($('<th>').text(title + ": "))
+                                    .append($('<td>').text(feature.data[key])));
 
                             });
                             return table;
@@ -779,11 +779,9 @@
 
                         if(row.child.isShown()) {
                             row.child.hide();
-                            tr.removeClass('shown');
                         } else {
                             if (feature && feature.data) {
                                 row.child(format(feature)).show();
-                                tr.addClass('shown');
                             }
                         }
                     });
