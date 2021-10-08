@@ -78,11 +78,15 @@
     border: none;
     border-bottom: 2px solid $buttonActiveBgColor;
   }
+  .ui-dialog-content {
+    // Fit Bootstrap .row without horizontal overflow
+    padding-left: 15px;
+    padding-right: 15px;
+  }
   .ui-dialog-titlebar {
     background-color: $buttonActiveBgColor;
     border: none;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
+    border-radius: 0;
     font-size: 14px;
     line-height: 1.5;
     .ui-dialog-title {

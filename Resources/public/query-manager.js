@@ -20,6 +20,9 @@ $.widget("rw.queryManager", {
     _create: function() {
         var widget = this;
         var options = this.options;
+        this.content_ = $(this.options.template);
+        this.conditionFormContent_ = this.content_.filter('.-tpl-condition-form')
+        this.content_ = this.content_.not(this.conditionFormContent_);
 
         widget.render(options.data);
 
@@ -37,16 +40,23 @@ $.widget("rw.queryManager", {
         return this.options.schemas[schemaId];
     },
 
+    renderFieldSelect_: function(schema) {
+        var $select = $(document.createElement('select'))
+            .prop('required', true)
+        ;
+        var options = _.map(schema.fields, function(field) {
+        });
+    },
+
     /**
      * Render
      */
     render: function(query) {
         var widget = this;
         var element = $(widget.element);
-        var options = widget.options;
         var initialFields = query && query.fields ? query.fields : [];
 
-        this.element.append(this.options.template);
+        this.element.append(this.content_.clone());
         $('select[name="schemaId"]', this.element).empty().append(_.map(this.options.schemas, function(schema, key) {
             var option = document.createElement('option');
             $(option).text(schema.title).attr('value', key);
@@ -142,67 +152,17 @@ $.widget("rw.queryManager", {
         });
 
         this.element.on('click', '.-fn-add-condition', function() {
-                            var conditionForm = $("<div>");
-                            var currentSchema = widget.getCurrentSchema();
-                            var fieldNames = _.object(_.pluck(currentSchema.fields, 'name'), _.pluck(currentSchema.fields, 'title'));
+            var currentSchema = widget.getCurrentSchema();
+            var conditionForm = widget.renderConditionForm_(currentSchema);
 
-                            conditionForm.generateElements(Mapbender.Util.beautifyGenerateElements({
-                                type:     'fieldSet',
-                                children: [{
-                                    title:     "Field",
-                                    type:      "select",
-                                    name:      "fieldName",
-                                    options:   Mapbender.Util.beautifyOptions(fieldNames),
-                                    mandatory: true,
-                                    css:       {width: "40%"},
-                                    change:    function() {
-                                        var el = $(this);
-                                        var select = $("select", el);
-                                        var fieldDefinition = _.findWhere(currentSchema.fields, {name: select.val()});
-                                        var container = el.next();
-                                        var operators = _.object(fieldDefinition.operators, fieldDefinition.operators);
-
-                                        container.empty();
-                                        container.generateElements( Mapbender.Util.beautifyGenerateElements({
-                                            title:     "Operator",
-                                            type:      "select",
-                                            name:      "operator",
-                                            options:   Mapbender.Util.beautifyOptions(operators),
-                                            mandatory: true,
-                                            css:       {width: "30%"}
-                                        }));
-
-
-                                        if(fieldDefinition.hasOwnProperty('options')) {
-                                            container
-                                                .generateElements( Mapbender.Util.beautifyGenerateElements({
-                                                    title:   "Optionen",
-                                                    type:    'select',
-                                                    name:    'value',
-                                                    options: Mapbender.Util.beautifyOptions(fieldDefinition.options),
-                                                    css:     {width: "70%"}
-                                                }));
-                                        } else if(fieldDefinition.hasOwnProperty("operators")) {
-                                            container
-                                                .generateElements(Mapbender.Util.beautifyGenerateElements({
-                                                    title: "Value",
-                                                    type:  "input",
-                                                    name:  "value",
-                                                    css:   {width: "70%"}
-                                                }));
-                                        }
-                                    }
-                                }, {
-                                    type:     'fieldSet',
-                                    cssClass: 'condition',
-                                    css:      {width: "60%"}
-                                }]
-                            }));
-
-                            conditionForm.popupDialog({
-                                title:   'Bedingung',
-                                width:   500,
-                                modal:   true,
+            conditionForm.dialog({
+                title: 'Bedingung',
+                width: 500,
+                classes: {
+                    'ui-dialog': 'ui-dialog mb-search-dialog'
+                },
+                closeText: '',
+                resizable: false,
                                 buttons: [{
                                     text:  "Speichern",
                                     click: function() {
@@ -224,7 +184,7 @@ $.widget("rw.queryManager", {
 
                                         conditionsTableApi.draw();
 
-                                        conditionForm.popupDialog('close');
+                                        conditionForm.dialog('close').dialog('destroy');
 
                                         return false;
                                     }
@@ -346,5 +306,52 @@ $.widget("rw.queryManager", {
         });
         $target.dataTable(options_);
         return $target.dataTable().api();
-    }
+    },
+    renderConditionForm_: function(schema) {
+        var conditionForm = this.conditionFormContent_.clone();
+        var $fieldSelect = $('[name="fieldName"]', conditionForm);
+        var $operatorField = $('.-js-operator-field', conditionForm);
+        var $operatorSelect = $('[name="operator"]', conditionForm);
+        $fieldSelect.empty();
+        $fieldSelect.append(_.map(schema.fields, function(field) {
+            return $(document.createElement('option'))
+                .attr('value', field.name)
+                .text(field.title)
+                .data('field', field)
+            ;
+        }));
+        $fieldSelect.val('');
+        $operatorField.hide();
+        $fieldSelect.on('change', function() {
+            var field = $(':selected', this).data('field');
+            $operatorSelect.empty().append(_.map(field.operators, function(operator) {
+                return $(document.createElement('option'))
+                    .text(operator)
+                    .val(operator)
+                ;
+            }));
+            $operatorField.show();
+            if (field.options) {
+                $('label[for="value"]', conditionForm).text('Optionen');
+                $('.-js-value-text', conditionForm).attr('name', null).hide();
+                $('.-js-value-choice', conditionForm)
+                    .attr('name', 'value')
+                    .append(_.map(field.options, function(text, value) {
+                        return $(document.createElement('option'))
+                            .attr('value', value)
+                            .text(text)
+                        ;
+                    }))
+                    .val('')
+                    .show()
+                ;
+            } else {
+                $('label[for="value"]', conditionForm).text('Wert');
+                $('.-js-value-choice', conditionForm).attr('name', null).hide();
+                $('.-js-value-text', conditionForm).attr('name', 'value').show();
+            }
+        });
+        return conditionForm;
+    },
+    __dummy__: null
 });
