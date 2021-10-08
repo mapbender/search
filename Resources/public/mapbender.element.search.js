@@ -853,6 +853,7 @@
                 collapsible: true,
                 active: false,
                 heightStyle: 'content',
+                icons: false,
                 beforeActivate: function(event, ui) {
                     var query = ui.newHeader && ui.newHeader.data('query');
                     var oldQuery = ui.oldHeader && ui.oldHeader.data('query');
