@@ -1,15 +1,21 @@
 <div id="{{ id }}" class="mb-element mb-element-search modal-body" title="{{ title|trans }}">
-    <fieldset class="form-group">
-        <div class="form-group select-container" style="width: 55%;">
-            <select class="form-control" name="typeFilter"></select>
+    <div class="form-group">
+        <div class="row">
+            <div class="col-sm-6 col-6">
+                <select class="form-control" name="typeFilter"></select>
+            </div>
+            <div class="col-sm-6 col-6 text-right">
+                <div class="btn-group">
+                    {#- collapse whitespace -#}
+                    <button class="btn button new-query" title="Abfrage"><i class="fa fas fa-fw fa-plus"></i>Abfrage</button>
+                    {#- collapse whitespace -#}
+                    <button class="btn button new-stylemap" title="Thema"><i class="fa fas fa-fw fa-plus"></i>Thema</button>
+                    {#- collapse whitespace -#}
+                    <button class="btn button new-style" title="Stil"><i class="fa fas fa-fw fa-plus"></i>Stil</button>
+                </div>
+            </div>
         </div>
-        {#- collapse whitespace -#}
-        <button class="btn button new-query" title="Abfrage" style="width: 15%;"><i class="fa fas fa-fw fa-plus"></i>Abfrage</button>
-        {#- collapse whitespace -#}
-        <button class="btn button new-stylemap" title="Thema" style="width: 15%;"><i class="fa fas fa-fw fa-plus"></i>Thema</button>
-        {#- collapse whitespace -#}
-        <button class="btn button new-style" title="Stil" style="width: 15%;"><i class="fa fas fa-fw fa-plus"></i>Stil</button>
-    </fieldset>
+    </div>
     <div class="html-element-container">{#- query accorion goes here (script) -#}</div>
     <div style="display: none;" class="-tpl-query-manager">
         {%- include 'MapbenderSearchBundle:Element:search-query-form.html.twig' -%}

@@ -9,6 +9,9 @@
     // Remove Bootstrap .btn border-radius
     border-radius: 0;
   }
+  .form-control {
+    font-size: inherit;
+  }
 
   .queries-accordion {
     .ui-accordion-header {
@@ -52,6 +55,10 @@
     // Reset to jquerui default
     margin: 2px 0 0 0;
     border: none;
+  }
+  &.modal-body .form-group {
+    // Reset to Bootstrap default
+    margin-bottom: 15px;
   }
 }
 
@@ -109,7 +116,7 @@
 
   .queries-accordion {
     .ui-accordion-content {
-      padding: 0 1em 0;
+      padding: 0 0 1em 0;
       .resultQueries {
         margin: 0;
       }
