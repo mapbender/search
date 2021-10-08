@@ -21,8 +21,12 @@ $.widget("rw.queryManager", {
         var widget = this;
         var options = this.options;
         this.content_ = $(this.options.template);
+        this.fieldFormContent_ = this.content_.filter('.-tpl-field-form')
         this.conditionFormContent_ = this.content_.filter('.-tpl-condition-form')
-        this.content_ = this.content_.not(this.conditionFormContent_);
+        this.content_ = this.content_
+            .not(this.fieldFormContent_)
+            .not(this.conditionFormContent_)
+        ;
 
         widget.render(options.data);
 
@@ -87,25 +91,19 @@ $.widget("rw.queryManager", {
         });
 
         this.element.on('click', '.-fn-add-field', function() {
-                            var fieldForm = $("<div>");
-                            var currentSchema = widget.getCurrentSchema();
-                            var fieldNames = _.object(_.pluck(currentSchema.fields, 'name'), _.pluck(currentSchema.fields, 'title'));
+            var currentSchema = widget.getCurrentSchema();
+            var fieldForm = widget.renderFieldForm_(currentSchema);
 
-                            fieldForm.generateElements( Mapbender.Util.beautifyGenerateElements({
-                                type:     'fieldSet',
-                                children: [{
-                                    title:     "Feld",
-                                    type:      "select",
-                                    name:      "fieldName",
-                                    options:   Mapbender.Util.beautifyOptions(fieldNames),
-                                    mandatory: true,
-                                    css:       {width: "100%"}
-                                }]
-                            }));
-                            fieldForm.popupDialog({
+                            fieldForm.dialog({
                                 title:   'Feldbenennung',
                                 width:   500,
                                 modal:   true,
+                                classes: {
+                                    'ui-dialog': 'ui-dialog mb-search-dialog'
+                                },
+                                closeText: '',
+                                resizable: false,
+
                                 buttons: [{
                                     text:  "Speichern",
                                     click: function() {
@@ -124,7 +122,7 @@ $.widget("rw.queryManager", {
                                             title:     title
                                         }]);
                                         fieldsTableApi.draw();
-                                        fieldForm.popupDialog('close');
+                                        fieldForm.dialog('destroy');
 
                                         return false;
                                     }
@@ -158,6 +156,7 @@ $.widget("rw.queryManager", {
             conditionForm.dialog({
                 title: 'Bedingung',
                 width: 500,
+                modal: true,
                 classes: {
                     'ui-dialog': 'ui-dialog mb-search-dialog'
                 },
@@ -184,7 +183,7 @@ $.widget("rw.queryManager", {
 
                                         conditionsTableApi.draw();
 
-                                        conditionForm.dialog('close').dialog('destroy');
+                                        conditionForm.dialog('destroy');
 
                                         return false;
                                     }
@@ -307,20 +306,29 @@ $.widget("rw.queryManager", {
         $target.dataTable(options_);
         return $target.dataTable().api();
     },
-    renderConditionForm_: function(schema) {
-        var conditionForm = this.conditionFormContent_.clone();
-        var $fieldSelect = $('[name="fieldName"]', conditionForm);
-        var $operatorField = $('.-js-operator-field', conditionForm);
-        var $operatorSelect = $('[name="operator"]', conditionForm);
-        $fieldSelect.empty();
-        $fieldSelect.append(_.map(schema.fields, function(field) {
+    initFieldNameChoices_: function($select, schema) {
+        $select.empty();
+        $select.append(_.map(schema.fields, function(field) {
             return $(document.createElement('option'))
                 .attr('value', field.name)
                 .text(field.title)
                 .data('field', field)
             ;
         }));
-        $fieldSelect.val('');
+        $select.val('');
+    },
+    renderFieldForm_: function(schema) {
+        var content = this.fieldFormContent_.clone();
+        var $fieldSelect = $('[name="fieldName"]', content);
+        this.initFieldNameChoices_($fieldSelect, schema);
+        return content;
+    },
+    renderConditionForm_: function(schema) {
+        var conditionForm = this.conditionFormContent_.clone();
+        var $fieldSelect = $('[name="fieldName"]', conditionForm);
+        this.initFieldNameChoices_($fieldSelect, schema);
+        var $operatorField = $('.-js-operator-field', conditionForm);
+        var $operatorSelect = $('[name="operator"]', conditionForm);
         $operatorField.hide();
         $fieldSelect.on('change', function() {
             var field = $(':selected', this).data('field');
