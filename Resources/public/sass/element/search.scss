@@ -1,7 +1,19 @@
 .mb-element-search {
   font-size: 12px;
+  line-height: 1.5;
+  .button.btn {
+    // Defeat @extend .button rules
+    font-size: inherit;
+    line-height: inherit;
+    height: auto;
+    // Remove Bootstrap .btn border-radius
+    border-radius: 0;
+  }
+
   .queries-accordion {
     .ui-accordion-header {
+      user-select: none;
+      border: none;
       padding: 0 0 0 1em !important;  // @todo: fix collateral CSS spill from Digitizer 1.3
       line-height: 2 !important;    // @todo: fix collateral CSS spill from Digitizer 1.3
       font-size: inherit !important; // @todo: fix collateral CSS spill from Digitizer 1.3
@@ -22,6 +34,10 @@
         outline: none;
       }
     }
+    .ui-accordion-content {
+      padding: 0;
+      border: none;
+    }
   }
   .query-content-panel {
     .buttons {
@@ -31,14 +47,16 @@
       }
     }
   }
+  // .modal-body shenanigans workarounds (redundant after clearing vis-ui css or removing modal-body class)
+  &.modal-body .ui-accordion.ui-widget > .ui-accordion-header {
+    // Reset to jquerui default
+    margin: 2px 0 0 0;
+    border: none;
+  }
 }
 
 
 .mb-element-search.modal-body {
-  .new-query, .new-stylemap, .new-style {
-    margin-bottom: 10px;
-  }
-
   .mapbender-element-result-table {
     table.dataTable {
       tbody > tr {
@@ -91,23 +109,19 @@
 
   .queries-accordion {
     .ui-accordion-content {
-      padding: 0;
-      width: 100%;
+      padding: 0 1em 0;
+      .resultQueries {
+        margin: 0;
+      }
     }
     > .ui-accordion-header {
+      background-color: darken($buttonActiveBgColor, 8%);
       &.updated {
-        background-color: #ec1b2d;
+        background-color: lighten($buttonActiveBgColor, 5%);
         font-weight: bold;
       }
     }
 
-  }
-}
-
-// Pop-up dialogs
-.ui-dialog {
-  > .search-edit {
-    padding: 10px 10px 0;
   }
 }
 
