@@ -854,6 +854,7 @@
                 header: ".query-header",
                 collapsible: true,
                 active: false,
+                heightStyle: 'content',
                 beforeActivate: function(event, ui) {
                     var query = ui.newHeader && ui.newHeader.data('query');
                     var oldQuery = ui.oldHeader && ui.oldHeader.data('query');
