@@ -52,18 +52,13 @@ $.widget("rw.queryManager", {
             $(option).text(schema.title).attr('value', key);
             return option;
         }));
-        $('select[name="styleMap"]', this.element).empty().append(_.map(this.options.styleMaps, function(styleMap) {
-            var option = document.createElement('option');
-            $(option).text(styleMap.name).attr('value', styleMap.id);
-            return option;
-        }));
+        this.updateStyleMapList(this.options.styleMaps);
         this.element.on('click', '.-fn-edit-stylemap', function() {
-                            var styleMapId = element.find('[name=styleMap]').val();
-                            var styleMap = _.findWhere(options.styleMaps, {id: styleMapId});
-                            widget._trigger('styleMapChange', null, {
-                                styleMap: styleMap
-                            });
-                            return false;
+            var styleMap = $('[name="styleMap"] option:selected', element).data('stylemap');
+            widget._trigger('styleMapChange', null, {
+                styleMap: styleMap
+            });
+            return false;
         });
         this.element.on('change', 'select[name="schemaId"]', function() {
             var taFields = $('.table.-js-fields-collection', element).dataTable().api();
@@ -309,15 +304,16 @@ $.widget("rw.queryManager", {
     },
 
     updateStyleMapList: function(styleMaps) {
-        var widget = this;
-        var element = widget.element;
-        // var formData = element.formData();
-
-        element.find('select[name=styleMap]').updateSelect(styleMaps, 'id', 'name');
-
-        widget._setOption("styleMaps", styleMaps);
-        widget._trigger('stylesMapsUpdated');
-        // widget.render(formData);
+        var $select = $('select[name="styleMap"]', this.element);
+        var currentValue = $select.val();
+        $select.empty();
+        $select.append('<option value="">');
+        $select.append(_.map(styleMaps, function(styleMap) {
+            var option = document.createElement('option');
+            $(option).text(styleMap.name).attr('value', styleMap.id).data('stylemap', styleMap);
+            return option;
+        }));
+        $select.val(currentValue || '');
     },
 
 
