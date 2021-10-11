@@ -8,8 +8,7 @@ $.widget("rw.queryManager", {
             id: null
         },
         schemas:   [],
-        styleMaps: [],
-        asPopup:   true
+        styleMaps: []
     },
 
     /**
@@ -29,10 +28,7 @@ $.widget("rw.queryManager", {
         ;
 
         widget.render(options.data);
-
-        if(options.asPopup) {
-            widget.popup();
-        }
+        widget.popup();
     },
     /**
      * Get current schema
@@ -42,14 +38,6 @@ $.widget("rw.queryManager", {
     getCurrentSchema: function() {
         var schemaId = $('select[name="schemaId"]', this.element).val();
         return this.options.schemas[schemaId];
-    },
-
-    renderFieldSelect_: function(schema) {
-        var $select = $(document.createElement('select'))
-            .prop('required', true)
-        ;
-        var options = _.map(schema.fields, function(field) {
-        });
     },
 
     /**
@@ -93,16 +81,9 @@ $.widget("rw.queryManager", {
         this.element.on('click', '.-fn-add-field', function() {
             var currentSchema = widget.getCurrentSchema();
             var fieldForm = widget.renderFieldForm_(currentSchema);
-
-                            fieldForm.dialog({
+            widget.dialog_(fieldForm, {
                                 title:   'Feldbenennung',
-                                width:   500,
                                 modal:   true,
-                                classes: {
-                                    'ui-dialog': 'ui-dialog mb-search-dialog'
-                                },
-                                closeText: '',
-                                resizable: false,
 
                                 buttons: [{
                                     text:  "Speichern",
@@ -152,16 +133,9 @@ $.widget("rw.queryManager", {
         this.element.on('click', '.-fn-add-condition', function() {
             var currentSchema = widget.getCurrentSchema();
             var conditionForm = widget.renderConditionForm_(currentSchema);
-
-            conditionForm.dialog({
+            widget.dialog_(conditionForm, {
                 title: 'Bedingung',
-                width: 500,
                 modal: true,
-                classes: {
-                    'ui-dialog': 'ui-dialog mb-search-dialog'
-                },
-                closeText: '',
-                resizable: false,
                                 buttons: [{
                                     text:  "Speichern",
                                     click: function() {
@@ -201,13 +175,8 @@ $.widget("rw.queryManager", {
             return false;
         });
 
-        $('.mapbender-element-tab-navigator', element).tabs({
-            active: 0,
-            classes: {
-                "ui-tabs": "ui-tabs mapbender-element-tab-navigator",
-                "ui-tabs-nav": "ui-tabs-nav nav nav-tabs",
-                "ui-tabs-panel": "ui-tabs-panel tab-content"
-            }
+        $('.ui-tabs', element).tabs({
+            active: 0
         });
         element.formData(query);
         return element;
@@ -215,19 +184,13 @@ $.widget("rw.queryManager", {
 
     popup: function() {
         var widget = this;
-        var element = widget.element;
-        return element.popupDialog({
-            title:       "Abfrage",
-            maximizable: true,
+        return this.dialog_(this.element, {
+            title: "Abfrage",
             modal:       true,
-            width:       "500px",
-            close: function() {
-                return false;
-            },
             buttons:     [{
                 text:  "Prüfen",
                 click: function() {
-                    return widget.submitData_($(this).closest('.popup-dialog'), true);
+                    return widget.submitData_($(this), true);
                 }
             }, {
                 text:  "Abbrechen",
@@ -238,7 +201,7 @@ $.widget("rw.queryManager", {
             }, {
                 text:  "Speichern",
                 click: function() {
-                    return widget.submitData_($(this).closest('.popup-dialog'), false);
+                    return widget.submitData_($(this), false);
                 }
             }]
         });
@@ -277,17 +240,7 @@ $.widget("rw.queryManager", {
 
 
     close: function() {
-        var widget = this;
-        var element = $(widget.element);
-        var options = widget.options;
-
-        if(options.asPopup) {
-            element.popupDialog("close");
-        } else {
-            widget.element.remove();
-        }
-
-        widget._trigger('close');
+        this.element.dialog("close");
     },
     initCollection_: function($target, options) {
         var options_ = $.extend({}, options, {
@@ -360,6 +313,21 @@ $.widget("rw.queryManager", {
             }
         });
         return conditionForm;
+    },
+    dialog_: function(element, options) {
+        var options_ = {
+            classes: {
+                'ui-dialog': 'ui-dialog mb-search-dialog'
+            },
+            closeText: '',
+            width: 500,
+            resizable: false,
+            close: function() {
+                $(this).dialog('destroy');
+            }
+        };
+        Object.assign(options_, options || {});
+        return $(element).dialog(options_);
     },
     __dummy__: null
 });

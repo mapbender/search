@@ -116,4 +116,31 @@
       }
     }
   }
+  .ui-tabs {
+    padding: 0;
+    border: none;
+    .ui-tabs-nav {
+      padding: 0;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      li {
+        margin: 0;
+        border: none;
+        border-radius: 0;
+        &.ui-tabs-active {
+          // Undo jQueryUI default vertical motion
+          margin-bottom: 0;
+          padding-bottom: 0;
+        }
+      }
+    }
+    .ui-state-active {
+      background-color: $buttonActiveBgColor;
+      color: $buttonActiveColor;
+    }
+  }
+  :focus, a:focus {
+    outline: none;
+  }
 }
