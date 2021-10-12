@@ -27,6 +27,10 @@
             var element = $(widget.element);
             var options = widget.options;
 
+            if (options.data && options.data.fontColor === null) {
+                delete(options.data.fontColor);
+            }
+
             this.element.empty().append(this.options.template);
             window.setTimeout(function() {
                 element.formData(options.data);
