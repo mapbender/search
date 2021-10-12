@@ -285,44 +285,6 @@ class Search extends \Mapbender\CoreBundle\Component\Element
     }
 
     /**
-     * Removes a Style Entity ID from StyleMap Entity
-     *
-     * @param $request
-     * @return JsonResponse
-     * @throws \Symfony\Component\Config\Definition\Exception\Exception
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
-     */
-    public function removeStyleFromStyleMapAction($request)
-    {
-        $styleManager = $this->getStyleMapManager();
-        $styleMapId   = $request['styleMapId'];
-        $styleId      = $request['styleId'];
-        return new JsonResponse(array(
-            'result' => $styleManager->removeStyle($styleMapId, $styleId)
-        ));
-    }
-
-
-    /**
-     * Add a Style Entity ID to StyleMap Entity
-     *
-     * @param $request
-     * @return JsonResponse
-     */
-    public function addStyleToStylemapAction($request)
-    {
-        $styleMapManager = $this->getStyleMapManager();
-        $styleMapId      = isset($request["stylemapid"]) ? $request["stylemapid"] : "UNDEFINED";
-        $styleId         = isset($request["styleid"]) ? $request["styleid"] : "UNDEFINED";
-        $style           = $styleMapManager->addStyle($styleMapId, $styleId);
-
-        return new JsonResponse(array(
-            'stylemap' => HKVStorageBetter::encodeValue($style)
-        ));
-    }
-
-    /**
      * @param Request $request
      * @return JsonResponse
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException

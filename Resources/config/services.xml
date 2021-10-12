@@ -22,7 +22,6 @@
         </service>
         <service class="Mapbender\SearchBundle\Component\StyleMapManager" id="mapbender.search.stylemap.manager">
             <argument type="service" id="security.token_storage"/>
-            <argument type="service" id="mapbender.search.style.manager"/>
             <argument>%mapbender.search.sqlite.storage_root%/stylemaps.sqlite</argument>
         </service>
     </services>

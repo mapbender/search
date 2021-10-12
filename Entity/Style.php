@@ -204,27 +204,4 @@ class Style extends UniqueBase
     {
         return empty($this->styleMaps);
     }
-
-
-    /**
-     * @param string $id
-     * @return string|boolean
-     */
-    public function removeStyleMapById($id)
-    {
-        $wasRemoved = isset($this->styleMaps[ $id ]);
-        unset($this->styleMaps[ $id ]);
-        return $wasRemoved;
-    }
-
-
-    /**
-     * @param $id
-     * @return $this
-     */
-    public function addStyleMap($id)
-    {
-        $this->styleMaps[ $id ] = $id;
-        return $this;
-    }
 }
