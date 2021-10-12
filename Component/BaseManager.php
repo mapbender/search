@@ -70,9 +70,15 @@ abstract class BaseManager implements ManagerInterface
      */
     public function getById($id)
     {
-        $allRecords = $this->getAll();
-        return isset($allRecords[$id]) ? $allRecords[$id] : null;
-
+        $connection = $this->getConnection();
+        $sql = 'SELECT value FROM ' . $connection->quoteIdentifier($this->tableName)
+             . ' WHERE key = :key ORDER BY id DESC, creationDate DESC LIMIT 1';
+        $params = array(
+            ':key' => $id,
+        );
+        $rows = $connection->fetchAll($sql, $params);
+        $item = $rows ? $this->create(\json_decode($rows[0]['value'], true)) : null;
+        return $item;
     }
 
     /**
