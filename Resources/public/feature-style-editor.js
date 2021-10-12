@@ -59,7 +59,7 @@
                     }
                 }],
                 classes: {
-                    'ui-dialog': 'ui-dialog mb-search-dialog'
+                    'ui-dialog': 'ui-dialog mb-search-dialog mb-search-style-dialog'
                 },
                 closeText: '',
                 resizable: false,

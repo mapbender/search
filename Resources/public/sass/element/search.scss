@@ -154,3 +154,14 @@
     outline: none;
   }
 }
+.mb-search-style-dialog {
+  label {
+    display: block;
+    color: #555;
+    margin-bottom: 2px;
+    font-size: 12px;
+  }
+  .form-group {
+    margin-bottom: 5px;
+  }
+}
