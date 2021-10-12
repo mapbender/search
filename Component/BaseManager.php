@@ -59,9 +59,20 @@ abstract class BaseManager
      */
     public function getAll()
     {
-        /** @var UniqueBase[] $list */
-        $list = $this->db->getData($this->tableName, null, null, $this->getUserId());
-        return $list ? $list : array();
+        $connection = $this->getConnection();
+        $tnq = $connection->quoteIdentifier($this->tableName);
+        // Filter out legacy hkv storage per-"key" historization entries
+        $distinctIdSql = "SELECT MAX(id) FROM {$tnq} WHERE userId LIKE :userId AND value IS NOT NULL GROUP BY key";
+        $sql = "SELECT key, value FROM {$tnq} WHERE id IN ({$distinctIdSql})";
+        $params = array(
+            ':userId' => $this->getUserId(),
+        );
+        $items = array();
+        foreach ($connection->executeQuery($sql, $params)->fetchAll() as $row) {
+            $item = $this->create(\json_decode($row['value'], true));
+            $items[$row['key']] = $item;
+        }
+        return $items;
     }
 
     /**
