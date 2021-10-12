@@ -19,7 +19,7 @@ abstract class BaseManager implements ManagerInterface
     /** @var TokenStorageInterface */
     protected $tokenStorage;
 
-    /** @var HKVStorage */
+    /** @var HKVStorage|HKVStorageBetter */
     protected $db;
 
     /** @var string tableName */
