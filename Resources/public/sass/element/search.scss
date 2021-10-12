@@ -12,6 +12,11 @@
   .form-control {
     font-size: inherit;
   }
+  // Defeat highly specific .mapbender-element-result-table cell sizing
+  .mapbender-element-result-table > .dataTables_wrapper > table[role="grid"] > tbody > tr > td {
+    padding: 0;
+    line-height: 2;
+  }
 
   .queries-accordion {
     .ui-accordion-header {
@@ -40,6 +45,8 @@
       white-space: nowrap;
       .button {
         padding: 0 4px;
+        border-top: none;
+        border-bottom: none;
       }
       .button + .button {
         margin-left: -1px;  // collapse borders
