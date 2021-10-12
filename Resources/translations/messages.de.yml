@@ -17,23 +17,6 @@ mb:
     #Form
     onlyMapSection: Nur Kartenabschnitt
 
-    # Need to have plus icon ("\f067") .new-query class
-
-    Add-Query: Suche
-    Add-Stylemap: Styleset
-    Add-Style: Style
-    Add-Field: Feld
-    Add-Condition: Bedingung
-
-    #Generic
-    name: Name
-    value: Wert
-    general: Allgemein
-    width: Breite
-    height: Höhe
-    style: Style
-
-
     #Query Manager
     feature-type: Featuretyp
     extent-only: Nicht Aktivieren
@@ -47,25 +30,33 @@ mb:
 
 
     #Style  Manager
-    color: Farbe
-    transparency: Durchsichtigkeit
-    fill: Füllung
-    background: Hintergrund
-    border: Rand
-    x-offset: X-Offset
-    y-offset: Y-Offset
-    z-index: Z-Index
-    corner-style: Glättung
-    url: URL
-    fontname: Fontname
-    size: Größe
-    type: Art
-    selectable: Selektierbar
-    point-radius: Punkt Radius
-    cursor: Zeiger
-    display: Anzeige
-    rotation: Rotation
-
+    style:
+         fillColor: Füllfarbe
+         color: Color
+         opacity: Deckkraft
+         pointRadius: Punktgröße (pixel)
+         activate: Activate
+         strokeColor: Strichfarbe
+         strokeWidth: Strichstärke
+         lineCap: Strichabschlüsse
+         round: abgerundet
+         square: eckig
+         butt: bündig
+         strokeDashstyle: Linienmuster
+         solid: Durchgezogen
+         dot: Punktiert
+         dash: Gestrichelt
+         longdash: Gestrichelt, lang
+         dashdot: Strichpunkt
+         longdashdot: Strichpunktpunkt
+         label: Beschriftung
+         fontFamily: Schriftart
+         fontColor: Schriftfarbe
+         fontSize: Schriftgröße
+         fontWeight: Schriftstärke
+         regular: regular
+         bold: bold
+         italic: italic
 
     # Status
     saved: Gespeichert
