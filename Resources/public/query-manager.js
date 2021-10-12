@@ -249,7 +249,10 @@ $.widget("rw.queryManager", {
             info:         false,
             paging:       false,
             ordering:     false,
-            autoWidth: false
+            autoWidth: false,
+            oLanguage: {
+                sEmptyTable: 'Nichts ausgewählt'
+            }
         });
         options_.columns.push({
             targets: -1,
