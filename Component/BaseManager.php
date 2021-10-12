@@ -2,6 +2,7 @@
 
 namespace Mapbender\SearchBundle\Component;
 
+use Doctrine\DBAL\Connection;
 use FOM\UserBundle\Entity\User;
 use Mapbender\SearchBundle\Component\HKVStorageBetter;
 use Mapbender\SearchBundle\Entity\UniqueBase;
@@ -18,6 +19,9 @@ abstract class BaseManager implements ManagerInterface
 {
     /** @var TokenStorageInterface */
     protected $tokenStorage;
+
+    /** @var Connection|null */
+    protected $connection;
 
     /** @var HKVStorage|HKVStorageBetter */
     protected $db;
@@ -94,13 +98,13 @@ abstract class BaseManager implements ManagerInterface
      */
     public function remove($id)
     {
-        $list = $this->getAll();
-        $wasMissed = isset($list[$id]);
-        unset($list[$id]);
-
-        $this->db->saveData($this->tableName, $list, null, null, $this->getUserId());
-
-        return $wasMissed;
+        $connection = $this->getConnection();
+        $sql = 'DELETE FROM ' . $connection->quoteIdentifier($this->tableName) . ' WHERE key = :key';
+        $params = array(
+            ':key' => $id,
+        );
+        $rowsAffected = $connection->executeStatement($sql, $params);
+        return !!$rowsAffected;
     }
 
     /**
@@ -181,5 +185,19 @@ abstract class BaseManager implements ManagerInterface
     public function createDB()
     {
         $this->db = new HKVStorageBetter($this->path, $this->tableName);
+    }
+
+    /**
+     * @return Connection
+     */
+    protected function getConnection()
+    {
+        if (!$this->connection) {
+            $params = array(
+                'path' => $this->path,
+            );
+            $this->connection = new Connection($params, new \Doctrine\DBAL\Driver\PDO\SQLite\Driver());
+        }
+        return $this->connection;
     }
 }
