@@ -15,7 +15,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
  * @package Mapbender\SearchBundle\Component
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
-abstract class BaseManager implements ManagerInterface
+abstract class BaseManager
 {
     /** @var TokenStorageInterface */
     protected $tokenStorage;
