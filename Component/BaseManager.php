@@ -148,17 +148,6 @@ abstract class BaseManager implements ManagerInterface
 
 
     /**
-     * Drop database
-     *
-     * @return bool
-     */
-    public function dropDatabase()
-    {
-        return $this->db->destroy();
-    }
-
-
-    /**
      * @return string
      */
     protected function generateUUID()
