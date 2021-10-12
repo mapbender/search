@@ -34,7 +34,7 @@ class QueryManager extends BaseManager
     }
 
     /**
-     * @param QueryCondition[] $queryConditions
+     * @param array[] $queryConditions
      * @param FeatureType      $featureType
      * @return string SQL
      */
@@ -89,7 +89,7 @@ class QueryManager extends BaseManager
         $connection  = $featureType->getConnection();
         $fields      = array();
 
-        $fieldNames = $fieldNames ? $fieldNames : $featureType->getFields();
+        $fieldNames = $fieldNames ?: $featureType->getFields();
         foreach ($fieldNames as $fieldName) {
             $fields[] = $connection->quoteIdentifier($fieldName);
         }
