@@ -9,7 +9,6 @@ use Mapbender\SearchBundle\Entity\Style;
  * @method Style getById(integer $id)
  * @method Style[] getAll()
  * @method Style save(Style $entity)
- * @method Style createFiltered(array $data)
  */
 class StyleManager extends BaseManager
 {
@@ -17,19 +16,18 @@ class StyleManager extends BaseManager
     /**
      * Create style object
      *
-     * @param $args
+     * @param mixed[] $data
      * @return Style
      */
-    public function create($args)
+    public function create(array $data)
     {
-        return new Style($args);
+        return new Style($data);
     }
 
-    protected function getBlacklistedFields()
+    public function filterFields(array $data)
     {
-        return array_merge(parent::getBlacklistedFields(), array(
-            'styleMaps',
-            'pointerEvents',
-        ));
+        unset($data['styleMaps']);
+        unset($data['pointerEvents']);
+        return $data;
     }
 }

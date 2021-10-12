@@ -49,7 +49,7 @@ abstract class BaseManager
      * @param mixed[] $data
      * @return UniqueBase
      */
-    abstract public function create($data);
+    abstract public function create(array $data);
 
     /**
      * List all records
@@ -114,35 +114,14 @@ abstract class BaseManager
     }
 
     /**
-     * @param $data
-     * @return UniqueBase
-     */
-    public function createFiltered($data)
-    {
-        $filtered = $this->filterFields($data);
-        return $this->create($filtered);
-    }
-
-    /**
-     * @return string[] field names that are not settable by the user
-     */
-    protected function getBlacklistedFields()
-    {
-        return array(
-        );
-    }
-
-    /**
      * Remove blacklisted fields
      *
      * @param mixed[] $data
      * @return mixed[]
      */
-    protected function filterFields($data)
+    public function filterFields(array $data)
     {
-        foreach ($this->getBlacklistedFields() as $deniedFieldName) {
-            unset($data[$deniedFieldName]);
-        }
+        // return unchaged
         return $data;
     }
 

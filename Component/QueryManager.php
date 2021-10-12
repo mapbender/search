@@ -13,24 +13,22 @@ use Mapbender\SearchBundle\Entity\QueryCondition;
  * @method Query getById(integer $id)
  * @method Query[] getAll()
  * @method Query save(Query $entity)
- * @method Query createFiltered(array $data)
- */
+  */
 class QueryManager extends BaseManager
 {
     /**
-     * @param $args
+     * @param mixed[] $data
      * @return Query
      */
-    public function create($args)
+    public function create(array $data)
     {
-        return new Query($args);
+        return new Query($data);
     }
 
-    protected function getBlacklistedFields()
+    public function filterFields(array $data)
     {
-        return array_merge(parent::getBlacklistedFields(), array(
-            'where',
-        ));
+        unset($data['where']);
+        return $data;
     }
 
     /**

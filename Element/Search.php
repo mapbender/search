@@ -171,7 +171,8 @@ class Search extends \Mapbender\CoreBundle\Component\Element
             case 'style/save':
             case 'stylemap/save':
                 $requestData = $this->expandArrayInputs(\json_decode($request->getContent(), true));
-                $entity = $repository->createFiltered($requestData[$saveDataKey]);
+                $saveData = $repository->filterFields($requestData[$saveDataKey]);
+                $entity = $repository->create($saveData);
                 $entity->setUserId($repository->getUserId());
                 $repository->save($entity);
                 // @todo: fix this inconsistency

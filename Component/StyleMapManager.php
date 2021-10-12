@@ -10,16 +10,15 @@ use Mapbender\SearchBundle\Entity\StyleMap;
  * @method StyleMap getById(integer $id)
  * @method StyleMap[] getAll()
  * @method StyleMap save(StyleMap $entity)
- * @method StyleMap createFiltered(array $data)
  */
 class StyleMapManager extends BaseManager
 {
     /**
-     * @param array $args
+     * @param mixed[] $data
      * @return StyleMap
      */
-    public function create($args)
+    public function create(array $data)
     {
-        return new StyleMap($args);
+        return new StyleMap($data);
     }
 }
