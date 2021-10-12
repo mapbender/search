@@ -69,6 +69,7 @@
             this.templates_['query-manager'] = $('.-tpl-query-manager', this.element).remove().css({display: null}).html();
             this.templates_['style-map-manager'] = $('.-tpl-style-map-manager', this.element).remove().css({display: null}).html();
             this.templates_['query'] = $('.-tpl-query', this.element).remove().css({display: null}).html();
+            this.templates_['style-editor'] = $('.-tpl-style-editor', this.element).remove().css({display: null}).html();
 
             widget.elementUrl = Mapbender.configuration.application.urls.element + '/' + element.attr('id') + '/';
             Mapbender.elementRegistry.waitReady('.mb-element-map').then(function(mbMap) {
@@ -194,7 +195,9 @@
          */
         openStyleEditor: function(options) {
             var widget = this;
-            var styleEditor = $("<div/>").featureStyleEditor(options);
+            var options_ = options || {};
+            options_.template = this.templates_['style-editor'];
+            var styleEditor = $("<div/>").featureStyleEditor(options_);
 
             styleEditor.bind('featurestyleeditorsubmit', function(e, context) {
                 var formData = styleEditor.formData();
