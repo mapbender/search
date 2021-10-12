@@ -257,7 +257,7 @@ $.widget("rw.queryManager", {
         options_.columns.push({
             targets: -1,
             width: '1%',
-            defaultContent: '<button type="button" class="-fn-collection-remove button" title="Löschen"><i class="fa fas fa-times"></i><span class="sr-only">Löschen</span></button>'
+            defaultContent: '<span class="-fn-collection-remove button" title="Löschen"><i class="fa fas fa-times"></i><span class="sr-only">Löschen</span></span>'
         });
         $target.dataTable(options_);
         return $target.dataTable().api();

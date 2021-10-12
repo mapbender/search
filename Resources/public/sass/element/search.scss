@@ -1,7 +1,7 @@
 .mb-element-search {
   font-size: 12px;
   line-height: 1.5;
-  .button.btn {
+  .button.btn, table .buttons .button {
     // Defeat @extend .button rules
     font-size: inherit;
     line-height: inherit;
@@ -38,8 +38,11 @@
   .query-content-panel {
     .buttons {
       white-space: nowrap;
-      button {
+      .button {
         padding: 0 4px;
+      }
+      .button + .button {
+        margin-left: -1px;  // collapse borders
       }
     }
   }
