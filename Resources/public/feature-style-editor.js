@@ -23,29 +23,22 @@
          * Generate StyleManagerForm
          */
         _create: function() {
-            var widget = this;
-            var element = $(widget.element);
-            var options = widget.options;
-
-            if (options.data && options.data.fontColor === null) {
-                delete(options.data.fontColor);
+            if (this.options.data && this.options.data.fontColor === null) {
+                delete(this.options.data.fontColor);
             }
 
             this.element.empty().append(this.options.template);
-            window.setTimeout(function() {
-                element.formData(options.data);
-                $('.-js-colorpicker', element).colorpicker({
-                    format: 'hex',
-                    colorSelectors: options.customColors
-                });
-            }, 100);
-
+            this.element.formData(this.options.data);
+            $('.-js-colorpicker', this.element).colorpicker({
+                format: 'hex',
+                colorSelectors: this.options.customColors
+            });
             this.popup();
         },
 
         popup: function() {
             var widget = this;
-            this.element.popupDialog({
+            this.element.dialog({
                 title:   "Stylemanager",
                 modal:   true,
                 width:   '500px',
@@ -64,7 +57,15 @@
                             widget: widget
                         });
                     }
-                }]
+                }],
+                classes: {
+                    'ui-dialog': 'ui-dialog mb-search-dialog'
+                },
+                closeText: '',
+                resizable: false,
+                close: function() {
+                    $(this).dialog('destroy');
+                }
             });
         },
 
