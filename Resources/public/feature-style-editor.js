@@ -7,11 +7,7 @@
      */
     $.widget('mapbender.featureStyleEditor', {
         options: {
-            asPopup:      true,
-            data:         {
-                'id':         null,
-                'borderSize': 1
-            },
+            data: {},
             customColors: {
                 '#777777': '#777777',
                 '#337ab7': '#337ab7',
@@ -19,9 +15,7 @@
                 '#5bc0de': '#5bc0de',
                 '#f0ad4e': '#f0ad4e',
                 '#d9534f': '#d9534f'
-            },
-            commonTab:    true,
-            fillTab: true
+            }
         },
 
         /**
@@ -260,39 +254,21 @@
 
             };
 
-            var tabs = [];
-
-            if(options.commonTab) {
-                tabs.push(commonTab);
-            }
-
-            if(options.fillTab){
-                tabs.push(fillTab);
-            }
-
-            tabs.push(strokeTab);
-            tabs.push(labelTab);
-
             element.generateElements(Mapbender.Util.beautifyGenerateElements({
                 type:     "tabs",
-                children: tabs
+                children: [commonTab, fillTab, strokeTab, labelTab]
             }));
 
             window.setTimeout(function() {
                 element.formData(options.data);
             }, 100);
 
-            if(options.asPopup) {
-                widget.popup();
-            }
-
-            return widget;
+            this.popup();
         },
 
         popup: function() {
             var widget = this;
-            var element = $(widget.element);
-            element.popupDialog({
+            this.element.popupDialog({
                 title:   "Stylemanager",
                 modal:   true,
                 width:   '500px',
@@ -320,15 +296,7 @@
          * @private
          */
         close: function() {
-            var widget = this;
-            var element = $(widget.element);
-            var options = widget.options;
-
-            if(options.asPopup) {
-                element.popupDialog("close");
-            } else {
-                widget.element.remove();
-            }
+            this.element.dialog("close");
         }
     });
 
