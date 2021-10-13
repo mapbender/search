@@ -253,8 +253,10 @@
                         $.notify("Erfolgreich gespeichert!", "info");
 
                         widget.refreshQueries().done(function() {
-                            var updatedQuery = _.findWhere( widget._queries, {id: query.id});
-                            updatedQuery.titleView.addClass('updated');
+                            var updatedQuery = query && query.id && _.findWhere( widget._queries, {id: query.id});
+                            if (updatedQuery) {
+                                updatedQuery.titleView.addClass('updated');
+                            }
                             widget.renderSchemaFilterSelect();
                         })
                     });
