@@ -94,19 +94,30 @@ abstract class BaseManager
 
     /**
      * @param UniqueBase $entity
-     * @return UniqueBase
      */
     public function save($entity)
     {
+        $isNew = !$entity->getId();
         if (!$entity->getId()) {
             $entity->setId($this->generateUUID());
         }
-        $all = $this->getAll();
-        $id = $entity->getId();
-        $all[$id] = $entity;
-        $this->db->saveData($this->tableName, $all, null, null, $this->getUserId());
-
-        return $entity;
+        $connection = $this->getConnection();
+        $values = $entity->toArray();
+        $updateValues = array(
+            'value' => \json_encode($values),
+            'creationDate' => time(),
+        );
+        $updateCriteria = array(
+            'key' => $values['id'],
+        );
+        if ($isNew) {
+            $insertValues = $updateValues + $updateCriteria + array(
+                'userId' => $values['userId'],
+            );
+            $connection->insert($connection->quoteIdentifier($this->tableName), $insertValues);
+        } else {
+            $connection->update($connection->quoteIdentifier($this->tableName), $updateValues, $updateCriteria);
+        }
     }
 
     /**
