@@ -21,9 +21,6 @@
     "debugteam/bootstrap-colorpicker": "@dev",
     "mapbender/data-source": "^0.1.22"
   },
-  "config": {
-    "bin-dir": "bin"
-  },
   "autoload": {
     "psr-4": {
       "Mapbender\\SearchBundle\\": "."
