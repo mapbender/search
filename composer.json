@@ -19,8 +19,7 @@
     "php": ">=5.3.3",
     "mapbender/vis-ui.js": "dev-master-keep-backward-compatibility@dev",
     "debugteam/bootstrap-colorpicker": "@dev",
-    "mapbender/data-source": "^0.1.22",
-    "eslider/hkv-storage": "*"
+    "mapbender/data-source": "^0.1.22"
   },
   "config": {
     "bin-dir": "bin"
