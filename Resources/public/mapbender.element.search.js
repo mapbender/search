@@ -262,22 +262,17 @@
                     });
                 })
                 .bind('querymanagercheck', function(event, context) {
-                    var queryDialog = context.dialog;
-                    queryDialog.disableForm();
                     widget.query('query/check', {
                         query:             context.data,
                         srid:              map.getProjectionObject().proj.srsProjNumber,
                         intersect: map.getExtent().toGeometry().toString()
                     }).done(function(r) {
-                        queryDialog.enableForm();
-
                         if(r.errorMessage) {
                             $.notify("Fehler beim Ausführen:\n" + r.errorMessage, 'error');
                             return;
                         }
 
                         $.notify("Anzahl der Ergebnisse : " + r.count + "\nAusführungsdauer: " + r.executionTime, 'info');
-                        queryDialog.enableForm();
                     });
                 });
 
