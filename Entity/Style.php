@@ -90,30 +90,4 @@ class Style extends UniqueBase
     {
         return $this->userId;
     }
-
-    /**
-     * @param \String[] $styleMaps
-     * @return Style
-     */
-    public function setStyleMaps($styleMaps)
-    {
-        $this->styleMaps = $styleMaps;
-        return $this;
-    }
-
-    /**
-     * @return \String[]
-     */
-    public function getStyleMaps()
-    {
-        return $this->styleMaps;
-    }
-
-    /**
-     * @return bool
-     */
-    public function canBeDeleted()
-    {
-        return empty($this->styleMaps);
-    }
 }
