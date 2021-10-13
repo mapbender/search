@@ -106,17 +106,25 @@ abstract class BaseManager
         $updateValues = array(
             'value' => \json_encode($values),
             'creationDate' => time(),
+            'userId' => $values['userId'],
         );
         $updateCriteria = array(
             'key' => $values['id'],
         );
+        $tnq = $connection->quoteIdentifier($this->tableName);
         if ($isNew) {
-            $insertValues = $updateValues + $updateCriteria + array(
-                'userId' => $values['userId'],
-            );
-            $connection->insert($connection->quoteIdentifier($this->tableName), $insertValues);
+            $insertValues = $updateValues + $updateCriteria;
+            $connection->insert($tnq, $insertValues);
         } else {
-            $connection->update($connection->quoteIdentifier($this->tableName), $updateValues, $updateCriteria);
+            // Autoclean legacy HkvStorage rows
+            $cleanSql = "DELETE FROM {$tnq} WHERE key = :key0"
+                      . " AND id != (SELECT id FROM {$tnq} WHERE key = :key1 ORDER BY creationDate DESC LIMIT 1)";
+            $connection->update($tnq, $updateValues, $updateCriteria);
+            $connection->executeStatement($cleanSql, array(
+                // Supply param twice to avoid issues with native prepared statements
+                ':key0' => $values['id'],
+                ':key1' => $values['id'],
+            ));
         }
     }
 
