@@ -4,7 +4,6 @@ namespace Mapbender\SearchBundle\Component;
 
 use Doctrine\DBAL\Connection;
 use FOM\UserBundle\Entity\User;
-use Mapbender\SearchBundle\Component\HKVStorageBetter;
 use Mapbender\SearchBundle\Entity\UniqueBase;
 use Symfony\Component\Security\Core\Authentication\Token\AnonymousToken;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -23,9 +22,6 @@ abstract class BaseManager
     /** @var Connection|null */
     protected $connection;
 
-    /** @var HKVStorage|HKVStorageBetter */
-    protected $db;
-
     /** @var string tableName */
     protected $tableName;
 
@@ -42,7 +38,6 @@ abstract class BaseManager
         $this->path      = $path;
         $baseName = preg_replace('#^([^/]*/)*#', '', $this->path);
         $this->tableName = preg_replace('#\..*$#', '', $baseName);
-        $this->createDB();
     }
 
     /**
@@ -185,13 +180,6 @@ abstract class BaseManager
     }
 
     /**
-     */
-    public function createDB()
-    {
-        $this->db = new HKVStorageBetter($this->path, $this->tableName);
-    }
-
-    /**
      * @return Connection
      */
     protected function getConnection()
@@ -201,7 +189,24 @@ abstract class BaseManager
                 'path' => $this->path,
             );
             $this->connection = new Connection($params, new \Doctrine\DBAL\Driver\PDO\SQLite\Driver());
+            $this->ensureTable($this->connection);
+            // @todo: indexes?
         }
         return $this->connection;
+    }
+
+    protected function ensureTable(Connection $connection)
+    {
+        if (!$connection->getSchemaManager()->tablesExist(array($this->tableName))) {
+            $sql = 'CREATE TABLE ' . $connection->quoteIdentifier($this->tableName) . ' ('
+                 . ' id INTEGER NOT NULL PRIMARY KEY'
+                 . ', "key" VARCHAR(31) NOT NULL'
+                 . ', "value" BLOB'
+                 . ', "creationDate" UNSIGNED INTEGER'
+                 . ', "userId" BLOB'
+                 . ')'
+            ;
+            $connection->executeStatement($sql);
+        }
     }
 }
