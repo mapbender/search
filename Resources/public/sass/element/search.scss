@@ -90,8 +90,13 @@
   }
   .ui-dialog-content {
     // Fit Bootstrap .row without horizontal overflow
-    padding-left: 15px;
-    padding-right: 15px;
+    padding: 10px 15px;
+  }
+  &.tabbed-dialog {
+    // Attach tabs directly to titlebar and Move intended padding to tab panel instead
+    .ui-dialog-content {
+      padding: 0;
+    }
   }
   .ui-dialog-titlebar {
     background-color: $buttonActiveBgColor;

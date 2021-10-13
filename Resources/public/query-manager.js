@@ -328,6 +328,10 @@ $.widget("rw.queryManager", {
                 $(this).dialog('destroy');
             }
         };
+        if ($('.ui-tabs-panel', element).length) {
+            options_.classes['ui-dialog'] = [options_.classes['ui-dialog'], 'tabbed-dialog'].join(' ');
+        }
+
         Object.assign(options_, options || {});
         return $(element).dialog(options_);
     },
