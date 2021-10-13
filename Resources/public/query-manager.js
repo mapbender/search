@@ -67,7 +67,6 @@ $.widget("rw.queryManager", {
             taFields.clear();
             taFields.draw();
             var taConditions = $('table.-js-conditions-collection table', element).dataTable().api();
-            taConditions();
             taConditions.draw();
         });
         var fieldsTableApi = this.initCollection_($('table.-js-fields-collection', this.element), {
