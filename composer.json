@@ -19,7 +19,7 @@
     "php": ">=5.3.3",
     "mapbender/vis-ui.js": "@dev",
     "debugteam/bootstrap-colorpicker": "@dev",
-    "mapbender/data-source": "^0.1.22"
+    "mapbender/data-source": "^0.1.22 || ^0.2"
   },
   "autoload": {
     "psr-4": {
