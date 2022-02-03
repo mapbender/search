@@ -4,7 +4,6 @@ namespace Mapbender\SearchBundle\Component;
 use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Entity\Feature;
 use Mapbender\SearchBundle\Entity\Query;
-use Mapbender\SearchBundle\Entity\QueryCondition;
 
 /**
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>

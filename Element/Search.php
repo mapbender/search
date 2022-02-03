@@ -7,8 +7,6 @@ use Doctrine\DBAL\DBALException;
 use Mapbender\CoreBundle\Entity\Element;
 use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Component\RepositoryRegistry;
-use Mapbender\SearchBundle\Component\FeatureTypeFactory;
-use Mapbender\SearchBundle\Component\HKVStorageBetter;
 use FOM\CoreBundle\Component\ExportResponse;
 use Mapbender\SearchBundle\Component\QueryManager;
 use Mapbender\SearchBundle\Component\StyleManager;
@@ -409,7 +407,7 @@ class Search extends \Mapbender\CoreBundle\Component\Element
     /**
      * @param Element $element
      * @param string $schemaName
-     * @return \Mapbender\DataSourceBundle\Component\FeatureType
+     * @return FeatureType
      */
     protected function getFeatureTypeForSchema(Element $element, $schemaName)
     {

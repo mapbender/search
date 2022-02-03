@@ -3,9 +3,6 @@
 namespace Mapbender\SearchBundle\Entity;
 
 /**
- * Class Style
- *
- * @package Mapbender\DataSourceBundle\Entity
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  * @author  Andriy Oblivantsev <eslider@gmail.com>
  */

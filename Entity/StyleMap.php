@@ -3,9 +3,6 @@
 namespace Mapbender\SearchBundle\Entity;
 
 /**
- * Class StyleMap
- *
- * @package Mapbender\DataSourceBundle\Entity
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
 class StyleMap extends UniqueBase
