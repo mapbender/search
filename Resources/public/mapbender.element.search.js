@@ -24,6 +24,7 @@
                 disable: true
             }]
         },
+        mbMap: null,
         map:                    null,
         templates_: {},
 
@@ -73,6 +74,7 @@
 
             widget.elementUrl = Mapbender.configuration.application.urls.element + '/' + element.attr('id') + '/';
             Mapbender.elementRegistry.waitReady('.mb-element-map').then(function(mbMap) {
+                widget.mbMap = mbMap;
                 widget.map = mbMap.map.olMap;
                 widget._setup();
                 rendered.resolveWith(true);
@@ -688,7 +690,7 @@
                         return false;
                     })
                     .bind('queryresultviewzoomto', function(e, context) {
-                        Mapbender.Util.OpenLayers2.zoomToJsonFeature(context.feature);
+                        widget.mbMap.getModel().zoomToFeature(context.feature);
                         return false;
                     })
                     .bind('queryresultviewmark', function(e, context) {
