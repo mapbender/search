@@ -40,15 +40,15 @@ class Search extends \Mapbender\CoreBundle\Component\Element
         return array(
             'js' => array(
                 '/components/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js',
-                'feature-style-editor.js',
-                'style-map-manager.js',
-                'query-result-title-bar-view.js',
-                'query-result-view.js',
-                'query-manager.js',
-                'mapbender.element.search.js',
+                '@MapbenderSearchBundle/Resources/public/feature-style-editor.js',
+                '@MapbenderSearchBundle/Resources/public/style-map-manager.js',
+                '@MapbenderSearchBundle/Resources/public/query-result-title-bar-view.js',
+                '@MapbenderSearchBundle/Resources/public/query-result-view.js',
+                '@MapbenderSearchBundle/Resources/public/query-manager.js',
+                '@MapbenderSearchBundle/Resources/public/mapbender.element.search.js',
             ),
             'css' => array(
-                'sass/element/search.scss',
+                '@MapbenderSearchBundle/Resources/public/sass/element/search.scss',
                 '/components/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css',
             ),
             'trans' => array(
