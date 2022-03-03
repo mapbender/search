@@ -24,5 +24,11 @@
     "psr-4": {
       "Mapbender\\SearchBundle\\": "."
     }
+  },
+  "extra": {
+      "branch-alias": {
+          "dev-fix/symfony-mapbender-forward-compatibility": "0.0.x-dev",
+          "dev-master": "0.1.x-dev"
+      }
   }
 }
