@@ -29,7 +29,7 @@ $.widget("wheregroup.styleMapManager", {
     },
 
     updateStyleSelects_: function(styles) {
-        var $selects = $('select[name^="styles"]', this.element);
+        var $selects = $('select[name^="style_"]', this.element);
 
         for (var i = 0; i < $selects.length; ++i) {
             var $select = $selects.eq(i);
@@ -52,7 +52,7 @@ $.widget("wheregroup.styleMapManager", {
         this.updateStyleSelects_(this.options.styles);
 
         this.element.on('click', '.-fn-edit-style[data-style-name]', function() {
-            var styleId = $('select[name="styles[' + $(this).attr('data-style-name') + ']"]', element).val();
+            var styleId = $('select[name="' + $(this).attr('data-style-name') + '"]', element).val();
             var style = options.styles[styleId];
             widget._trigger('editstyle', null, {
                 widget: widget,
@@ -60,8 +60,8 @@ $.widget("wheregroup.styleMapManager", {
             });
         });
         $('[name="name"]', this.element).val(data.name || 'Style map #' + Math.round(Math.random() * 10000));
-        $('[name="styles[default]"]', this.element).val(data.styles && data.styles.default || '');
-        $('[name="styles[select]"]', this.element).val(data.styles && data.styles.select || '');
+        $('[name="style_default"]', this.element).val(data.styles && data.styles.default || '');
+        $('[name="style_select"]', this.element).val(data.styles && data.styles.select || '');
     },
 
     updateStyleList: function(styles) {
@@ -91,10 +91,18 @@ $.widget("wheregroup.styleMapManager", {
             }, {
                 text:  'Speichern',
                 click: function(e) {
-                    widget._trigger('submit', null, {
-                        form:   element,
-                        widget: widget
-                    });
+                    if (Mapbender.Search.FormUtil.checkValidity(this)) {
+                        var formDataRaw = Mapbender.Search.FormUtil.getData(this)
+                        widget._trigger('submit', null, {
+                            data: {
+                                name: formDataRaw.name,
+                                styles: {
+                                    default: formDataRaw['style_default'],
+                                    select: formDataRaw['style_select']
+                                }
+                            }
+                        });
+                    }
                     return false;
                 }
             }]

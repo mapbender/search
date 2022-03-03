@@ -304,18 +304,18 @@
             });
 
             styleMapManager.bind('stylemapmanagersubmit', function(event, context) {
-                if (Mapbender.Search.FormUtil.checkValidity(styleMapManager)) {
-                    var formData = Mapbender.Search.FormUtil.getData(styleMapManager);
-                    formData.id = (data || {}).id || null;
-                    widget.query('stylemap/save', {
-                        styleMap: formData
-                    }).done(function(r) {
-                        Mapbender.Search.FormUtil.setData(styleMapManager, r.styleMap);
-                        $.notify("Stylemap erfolgreich gespeichert!", "info");
-                        styleMapManager.styleMapManager('close');
-                        widget.refreshStyleMaps();
-                    });
-                }
+                var formData = Mapbender.Search.FormUtil.getData(styleMapManager);
+                formData.id = (data || {}).id || null;
+                widget.query('stylemap/save', {
+                    styleMap: Object.assign({}, context.data, {
+                        id: (data || {}).id || null
+                    })
+                }).done(function(r) {
+                    Mapbender.Search.FormUtil.setData(styleMapManager, r.styleMap);
+                    $.notify("Stylemap erfolgreich gespeichert!", "info");
+                    styleMapManager.styleMapManager('close');
+                    widget.refreshStyleMaps();
+                });
             });
 
             element.bind('mbsearchstylesupdated', function(e, styles) {

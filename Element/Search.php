@@ -185,7 +185,7 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
             case 'query/save':
             case 'style/save':
             case 'stylemap/save':
-                $requestData = $this->expandArrayInputs(\json_decode($request->getContent(), true));
+                $requestData = \json_decode($request->getContent(), true);
                 $saveData = $repository->filterFields($requestData[$saveDataKey]);
                 $entity = $repository->create($saveData);
                 $entity->setUserId($repository->getUserId());
@@ -425,23 +425,5 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
         /** @var FeatureType $ft */
         $ft = $this->repositoryRegistry->dataStoreFactory($config);
         return $ft;
-    }
-
-    protected function expandArrayInputs($data)
-    {
-        $nested = array();
-        foreach ($data as $key => $value) {
-            if (\is_array($value)) {
-                $value = $this->expandArrayInputs($value);
-            }
-            $matches = array();
-            if (\preg_match('#^([^[]*)\[(.*?)\]$#', $key, $matches)) {
-                $nested += array($matches[1] => array());
-                $nested[$matches[1]][$matches[2]] = $value;
-            } else {
-                $nested[$key] = $value;
-            }
-        }
-        return $nested;
     }
 }
