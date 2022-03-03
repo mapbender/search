@@ -11,7 +11,7 @@ use FOM\CoreBundle\Component\ExportResponse;
 use Mapbender\SearchBundle\Component\QueryManager;
 use Mapbender\SearchBundle\Component\StyleManager;
 use Mapbender\SearchBundle\Component\StyleMapManager;
-use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
+use Mapbender\SearchBundle\Element\Type\SearchAdminType;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -62,11 +62,8 @@ class Search extends \Mapbender\CoreBundle\Component\Element
     public static function getDefaultConfiguration()
     {
         return array(
-            'target'       => null,
-            'featureTypes' => array(),
-            'debug'        => false,
-            'title'        => 'Search',
             'schemas' => array(),
+            'clustering' => array(),
         );
     }
 
@@ -95,7 +92,7 @@ class Search extends \Mapbender\CoreBundle\Component\Element
      */
     public static function getType()
     {
-        return null;
+        return SearchAdminType::class;
     }
 
     /**
@@ -103,21 +100,7 @@ class Search extends \Mapbender\CoreBundle\Component\Element
      */
     public static function getFormTemplate()
     {
-        return null;
-    }
-
-    /**
-     * Prepare form items for each scheme definition
-     * Optional: get featureType by name from global context.
-     *
-     * @inheritdoc
-     * @throws InvalidArgumentException
-     */
-    public function getConfiguration()
-    {
-        $configuration = $this->entity->getConfiguration();
-        $configuration['debug']   = isset($configuration['debug']) ? $configuration['debug'] : false;
-        return $configuration;
+        return false;
     }
 
     public function handleHttpRequest(Request $request)
