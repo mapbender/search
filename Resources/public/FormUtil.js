@@ -1,3 +1,4 @@
+;!(function() {
 window.Mapbender = Mapbender || {};
 window.Mapbender.Search = window.Mapbender.Search || {}
 window.Mapbender.Search.FormUtil = {
@@ -43,3 +44,4 @@ window.Mapbender.Search.FormUtil = {
         return $(':input[name]', scope);
     }
 };
+}());
