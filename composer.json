@@ -17,6 +17,7 @@
   ],
   "require": {
     "php": ">=5.5",
+    "mapbender/mapbender": "^3.2.6",
     "debugteam/bootstrap-colorpicker": "@dev",
     "mapbender/data-source": "^0.1.22 || ^0.2"
   },

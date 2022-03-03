@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="mbsearch.element.Search" class="Mapbender\SearchBundle\Element\Search">
+            <tag name="mapbender.element" />
+            <argument type="service" id="doctrine" />
+            <argument type="service" id="mapbender.search.featuretype_registry" />
+            <argument type="service" id="mapbender.search.query.manager" />
+            <argument type="service" id="mapbender.search.style.manager" />
+            <argument type="service" id="mapbender.search.stylemap.manager" />
+            <argument>%featureTypes%</argument>
+        </service>
+    </services>
+</container>

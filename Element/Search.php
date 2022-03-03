@@ -4,6 +4,10 @@ namespace Mapbender\SearchBundle\Element;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
+use Doctrine\Persistence\ConnectionRegistry;
+use Mapbender\Component\Element\AbstractElementService;
+use Mapbender\Component\Element\ElementHttpHandlerInterface;
+use Mapbender\Component\Element\TemplateView;
 use Mapbender\CoreBundle\Entity\Element;
 use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Component\RepositoryRegistry;
@@ -22,8 +26,37 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  * @package Mapbender\SearchBundle\Element
  * @author  Andriy Oblivantsev <eslider@gmail.com>
  */
-class Search extends \Mapbender\CoreBundle\Component\Element
+class Search extends AbstractElementService implements ElementHttpHandlerInterface
 {
+    /** @var ConnectionRegistry */
+    protected $connectionRegistry;
+    /** @var RepositoryRegistry */
+    protected $repositoryRegistry;
+    /** @var QueryManager */
+    protected $queryManager;
+    /** @var StyleManager */
+    protected $styleManager;
+    /** @var StyleMapManager */
+    protected $styleMapManager;
+    /** @var array[] */
+    protected $featureTypes;
+
+    public function __construct(ConnectionRegistry $connectionRegistry,
+                                RepositoryRegistry $repositoryRegistry,
+                                QueryManager $queryManager,
+                                StyleManager $styleManager,
+                                StyleMapManager $styleMapManager,
+                                $featureTypes)
+    {
+        $this->connectionRegistry = $connectionRegistry;
+        $this->repositoryRegistry = $repositoryRegistry;
+        $this->queryManager = $queryManager;
+        $this->styleManager = $styleManager;
+        $this->styleMapManager = $styleMapManager;
+        $this->featureTypes = $featureTypes;
+    }
+
+
     public static function getClassTitle()
     {
         return 'Search';
@@ -34,8 +67,7 @@ class Search extends \Mapbender\CoreBundle\Component\Element
         return 'Object search element';
     }
 
-    /** @inheritdoc */
-    public function getAssets()
+    public function getRequiredAssets(Element $element)
     {
         return array(
             'js' => array(
@@ -67,19 +99,16 @@ class Search extends \Mapbender\CoreBundle\Component\Element
         );
     }
 
-    public function getWidgetName()
+    public function getWidgetName(Element $element)
     {
         return 'mapbender.mbSearch';
     }
 
-    public function getFrontendTemplatePath($suffix = '.html.twig')
+    public function getView(Element $element)
     {
-        return 'MapbenderSearchBundle:Element:search.html.twig';
-    }
-
-    public function getFrontendTemplateVars()
-    {
-        return array();
+        $view = new TemplateView('MapbenderSearchBundle:Element:search.html.twig');
+        $view->attributes['class'] = 'mb-element-search';
+        return $view;
     }
 
     /**
@@ -103,35 +132,40 @@ class Search extends \Mapbender\CoreBundle\Component\Element
         return false;
     }
 
-    public function handleHttpRequest(Request $request)
+    public function getHttpHandler(Element $element)
+    {
+        return $this;
+    }
+
+    public function handleRequest(Element $element, Request $request)
     {
         $action = $request->attributes->get('action');
         // action seems to come in lower-case anyway, might be browser dependent
         $action = strtolower($action);
         switch ($action) {
             case 'schemas/list':
-                return $this->listSchemasAction();
+                return $this->listSchemasAction($element);
             case 'query/fetch':
-                return new JsonResponse($this->fetchQueryAction($request));
+                return new JsonResponse($this->fetchQueryAction($element, $request));
             case 'query/check':
-                return $this->checkQueryAction($request);
+                return $this->checkQueryAction($element, $request);
             case 'export':
-                return $this->exportAction($request);
+                return $this->exportAction($element, $request);
             case 'queries/list':
             case 'query/save':
             case 'query/remove':
                 $saveDataKey = 'query';
-                $repository = $this->getQueryManager();
+                $repository = $this->queryManager;
                 break;
             case 'style/list':
             case 'style/save':
                 $saveDataKey = 'style';
-                $repository = $this->getStyleManager();
+                $repository = $this->styleManager;
                 break;
             case 'stylemap/list':
             case 'stylemap/save':
                 $saveDataKey = 'styleMap';
-                $repository = $this->getStyleMapManager();
+                $repository = $this->styleMapManager;
                 break;
             default:
                 throw new BadRequestHttpException("Invalid action " . var_export($action, true));
@@ -170,23 +204,23 @@ class Search extends \Mapbender\CoreBundle\Component\Element
     /**
      * Export results
      *
+     * @param Element $element
      * @param Request $request
      * @return ExportResponse
      */
-    public function exportAction(Request $request)
+    public function exportAction(Element $element, Request $request)
     {
         $ids = $request->request->get('ids', array());
 
-        $queryManager = $this->getQueryManager();
-        $query = $queryManager->getById($request->request->get('queryId'));
-        $ftConfig = $this->getFeatureTypeConfigForSchema($this->entity, $query->getSchemaId());
+        $query = $this->queryManager->getById($request->request->get('queryId'));
+        $ftConfig = $this->getFeatureTypeConfigForSchema($element, $query->getSchemaId());
         $featureType = $this->getFeatureTypeFromConfig($ftConfig);
         $config = $ftConfig['export'];
         $connection      = $featureType->getConnection();
         $maxResults = isset($config["maxResults"]) ? $config["maxResults"] : 10000; // TODO: Set max results in export
         $fileName        = $query->getName() . " " . date('Y:m:d H:i:s');
 
-        $sql = $queryManager->buildSql($featureType, $query);
+        $sql = $this->queryManager->buildSql($featureType, $query);
         if ($ids) {
             $sql .= ' AND ' . $connection->quoteIdentifier($featureType->getUniqueId()) . ' IN (' . implode(', ', array_map('intval', $ids)) . ')';
         } else {
@@ -219,26 +253,25 @@ class Search extends \Mapbender\CoreBundle\Component\Element
     }
 
     /**
+     * @param Element $element
      * @return JsonResponse
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      */
-    public function listSchemasAction()
+    public function listSchemasAction(Element $element)
     {
         $result                  = array();
-        $config = $this->entity->getConfiguration();
+        $config = $element->getConfiguration();
         $schemaNames = \array_keys($config['schemas']);
 
         foreach ($schemaNames as $schemaId) {
-            $schemaConfig = $this->getSchemaConfigByName($this->entity, $schemaId);
-            $declaration = $this->getFeatureTypeConfigForSchema($this->entity, $schemaId);
+            $schemaConfig = $this->getSchemaConfigByName($element, $schemaId);
+            $declaration = $this->getFeatureTypeConfigForSchema($element, $schemaId);
             $fields = $schemaConfig['fields'];
 
             foreach ($fields as &$fieldDescription) {
                 if (isset($fieldDescription["sql"])) {
                     /** @var Connection $dbalConnection */
                     $connectionName = isset($fieldDescription["connection"]) ? $fieldDescription["connection"] : "default";
-                    $dbalConnection = $this->container->get("doctrine.dbal.{$connectionName}_connection");
+                    $dbalConnection = $this->connectionRegistry->getConnection($connectionName);
                     $options        = array();
 
                     foreach ($dbalConnection->fetchAll($fieldDescription["sql"]) as $row) {
@@ -267,23 +300,22 @@ class Search extends \Mapbender\CoreBundle\Component\Element
     }
 
     /**
+     * @param Element $element
      * @param Request $request
      * @return JsonResponse
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      */
-    public function checkQueryAction(Request $request)
+    public function checkQueryAction(Element $element, Request $request)
     {
         $requestData = \json_decode($request->getContent(), true);
-        $queryManager = $this->getQueryManager();
-        $query = $queryManager->create($requestData['query']);
+        $query = $this->queryManager->create($requestData['query']);
 
         try {
-            $featureType = $this->getFeatureTypeForSchema($this->entity, $query->getSchemaId());
+            $featureType = $this->getFeatureTypeForSchema($element, $query->getSchemaId());
             $params = array_filter(array(
                 'srid' => $requestData['srid'],
                 'intersect' => $requestData['intersect'],
             ));
-            $check = $queryManager->check($featureType, $query, $params);
+            $check = $this->queryManager->check($featureType, $query, $params);
         } /** @noinspection PhpRedundantCatchClauseInspection */ catch (DBALException $e) {
             $message = $e->getMessage();
             if (strpos($message, 'ERROR:')) {
@@ -300,18 +332,16 @@ class Search extends \Mapbender\CoreBundle\Component\Element
 
 
     /**
-     *
+     * @param Element $element
      * @param Request $request
      * @return array
-     * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      */
-    public function fetchQueryAction(Request $request)
+    public function fetchQueryAction(Element $element, Request $request)
     {
-        $queryManager = $this->getQueryManager();
-        $query = $queryManager->getById($request->query->get('queryId'));
+        $query = $this->queryManager->getById($request->query->get('queryId'));
 
-        $schemaConfig = $this->getSchemaConfigByName($this->entity, $query->getSchemaId());
-        $featureType = $this->getFeatureTypeForSchema($this->entity, $query->getSchemaId());
+        $schemaConfig = $this->getSchemaConfigByName($element, $query->getSchemaId());
+        $featureType = $this->getFeatureTypeForSchema($element, $query->getSchemaId());
 
 
         try {
@@ -321,7 +351,7 @@ class Search extends \Mapbender\CoreBundle\Component\Element
                 'srid' => $request->query->get('srid'),
                 'intersect' => $request->query->get('intersect'),
             ));
-            $results = $queryManager->fetchQuery($featureType, $query, $params);
+            $results = $this->queryManager->fetchQuery($featureType, $query, $params);
             $count                 = count($results["features"]);
 
 
@@ -344,22 +374,11 @@ class Search extends \Mapbender\CoreBundle\Component\Element
         return $check;
     }
 
-    /**
-     * @return QueryManager
-     */
-    protected function getQueryManager()
-    {
-        /** @var QueryManager $queryManager */
-        $queryManager = $this->container->get('mapbender.search.query.manager');
-        return $queryManager;
-    }
-
     protected function getFeatureTypeConfigForSchema(Element $element, $schemaName)
     {
         $schemaConfig = $this->getSchemaConfigByName($element, $schemaName);
         if (\is_string($schemaConfig['featureType'])) {
-            $declarations = $this->container->getParameter('featureTypes');
-            $ftConfig = $declarations[$schemaConfig['featureType']];
+            $ftConfig = $this->featureTypes[$schemaConfig['featureType']];
             if (empty($ftConfig['title'])) {
                 $ftConfig['title'] = ucfirst($schemaConfig['featureType']);
             }
@@ -403,10 +422,8 @@ class Search extends \Mapbender\CoreBundle\Component\Element
      */
     protected function getFeatureTypeFromConfig(array $config)
     {
-        /** @var RepositoryRegistry $registry */
-        $registry = $this->container->get('mapbender.search.featuretype_registry');
         /** @var FeatureType $ft */
-        $ft = $registry->dataStoreFactory($config);
+        $ft = $this->repositoryRegistry->dataStoreFactory($config);
         return $ft;
     }
 
@@ -426,25 +443,5 @@ class Search extends \Mapbender\CoreBundle\Component\Element
             }
         }
         return $nested;
-    }
-
-    /**
-     * @return StyleManager
-     */
-    protected function getStyleManager()
-    {
-        /** @var StyleManager $service */
-        $service = $this->container->get('mapbender.search.style.manager');
-        return $service;
-    }
-
-    /**
-     * @return StyleMapManager
-     */
-    protected function getStyleMapManager()
-    {
-        /** @var StyleMapManager $service */
-        $service = $this->container->get('mapbender.search.stylemap.manager');
-        return $service;
     }
 }
