@@ -28,7 +28,7 @@
             }
 
             this.element.empty().append(this.options.template);
-            this.element.formData(this.options.data);
+            Mapbender.Search.FormUtil.setData(this.element, this.options.data);
             $('.-js-colorpicker', this.element).colorpicker({
                 format: 'hex',
                 colorSelectors: this.options.customColors

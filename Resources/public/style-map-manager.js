@@ -59,16 +59,9 @@ $.widget("wheregroup.styleMapManager", {
                 style: style
             });
         });
-
-        window.setTimeout(function() {
-            if(!data.name) {
-                data.name = 'Style map #' + Math.round(Math.random() * 10000);
-            }
-            for (var k in data.styles) {
-                data['styles[' + k + ']'] = data.styles[k];
-            }
-            element.formData(data)
-        }, 200);
+        $('[name="name"]', this.element).val(data.name || 'Style map #' + Math.round(Math.random() * 10000));
+        $('[name="styles[default]"]', this.element).val(data.styles && data.styles.default || '');
+        $('[name="styles[select]"]', this.element).val(data.styles && data.styles.select || '');
     },
 
     updateStyleList: function(styles) {
@@ -109,14 +102,7 @@ $.widget("wheregroup.styleMapManager", {
     },
 
     close: function() {
-        var widget = this;
-        var element = $(widget.element);
-        var options = widget.options;
-
-        if(options.asPopup) {
-            element.popupDialog("close");
-        } else {
-            widget.element.remove();
-        }
+        this.element.dialog('destroy');
+        this.element.remove();
     }
 });

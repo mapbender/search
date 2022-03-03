@@ -40,6 +40,7 @@ class Search extends \Mapbender\CoreBundle\Component\Element
         return array(
             'js' => array(
                 '/components/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js',
+                '@MapbenderSearchBundle/Resources/public/FormUtil.js',
                 '@MapbenderSearchBundle/Resources/public/feature-style-editor.js',
                 '@MapbenderSearchBundle/Resources/public/style-map-manager.js',
                 '@MapbenderSearchBundle/Resources/public/query-result-title-bar-view.js',

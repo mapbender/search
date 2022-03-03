@@ -87,19 +87,15 @@ $.widget("rw.queryManager", {
                                 buttons: [{
                                     text:  "Speichern",
                                     click: function() {
-                                        var data = fieldForm.formData();
-
-                                        var errorInputs = $(".has-error", fieldForm);
-                                        var hasErrors = errorInputs.size() > 0;
-
-                                        if(hasErrors) {
+                                        var fieldName = $('select', fieldForm).val();
+                                        if (!fieldName) {
+                                            $('.form-group', fieldForm).addClass('has-error');
                                             return false;
                                         }
-
-                                        var title = _.object(_.pluck(currentSchema.fields, 'name'), _.pluck(currentSchema.fields, 'title'))[data.fieldName];
+                                        var fieldLabel = $('option:selected', fieldForm).text();
                                         fieldsTableApi.rows.add([{
-                                            fieldName: data.fieldName,
-                                            title:     title
+                                            fieldName: fieldName,
+                                            title: fieldLabel
                                         }]);
                                         fieldsTableApi.draw();
                                         fieldForm.dialog('destroy');
@@ -138,14 +134,11 @@ $.widget("rw.queryManager", {
                                 buttons: [{
                                     text:  "Speichern",
                                     click: function() {
-                                        var data = conditionForm.formData();
-                                        var errorInputs = $(".has-error", conditionForm);
-                                        var hasErrors = errorInputs.size() > 0;
-                                        var fieldDefinition = _.findWhere(currentSchema.fields, {name: data.fieldName});
-
-                                        if(hasErrors) {
+                                        if (!Mapbender.Search.FormUtil.checkValidity(conditionForm)) {
                                             return false;
                                         }
+                                        var data = Mapbender.Search.FormUtil.getData(conditionForm);
+                                        var fieldDefinition = _.findWhere(currentSchema.fields, {name: data.fieldName});
 
                                         conditionsTableApi.rows.add([{
                                             fieldName:  data.fieldName,
@@ -177,7 +170,7 @@ $.widget("rw.queryManager", {
         $('.ui-tabs', element).tabs({
             active: 0
         });
-        element.formData(query);
+        Mapbender.Search.FormUtil.setData(this.element, query);
         return element;
     },
 
@@ -206,11 +199,15 @@ $.widget("rw.queryManager", {
         });
     },
     submitData_: function(form, isCheck) {
+        var formData = {};
+        $(':input[name]', form).get().forEach(function(input) {
+            formData[input.name] = input.type === 'checkbox' ? input.checked : (input.value || '');
+        });
+        if (!isCheck && !formData['name']) {
+            $('input[name="name"]', form).closest('.form-group').addClass('has-error');
+            return false;
+        }
                     var eventName = isCheck && 'check' || 'submit';
-                    var formData = form.formData();
-                    if (!formData || (!isCheck && $('.has-error', form).length)) {
-                        return false;
-                    }
                     formData.conditions = $('table.-js-conditions-collection', form).dataTable().api().rows().data().toArray();
                     formData.fields = $('table.-js-fields-collection', form).dataTable().api().rows().data().toArray();
                     formData.id = this.options.data.id;

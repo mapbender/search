@@ -190,31 +190,25 @@
         },
 
         /**
-         * Open style editor dialog
-         *
-         * @param options
-         * @todo: Check inputs
+         * @param {Object} [style]
          */
-        openStyleEditor: function(options) {
+        openStyleEditor: function(style) {
             var widget = this;
-            var options_ = options || {};
-            options_.template = this.templates_['style-editor'];
-            var styleEditor = $("<div/>").featureStyleEditor(options_);
+            var options = {
+                data: style || {},
+                template: this.templates_['style-editor']
+            };
+            var styleEditor = $("<div/>").featureStyleEditor(options);
 
             styleEditor.bind('featurestyleeditorsubmit', function(e, context) {
-                var formData = styleEditor.formData();
-                var incompleteFields = styleEditor.has(".has-error");
-                var styleId = styleEditor.featureStyleEditor('option', 'data').id;
-                var isNew = !!styleId;
+                if (Mapbender.Search.FormUtil.checkValidity(styleEditor)) {
+                    var formData = Mapbender.Search.FormUtil.getData(styleEditor);
+                    formData.id = (style || {}).id || null;
 
-                if(incompleteFields.size()) {
-                    $.notify("Bitte vervollständigen sie die Daten.");
-                } else {
                     widget.query('style/save', {
-                        style: _.extend(formData, {id: styleId})
+                        style: formData
                     }).done(function(r) {
-                        var style = r.style;
-                        styleEditor.formData(style);
+                        Mapbender.Search.FormUtil.setData(styleEditor, r.style);
                         $.notify("Style erfolgreich gespeichert!", "info");
                         styleEditor.featureStyleEditor('close');
                         widget.refreshStyles();
@@ -302,27 +296,21 @@
 
             styleMapManager.bind('stylemapmanagereditstyle', function(event, context) {
                 var style = context.style;
-                if(style) {
-                    widget.openStyleEditor({data: style});
+                if (style) {
+                    widget.openStyleEditor(style);
                 } else {
                     $.notify("Bitte Style wählen!");
                 }
             });
 
             styleMapManager.bind('stylemapmanagersubmit', function(event, context) {
-                var formData = styleMapManager.formData();
-                var incompleteFields = styleMapManager.has(".has-error");
-                var styleMapId = styleMapManager.styleMapManager('option', 'data').id;
-                var isNew = !!styleMapId;
-
-                if(incompleteFields.size()) {
-                    $.notify("Bitte vervollständigen sie die Daten.");
-                } else {
+                if (Mapbender.Search.FormUtil.checkValidity(styleMapManager)) {
+                    var formData = Mapbender.Search.FormUtil.getData(styleMapManager);
+                    formData.id = (data || {}).id || null;
                     widget.query('stylemap/save', {
-                        styleMap: _.extend(formData, {id: styleMapId})
+                        styleMap: formData
                     }).done(function(r) {
-                        var styleMap = r.styleMap;
-                        styleMapManager.formData(styleMap);
+                        Mapbender.Search.FormUtil.setData(styleMapManager, r.styleMap);
                         $.notify("Stylemap erfolgreich gespeichert!", "info");
                         styleMapManager.styleMapManager('close');
                         widget.refreshStyleMaps();
