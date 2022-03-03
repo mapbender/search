@@ -483,9 +483,7 @@
         renderQuery: function(queriesAccordionView, query) {
             var widget = this;
             var map = this.map;
-            var options = this.options;
                 var schema = widget._schemas[query.schemaId];
-                schema.clustering =  options.clustering;
             var $query = $(widget.templates_['query']);
             var queryTitleView = query.titleView = $query.filter('.query-header');
             queryTitleView.data('query', query);
@@ -531,18 +529,16 @@
                         });
                     }
 
-                    if (schema.clustering && schema.clustering.length) {
+                    if ((widget.options.clustering || []).length) {
                         var clusterStrategy = new OpenLayers.Strategy.Cluster({
                             threshold: 1,
-                            distance:  -1
+                            distance: 30
                         });
                         strategies.push(clusterStrategy);
-                        query.clusterStrategy = clusterStrategy;
                     }
 
                     styleMapConfig.featureDefault = styleMapConfig['default'];
                     styleMapConfig.featureSelect = styleMapConfig['select'];
-                    styleMapConfig.featureInvisible = styleMapConfig['invisible'];
 
                     styleMapConfig.clusterDefault = new OpenLayers.Style(_.extend({}, styleMapConfig.featureDefault.defaultStyle, {
                         pointRadius:         '15',
@@ -584,7 +580,6 @@
                         }
                     });
 
-                    styleMapConfig.clusterInvisible = styleMapConfig.featureInvisible.defaultStyle;
                     if (!hasDefaultStyle && schema.featureType && (typeof schema.featureType) === 'string' && widget.customStyles_[schema.featureType]) {
                         var customFtStyle = widget.customStyles_[schema.featureType];
                         _.each(['featureDefault', 'clusterDefault'], function(styleMapConfigName) {
@@ -1087,42 +1082,34 @@
          */
         updateClusterStrategies: function() {
             var scale = Mapbender.Model.getCurrentScale(false);
+            var enabled = false;
+            for (var i = 0; i < this.options.clustering.length; ++i) {
+                var clusterSetting = this.options.clustering[i];
+                if (scale >= clusterSetting.scale) {
+                    enabled = !clusterSetting.disable;
+                    break;
+                }
+            }
+
             var widget = this;
             _.each(this._queries, function(query) {
-                var schema = widget._schemas[query.schemaId];
-                if (schema.clustering && schema.clustering.length) {
-                    var clusterSettings = widget.pickClusterSettings(schema, scale);
-                    widget.applyClusterSettings(query, clusterSettings);
-                }
+                widget.toggleClustering(query, enabled);
             });
         },
-        pickClusterSettings: function(schema, scale) {
-            if (!schema.clustering || !schema.clustering.length) {
-                return false;
-            }
-            for (var i = 0; i < schema.clustering.length; ++i) {
-                var clusterSetting = schema.clustering[i];
-                if (scale >= clusterSetting.scale) {
-                    return !clusterSetting.disable && clusterSetting;
-                }
-            }
-            return false;
-        },
-        applyClusterSettings: function(query, clusterSettings) {
-            var styles = query.layer.options.styleMap.styles;
-            if (clusterSettings) {
-                if (clusterSettings.distance) {
-                    query.clusterStrategy.distance = clusterSettings.distance;
-                }
+        toggleClustering: function(query, state) {
+            var layer = query.layer;
+            var styles = layer.options.styleMap.styles;
+            var clusterStrategy = layer.strategies[0];
+            if (state && clusterStrategy) {
                 styles['default'] = styles.clusterDefault;
                 styles['select'] = styles.clusterSelect;
-                styles['invisible'] = styles.clusterInvisible;
-                query.clusterStrategy.activate();
+                clusterStrategy.activate();
             } else {
                 styles['default'] = styles.featureDefault;
                 styles['select'] = styles.featureSelect;
-                styles['invisible'] = styles.featureInvisible;
-                query.clusterStrategy.deactivate();
+                if (clusterStrategy) {
+                    clusterStrategy.deactivate();
+                }
             }
         }
     });
