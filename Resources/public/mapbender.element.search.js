@@ -426,13 +426,12 @@
             if (!query.extendOnly && query._rowFeatures) {
                 setTimeout(function() {
                     var featureCollection = widget.parseResponseFeatures_(query._rowFeatures);
-                    query.resultView.queryResultView('updateList', featureCollection);
                     widget.reloadFeatures(query, featureCollection);
                     query.titleView.removeClass('loading');
                 }, 100);
                 return null;
-            }else {
-                query.resultView.queryResultView('updateList', []);
+            } else {
+                this.replaceTableRows(query, []);
             }
 
             return query.fetchXhr = widget.query('query/fetch', request, 'GET').done(function(r) {
@@ -455,8 +454,6 @@
                     query._rowFeatures = r.features;
                 }
                 var featureCollection = widget.parseResponseFeatures_(r.features);
-
-                query.resultView.queryResultView('updateList', featureCollection);
                 widget.reloadFeatures(query, featureCollection);
             }).always(function() {
                 query.titleView.removeClass('loading');
@@ -492,12 +489,15 @@
             $('.title-text', $titleView).text(query.name);
             query.titleView = $titleView;
             var $resultView = $query.filter('.query-content-panel');
+            $('input[name="extent-only"]', $resultView).prop('checked', !!query.extendOnly);
+            $('input[type="search"]', $resultView).attr('placeholder', _.pluck(query.fields, 'title').join(', '));
+
             $resultView
                 .data('query', query)
                 .queryResultView()
             ;
             query.resultView = $resultView;
-            this.initQueryViewEvents($resultView);
+            this.initQueryViewEvents($resultView, query);
             this.initTitleEvents($titleView, query);
             return $query;
         },
@@ -661,60 +661,48 @@
             layer.query = query;
             return layer;
         },
-        initQueryViewEvents: function(queryView) {
+        initQueryViewEvents: function(queryView, query) {
             var widget = this;
-                queryView
-                    .bind('queryresultviewchangeextend', function(e, context) {
-                        var query = context.query;
-                        query.extendOnly = context.checked;
-                        widget.fetchQuery(query);
-                        return false;
-                    })
-                    .bind('queryresultviewzoomto', function(e, context) {
-                        widget.mbMap.getModel().zoomToFeature(context.feature);
-                        return false;
-                    })
-                    .bind('queryresultviewmark', function(e, context) {
-                        var tr = $(context.ui).closest("tr");
-                        var tableApi = tr.closest('table').dataTable().api();
-                        var row = tableApi.row(tr);
-                        var feature = row.data();
-
-                        if(tr.is(".mark")) {
-                            tr.removeClass('mark');
-                        } else {
-                            tr.addClass('mark');
-                        }
-
-                        feature.mark = tr.is(".mark");
-
-                        return false;
-                    })
-                    .bind('queryresultviewtogglevisibility', function(e, context) {
-
-                        var feature = widget._checkFeatureCluster(context.feature);
-                        var layer = feature.layer;
-                        var featureStyle = (context.feature.styleId) ? context.feature.styleId : 'default';
-
-                        if(!feature.renderIntent || feature.renderIntent != 'invisible') {
-                            featureStyle = 'invisible';
-                        }
-
-                        layer.drawFeature(feature, featureStyle);
-
-                        context.ui.closest('tr').toggleClass('invisible-feature');
-
-                        return false;
-                    })
-                    .bind('queryresultviewfeatureover', function(e, context) {
-                        widget._highlightSchemaFeature(context.feature, true);
-                        return false;
-                    })
-                    .bind('queryresultviewfeatureout ', function(e, context) {
-                        widget._highlightSchemaFeature(context.feature, false);
-                        return false;
-                    })
-                    .bind('queryresultviewfeatureclick', function(e, context) {
+            $('input[name="extent-only"]', queryView).on('change', function() {
+                query.extendOnly = this.checked;
+                widget.fetchQuery(query);
+            });
+            // noinspection JSVoidFunctionReturnValueUsed
+            queryView
+                .on('click', '.-fn-zoomto', function() {
+                    var feature = $(this).closest('tr').data('feature');
+                    widget.mbMap.getModel().zoomToFeature(feature);
+                    return false;
+                })
+                .on('click', '.-fn-bookmark', function() {
+                    var $row = $(this).closest('tr');
+                    var feature = $row.data('feature');
+                    $row.toggleClass('mark');
+                    feature.mark = $row.hasClass('mark');
+                    return false;
+                })
+                .on('click', '.-fn-toggle-visibility', function() {
+                    var $btn = $(this);
+                    var $icon = $('> i', this);
+                    var $row = $btn.closest('tr');
+                    var feature = $row.data('feature');
+                    feature = widget._checkFeatureCluster(feature);
+                    var hidden = !feature.__hidden__;
+                    feature.__hidden__ = hidden;
+                    $icon.toggleClass('fa-eye-slash', hidden);
+                    $icon.toggleClass('fa-eye', !hidden);
+                    feature.layer.drawFeature(feature, hidden && 'invisible' || 'default');
+                    return false;
+                })
+                .on('mouseover', 'tbody > tr[role="row"]', function() {
+                    var feature = $(this).data('feature');
+                    widget._highlightSchemaFeature(feature, true);
+                })
+                .on('mouseout', 'tbody > tr[role="row"]', function() {
+                    var feature = $(this).data('feature');
+                    widget._highlightSchemaFeature(feature, false);
+                })
+                .on('click', 'tbody > tr[role="row"]', function() {
                         function format(feature) {
                             var table = $('<table>');
 
@@ -736,7 +724,7 @@
                             return table;
                         }
 
-                        var tr = $(context.ui);
+                        var tr = $(this);
                         var tableApi = tr.closest('table').dataTable().api();
                         var row = tableApi.row(tr);
                         var feature = tr.data('feature');
@@ -893,7 +881,7 @@
          * @private
          */
         _highlightTableRow: function(feature, highlight) {
-            var table = feature.layer.query.resultView.find('.mapbender-element-result-table');
+            var $table = $('table:first', feature.layer.query.resultView);
             var features = feature.cluster ? feature.cluster : [feature];
 
             for (var i = 0; i < features.length; ++i) {
@@ -901,7 +889,7 @@
                     var tr = features[i].tableRow;
                     $(tr).toggleClass('hover', !!highlight);
                     if (highlight) {
-                        var tableApi = $('table:first', table).DataTable();
+                        var tableApi = $table.dataTable().api();
                         var rowsPerPage = tableApi.page.len();
                         var rowIndex = tableApi.rows({order: 'current'}).nodes().indexOf(tr);
                         var pageWithRow = Math.floor(rowIndex / rowsPerPage);
@@ -1038,7 +1026,6 @@
             var widget = this;
             var schema = widget._schemas[query.schemaId];
             var layer = query.layer;
-            var tableApi = $('table', query.resultView).dataTable().api();
             var features = _features ? _features : layer.features;
 
             if(features.length && features[0].cluster) {
@@ -1056,12 +1043,14 @@
             });
 
             layer.redraw();
-
+            this.replaceTableRows(query, features);
+        },
+        replaceTableRows: function(query, features) {
+            var tableApi = $('table:first', query.resultView).dataTable().api();
             tableApi.clear();
             tableApi.rows.add(features);
             tableApi.draw();
         },
-
         /**
          * Update cluster strategies
          */

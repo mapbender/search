@@ -18,14 +18,6 @@ $.widget("wheregroup.queryResultView", {
     },
 
     /**
-     * Settings for saving
-     */
-    preparedData:{
-    },
-
-    table: null,
-
-    /**
      * Constructor
      */
     _create: function() {
@@ -36,15 +28,7 @@ $.widget("wheregroup.queryResultView", {
      * Render
      */
     render: function(query) {
-        var widget = this;
-
         this.element.attr('data-id', query.id);
-        $('input[name="extent-only"]', this.element).on('change', function() {
-            widget._trigger('changeExtend', null, {
-                query:   query,
-                checked: $(this).prop('checked')
-            });
-        }).prop('checked', !!query.extendOnly);
 
         function escapeHtml(text) {
             'use strict';
@@ -93,75 +77,7 @@ $.widget("wheregroup.queryResultView", {
         });
 
 
-        $('.resultQueries table', this.element).dataTable(tableOptions);
-
-        $('table tbody', this.element)
-            .on('click', '> tr[role="row"]', function(e) {
-                var olFeature = $(this).data('feature');
-                if(!olFeature) {
-                    return;
-                }
-
-                widget._trigger('featureClick', null, {
-                    feature:  olFeature,
-                    ui: this,
-                    query: query
-                });
-                return false;
-            })
-            .on('mouseover', '> tr[role="row"]', function(e) {
-                var olFeature = $(this).data('feature');
-                if(!olFeature) {
-                    return false;
-                }
-
-                widget._trigger('featureOver', null, {
-                    feature:  olFeature
-                });
-                return false;
-            })
-            .on('mouseout', '> tr[role="row"]', function(e) {
-                var olFeature = $(this).data('feature');
-                if(!olFeature) {
-                    return false;
-                }
-
-                widget._trigger('featureOut', null, {
-                    feature:  olFeature
-                });
-                return false;
-            })
-            .on('click', '.-fn-zoomto', function() {
-                widget._trigger('zoomTo', null, {
-                    feature: $(this).closest('tr').data('feature')
-                });
-                return false;
-            })
-            .on('click', '.-fn-toggle-visibility', function() {
-                widget._trigger('toggleVisibility', null, {
-                    feature: $(this).closest('tr').data('feature'),
-                    ui:      $(this)
-                });
-                return false;
-            })
-            .on('click', '.-fn-bookmark', function() {
-                widget._trigger('mark', null, {
-                    ui: this
-                });
-                return false;
-            })
-        ;
-
-        // Add placeholder to result table filter search input
-        $('input[type="search"]', this.element).attr('placeholder', _.pluck(query.fields, 'title').join(', '));
-    },
-
-    updateList: function(list) {
-        var $table = $('table:first', this.element);
-        var tableApi = $table.dataTable().api();
-        tableApi.clear();
-        tableApi.rows.add(list);
-        tableApi.draw();
+        $('table', this.element).dataTable(tableOptions);
     }
 });
 

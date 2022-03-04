@@ -70,9 +70,6 @@
   .queries-accordion {
     .ui-accordion-content {
       padding: 0 0 1em 0;
-      .resultQueries {
-        margin: 0;
-      }
     }
     > .ui-accordion-header {
       background-color: darken($buttonActiveBgColor, 7%);
