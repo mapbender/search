@@ -76,7 +76,11 @@
             this.tableRenderer = new Mapbender.Search.TableRenderer(this.templates_['table-buttons']);
             this.styleEditor = new Mapbender.Search.StyleEditor(this, this.templates_['style-editor'], this.templates_['style-map-manager']);
 
-            widget.elementUrl = Mapbender.configuration.application.urls.element + '/' + element.attr('id') + '/';
+            this.elementUrl = Mapbender.configuration.application.urls.element + '/' + element.attr('id') + '/';
+
+            // Start loading data before wating on map
+            this.initDataPromise_ = $.getJSON(this.elementUrl + 'init');
+
             Mapbender.elementRegistry.waitReady('.mb-element-map').then(function(mbMap) {
                 widget.mbMap = mbMap;
                 widget.map = mbMap.map.olMap;
@@ -136,17 +140,15 @@
                 widget.updateClusterStrategies();
             });
 
-
-            jQuery.when(
-                widget.refreshSchemas(),
-                widget.refreshStyles(),
-                widget.refreshStyleMaps()
-            ).done(function() {
-                widget.refreshQueries().done(function(r) {
-                    widget.updateClusterStrategies();
-                    widget.renderSchemaFilterSelect();
-                    widget._trigger('ready');
-                });
+            this.initDataPromise_.then(function(data) {
+                widget._schemas = data.schemas;
+                widget._styles = !Array.isArray(data.styles) && data.styles || {};
+                widget._styleMaps = !Array.isArray(data.styleMaps) && data.styleMaps || {};
+                widget._queries = !Array.isArray(data.queries) && data.queries || {};
+                widget.renderSchemaFilterSelect();
+                widget.renderQueries(widget._queries);
+                widget.updateClusterStrategies();
+                widget._trigger('ready');
             });
         },
 
@@ -246,7 +248,6 @@
                         $.notify("Erfolgreich gespeichert!", "info");
                         if (isNew) {
                             widget.addQuery(query);
-                            $('.queries-accordion', widget.element).accordion('refresh');
                         } else {
                             widget.updateQuery(query);
                         }
@@ -285,59 +286,6 @@
             });
         },
 
-        /**
-         * Refresh styles
-         */
-        refreshStyles: function() {
-            var widget = this;
-            return widget.query('style/list').then(function(r) {
-                widget._styles = r.list;
-            });
-        },
-
-        /**
-         * Refresh style maps
-         */
-        refreshStyleMaps: function() {
-            var widget = this;
-            return widget.query('stylemap/list').then(function(r) {
-                widget._styleMaps = r.list;
-            });
-        },
-
-        /**
-         * Refresh feature types
-         */
-        refreshSchemas: function() {
-            var widget = this;
-            return widget.query('schemas/list').done(function(r) {
-                var schemas = r.list;
-                widget._schemas = schemas;
-                widget._trigger('schemasUpdate', null, schemas);
-            });
-        },
-
-        /**
-         * Refresh feature types
-         */
-        refreshQueries: function() {
-            var widget = this;
-            return widget.query('queries/list').done(function(r) {
-                var queries = $.isArray(r.list) ? {} : r.list;
-                // clean up previous queries
-                _.each(widget._queries, function(query) {
-                    if(query.layer && query.layer.map) {
-                        var layer = query.layer;
-                        var map = layer.map;
-                        map.removeControl(query.selectControl);
-                        map.removeLayer(layer);
-                    }
-                });
-
-                widget._queries = queries;
-                widget.renderQueries(queries);
-            });
-        },
         parseResponseFeatures_: function(data) {
             return data.map(function(featureData) {
                 var feature = new OpenLayers.Feature.Vector(OpenLayers.Geometry.fromWKT(featureData.geometry));
@@ -412,16 +360,18 @@
          */
         renderQueries: function(queries) {
             var queriesArray = _.toArray(queries);
+            this.initAccordion($('.queries-accordion', this.element));
 
             for (var i = 0; i < queriesArray.length; ++i) {
                 this.addQuery(queriesArray[i]);
             }
-            this.initAccordion($('.queries-accordion', this.element), queries);
         },
         addQuery: function(query) {
             this._queries[query.id] = query;
-            $('.queries-accordion', this.element).append(this.renderQuery(query));
+            var $accordion = $('.queries-accordion', this.element);
+            $accordion.append(this.renderQuery(query));
             query.layer = this.createQueryLayer_(query);
+            $accordion.accordion('refresh');
         },
         updateQuery: function(query) {
             this._queries[query.id] = query;

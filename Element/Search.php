@@ -141,45 +141,40 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
         // action seems to come in lower-case anyway, might be browser dependent
         $action = strtolower($action);
         switch ($action) {
-            case 'schemas/list':
-                return $this->listSchemasAction($element);
+            case 'init':
+                return new JsonResponse(array(
+                    'schemas' => $this->getSchemaData($element),
+                    'styles' => $this->styleManager->getAll(),
+                    'styleMaps' => $this->styleMapManager->getAll(),
+                    'queries' => \array_reverse($this->queryManager->getAll(), true),
+                ));
             case 'query/fetch':
                 return new JsonResponse($this->fetchQueryAction($element, $request));
             case 'query/check':
                 return $this->checkQueryAction($element, $request);
             case 'export':
                 return $this->exportAction($element, $request);
-            case 'queries/list':
-            case 'query/save':
             case 'query/remove':
+                $requestData = \json_decode($request->getContent(), true);
+                return new JsonResponse(array(
+                    'result' => $this->queryManager->remove($requestData['id']),
+                ));
+            case 'query/save':
                 $saveDataKey = 'query';
                 $repository = $this->queryManager;
                 break;
-            case 'style/list':
             case 'style/save':
                 $saveDataKey = 'style';
                 $repository = $this->styleManager;
                 break;
-            case 'stylemap/list':
             case 'stylemap/save':
                 $saveDataKey = 'styleMap';
                 $repository = $this->styleMapManager;
                 break;
             default:
-                throw new BadRequestHttpException("Invalid action " . var_export($action, true));
+                break;
         }
         switch ($action) {
-            case 'queries/list':
-            case 'style/list':
-            case 'stylemap/list':
-                return new JsonResponse(array(
-                    'list' => array_reverse($repository->getAll(), true)
-                ));
-            case 'query/remove':
-                $requestData = \json_decode($request->getContent(), true);
-                return new JsonResponse(array(
-                    'result' => $repository->remove($requestData['id']),
-                ));
             case 'query/save':
             case 'style/save':
             case 'stylemap/save':
@@ -252,9 +247,9 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
 
     /**
      * @param Element $element
-     * @return JsonResponse
+     * @return array
      */
-    public function listSchemasAction(Element $element)
+    public function getSchemaData(Element $element)
     {
         $result                  = array();
         $config = $element->getConfiguration();
@@ -282,7 +277,7 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
                 }
             }
 
-            $result[ $schemaId ] = array(
+            $result[$schemaId] = array(
                 'title' => $declaration['title'],
                 'fields'      => $fields,
                 'print' => !empty($declaration['print']) ? $declaration['print'] : null,
@@ -291,10 +286,8 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
         }
 
         ksort($result);
+        return $result;
 
-        return new JsonResponse(array(
-            'list' => $result,
-        ));
     }
 
     /**
