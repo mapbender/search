@@ -475,28 +475,38 @@
             // TODO: clean up, remove/refresh map layers, events, etc...
             queriesContainer.empty();
             for (var i = 0; i < queriesArray.length; ++i) {
-                queriesContainer.append(this.renderQuery(queriesAccordionView, queriesArray[i]));
+                var query = queriesArray[i];
+                queriesAccordionView.append(this.renderQuery(query));
+                query.layer = this.createQueryLayer_(query);
             }
             this.initAccordion(queriesAccordionView, queries);
             queriesContainer.append(queriesAccordionView);
         },
-        renderQuery: function(queriesAccordionView, query) {
+        renderQuery: function(query) {
+            var $query = $($.parseHTML(this.templates_['query']));
+            var $titleView = $query.filter('.query-header');
+            $titleView
+                .data('query', query)
+                .queryResultTitleBarView()
+            ;
+            query.titleView = $titleView;
+            var $resultView = $query.filter('.query-content-panel');
+            $resultView
+                .data('query', query)
+                .queryResultView()
+            ;
+            query.resultView = $resultView;
+            this.initQueryViewEvents($resultView);
+            this.initTitleEvents($titleView);
+            return $query;
+        },
+        createQueryLayer_: function(query) {
             var widget = this;
             var map = this.map;
                 var schema = widget._schemas[query.schemaId];
-            var $query = $(widget.templates_['query']);
-            var queryTitleView = query.titleView = $query.filter('.query-header');
-            queryTitleView.data('query', query);
-                queryTitleView.queryResultTitleBarView();
-            var queryView = query.resultView = $query.filter('.query-content-panel');
-            queryView.data('query', query);
-            queryView.queryResultView();
+
                 var layerName = 'query-' + query.id;
 
-                /**
-                 * Create query layer and style maps
-                 */
-                query.layer = function createQueryLayer(query) {
                     var styleDefinitions = widget._styles;
                     var styleMapDefinition = _.extend({}, widget._styleMaps[query.styleMap] || _.first(_.toArray(widget._styleMaps)));
                     var styleMapConfig = {};
@@ -625,14 +635,9 @@
                         strategies: strategies
                     }, {extendDefault: true});
 
-                    layer.query = query;
+                map.addLayer(layer);
 
-                    return layer;
-                }(query);
-
-                map.addLayer(query.layer);
-
-                var selectControl = query.selectControl = new OpenLayers.Control.SelectFeature(query.layer, {
+                var selectControl = query.selectControl = new OpenLayers.Control.SelectFeature(layer, {
                     hover:        true,
                     overFeature:  function(feature) {
                         widget._highlightSchemaFeature(feature, true, true);
@@ -652,16 +657,8 @@
 
                 selectControl.deactivate();
                 map.addControl(selectControl);
-
-
-                // Shows     how long queries runs and queries results can be fetched.
-                // widget.query('query/check', {query: query}).done(function(r) {
-                //     queryTitleView.find(".titleText").html(query.name + " (" + r.count + ", "+r.executionTime+")")
-                // });
-            this.initQueryViewEvents(queryView);
-            this.initTitleEvents(queryTitleView);
-            queriesAccordionView.append(queryTitleView);
-            queriesAccordionView.append(queryView);
+            layer.query = query;
+            return layer;
         },
         initQueryViewEvents: function(queryView) {
             var widget = this;
