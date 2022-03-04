@@ -1,4 +1,7 @@
 (function($) {
+    /**
+     * @external JQuery
+     */
     'use strict';
 
     /**
@@ -418,15 +421,14 @@
             if(query.fetchXhr) {
                 query.fetchXhr.abort();
             }
-
-            query.titleView.queryResultTitleBarView('showPreloader');
+            query.titleView.addClass('loading');
 
             if (!query.extendOnly && query._rowFeatures) {
                 setTimeout(function() {
                     var featureCollection = widget.parseResponseFeatures_(query._rowFeatures);
                     query.resultView.queryResultView('updateList', featureCollection);
                     widget.reloadFeatures(query, featureCollection);
-                    query.titleView.queryResultTitleBarView('hidePreloader');
+                    query.titleView.removeClass('loading');
                 }, 100);
                 return null;
             }else {
@@ -457,7 +459,7 @@
                 query.resultView.queryResultView('updateList', featureCollection);
                 widget.reloadFeatures(query, featureCollection);
             }).always(function() {
-                query.titleView.queryResultTitleBarView('hidePreloader');
+                query.titleView.removeClass('loading');
             });
         },
 
@@ -485,10 +487,9 @@
         renderQuery: function(query) {
             var $query = $($.parseHTML(this.templates_['query']));
             var $titleView = $query.filter('.query-header');
-            $titleView
-                .data('query', query)
-                .queryResultTitleBarView()
-            ;
+            $titleView.data('query', query);
+            $('.-fn-zoomtolayer, .-fn-visibility', $titleView).toggle(!query.exportOnly);
+            $('.title-text', $titleView).text(query.name);
             query.titleView = $titleView;
             var $resultView = $query.filter('.query-content-panel');
             $resultView
@@ -497,7 +498,7 @@
             ;
             query.resultView = $resultView;
             this.initQueryViewEvents($resultView);
-            this.initTitleEvents($titleView);
+            this.initTitleEvents($titleView, query);
             return $query;
         },
         createQueryLayer_: function(query) {
@@ -749,21 +750,24 @@
                         }
                     });
         },
-        initTitleEvents: function(queryTitleView) {
+        /**
+         *
+         * @param {JQuery} queryTitleView
+         * @param {Object} query
+         */
+        initTitleEvents: function(queryTitleView, query) {
             var widget = this;
-                queryTitleView
-                    .bind('queryresulttitlebarviewexport', function(e, context) {
-                        var query = context.query;
+            // noinspection JSVoidFunctionReturnValueUsed
+            queryTitleView.on('click', '.-fn-export', function() {
                         var layer = query.layer;
                         var features = layer.features;
                         var exportFormat = 'xls';
-                        var markedFeatures = null;
 
                         if(features.length && features[0].cluster) {
                             features = _.flatten(_.pluck(layer.features, "cluster"));
                         }
 
-                        markedFeatures = _.where(features, {mark: true});
+                        var markedFeatures = _.where(features, {mark: true});
 
                         if( markedFeatures.length) {
                             widget.exportFeatures(query.id, exportFormat, _.pluck(markedFeatures, 'fid'));
@@ -772,28 +776,23 @@
                         }
 
                         return false;
-                    })
-                    .bind('queryresulttitlebarviewedit', function(e, context) {
-                        var originalQuery = widget._originalQueries[context.query.id];
+            }).on('click', '.-fn-edit', function() {
+                        var originalQuery = widget._originalQueries[query.id];
                         widget.openQueryManager(originalQuery);
                         return false;
-                    })
-                    .bind('queryresulttitlebarviewzoomtolayer', function(e, context) {
-                        var query = context.query;
+            }).on('click', '.-fn-zoomtolayer', function() {
                         var layer = query.layer;
                         layer.map.zoomToExtent(layer.getDataExtent());
                         return false;
-                    })
-                    .bind('queryresulttitlebarviewvisibility', function(e, context) {
-                        console.log(context);
+            }).on('click', '.-fn-visibility', function() {
+                        /** @todo: implement this properly or remove the button! */
+                        return false;
                         // var query = context.query;
                         // var layer = query.layer;
                         // layer.setVisibility()
                         // $.notify("Chnage visibility of layer");
                         // return false;
-                    })
-                    .bind('queryresulttitlebarviewremove', function(e, context) {
-                        var query = context.query;
+            }).on('click', '.-fn-delete', function() {
                         Mapbender.confirmDialog({
                             title:     'Suche löschen?',
                             html:      'Die Suche "' + query.name + '" löschen?',
@@ -804,8 +803,8 @@
                                 })
                             }
                         });
-                    });
-
+                        return false;
+            });
         },
         initAccordion: function(queriesAccordionView, queries) {
             var widget = this;
@@ -829,7 +828,7 @@
                         return false;
                     }
                     if (query) {
-                        $('.preloader', ui.newHeader).show();
+                        ui.newHeader.addClass('loading');
                     }
                 },
                 activate: function(event, ui) {
@@ -838,9 +837,7 @@
                         query.isActive = true;
                         query.selectControl.activate();
                         query.layer.setVisibility(true);
-                        widget.fetchQuery(query).always(function() {
-                            $('.preloader', ui.newHeader).hide();
-                        });
+                        widget.fetchQuery(query);
                     }
                 }
             });

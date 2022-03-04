@@ -31,6 +31,9 @@
         display: none;
         margin-right: 0.5em;
       }
+      &.loading .preloader {
+        display: inline-block;
+      }
       &:focus {
         outline: none;
       }
