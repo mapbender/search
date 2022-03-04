@@ -802,16 +802,7 @@
                     })
                     .bind('queryresulttitlebarviewremove', function(e, context) {
                         var query = context.query;
-                        Mapbender.confirmDialog({
-                            title:     'Suche löschen?',
-                            html:      'Die Suche "' + query.name + '" löschen?',
-                            onSuccess: function() {
-                                widget.query('query/remove', {id: query.id}).done(function(r) {
-                                    $.notify("Die Suche wurde gelöscht!", 'notice');
-                                    widget.refreshQueries();
-                                })
-                            }
-                        });
+                        widget.confirmDelete(query);
                     });
 
         },
@@ -1124,6 +1115,35 @@
                 styles['invisible'] = styles.featureInvisible;
                 query.clusterStrategy.deactivate();
             }
+        },
+        confirmDelete: function(query) {
+            var self = this;
+            var $content = $(document.createElement('div'))
+                .text('Die Suche "' + query.name + '" löschen?')
+            ;
+            $content.dialog({
+                title: 'Suche löschen?',
+                classes: {
+                    'ui-dialog': 'ui-dialog mb-search-dialog'
+                },
+                modal: true,
+                buttons: [{
+                    text: 'Ok',
+                    click: function() {
+                        self.query('query/remove', {id: query.id}).then(function(r) {
+                            $.notify("Die Suche wurde gelöscht!", 'notice');
+                            self.refreshQueries();
+                            $content.dialog('destroy');
+                        });
+                        return false;
+                    }
+                }, {
+                    text: Mapbender.trans('mb.actions.cancel'),
+                    click: function() {
+                        $content.dialog('destroy');
+                    }
+                }]
+            });
         }
     });
 
