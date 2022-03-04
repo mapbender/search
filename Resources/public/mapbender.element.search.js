@@ -76,6 +76,7 @@
             this.templates_['style-editor'] = $('.-tpl-style-editor', this.element).remove().css({display: null}).html();
             this.templates_['table-buttons'] = $('.-tpl-query-table-buttons', this.element).remove().css({display: null}).html();
             this.tableRenderer = new Mapbender.Search.TableRenderer(this.templates_['table-buttons']);
+            this.styleEditor = new Mapbender.Search.StyleEditor(this, this.templates_['style-editor'], this.templates_['style-map-manager']);
 
             widget.elementUrl = Mapbender.configuration.application.urls.element + '/' + element.attr('id') + '/';
             Mapbender.elementRegistry.waitReady('.mb-element-map').then(function(mbMap) {
@@ -115,10 +116,10 @@
                 });
 
                 element.on('click', '.new-query', function() {
-                    widget.openCreateDialog();
+                    widget.openQueryManager();
                 });
                 element.on('click', '.new-stylemap', function() {
-                    widget.openStyleMapManager({id: null}, widget._styles);
+                    widget.openStyleMapManager();
                 });
                 element.on('click', '.new-style', function() {
                     widget.openStyleEditor();
@@ -199,29 +200,13 @@
          */
         openStyleEditor: function(style) {
             var widget = this;
-            var options = {
-                data: style || {},
-                template: this.templates_['style-editor']
-            };
-            var styleEditor = $("<div/>").featureStyleEditor(options);
-
-            styleEditor.bind('featurestyleeditorsubmit', function(e, context) {
-                if (Mapbender.Search.FormUtil.checkValidity(styleEditor)) {
-                    var formData = Mapbender.Search.FormUtil.getData(styleEditor);
-                    formData.id = (style || {}).id || null;
-
-                    widget.query('style/save', {
-                        style: formData
-                    }).done(function(r) {
-                        Mapbender.Search.FormUtil.setData(styleEditor, r.style);
-                        $.notify("Style erfolgreich gespeichert!", "info");
-                        styleEditor.featureStyleEditor('close');
-                        widget.refreshStyles();
-                    });
-                }
+            return this.styleEditor.editStyle(style).then(function(style) {
+                return widget.query('style/save', {
+                    style: style
+                }).then(function(response) {
+                    widget._styles[response.style.id] = response.style;
+                });
             });
-
-            return styleEditor;
         },
 
 
@@ -230,12 +215,12 @@
          */
         openQueryManager: function(query) {
             var widget = this;
-            var element = widget.element;
             var schemas = widget._schemas;
             var queryManager = $("<div/>");
             var map = widget.map;
 
             queryManager.queryManager({
+                owner: this,
                 data:      query,
                 schemas:   schemas,
                 styleMaps: this._styleMaps,
@@ -243,9 +228,6 @@
             });
 
             queryManager
-                .bind('querymanagerstylemapchange', function(event, context) {
-                    widget.openStyleMapManager(context.styleMap, widget._styles);
-                })
                 .bind('querymanagersubmit', function(event, context) {
                     widget.query('query/save', {query: context.data}).done(function(r) {
                         var queryManagerWidget = context.widget;
@@ -276,62 +258,22 @@
                         $.notify("Anzahl der Ergebnisse : " + r.count + "\nAusführungsdauer: " + r.executionTime, 'info');
                     });
                 });
-
-            element.bind('mbsearchstylesmapsupdated', function(e, styleMaps) {
-                queryManager.queryManager('updateStyleMapList', styleMaps);
-            });
-
-        },
-
-        /**
-         * Create query
-         */
-        openCreateDialog: function(query) {
-            var widget = this;
-            widget.openQueryManager();
         },
 
         /**
          * Open style map manager
          */
-        openStyleMapManager: function(data, styles) {
+        openStyleMapManager: function(data) {
             var widget = this;
-            var element = widget.element;
-            var styleMapManager = $("<div/>");
-
-            styleMapManager.bind('stylemapmanagereditstyle', function(event, context) {
-                var style = context.style;
-                if (style) {
-                    widget.openStyleEditor(style);
-                } else {
-                    $.notify("Bitte Style wählen!");
-                }
-            });
-
-            styleMapManager.bind('stylemapmanagersubmit', function(event, context) {
-                var formData = Mapbender.Search.FormUtil.getData(styleMapManager);
-                formData.id = (data || {}).id || null;
-                widget.query('stylemap/save', {
-                    styleMap: Object.assign({}, context.data, {
-                        id: (data || {}).id || null
-                    })
-                }).done(function(r) {
-                    Mapbender.Search.FormUtil.setData(styleMapManager, r.styleMap);
-                    $.notify("Stylemap erfolgreich gespeichert!", "info");
-                    styleMapManager.styleMapManager('close');
-                    widget.refreshStyleMaps();
+            return this.styleEditor.editStyleMap(data, this._styles).then(function(styleMap) {
+                return widget.query('stylemap/save', {
+                    styleMap: styleMap
+                }).then(function(response) {
+                    var styleMap = response.styleMap;
+                    widget._styleMaps[styleMap.id] = styleMap;
+                    return styleMap;
                 });
             });
-
-            element.bind('mbsearchstylesupdated', function(e, styles) {
-                styleMapManager.styleMapManager('updateStyleList', styles);
-            });
-
-            return styleMapManager.styleMapManager({
-                styles: styles,
-                data: data,
-                template: this.templates_['style-map-manager']
-            })
         },
 
         /**
@@ -339,9 +281,8 @@
          */
         refreshStyles: function() {
             var widget = this;
-            return widget.query('style/list').done(function(r) {
+            return widget.query('style/list').then(function(r) {
                 widget._styles = r.list;
-                widget._trigger('stylesUpdated', null, r.list);
             });
         },
 
@@ -350,9 +291,8 @@
          */
         refreshStyleMaps: function() {
             var widget = this;
-            return widget.query('stylemap/list').done(function(r) {
+            return widget.query('stylemap/list').then(function(r) {
                 widget._styleMaps = r.list;
-                widget._trigger('stylesMapsUpdated', null, r.list);
             });
         },
 

@@ -4,11 +4,12 @@
  */
 $.widget("rw.queryManager", {
     options: {
+        owner: null,
         data:      {
             id: null
         },
         schemas:   [],
-        styleMaps: []
+        styleMaps: {}
     },
 
     /**
@@ -57,10 +58,10 @@ $.widget("rw.queryManager", {
         this.updateStyleMapList(this.options.styleMaps);
         this.element.on('click', '.-fn-edit-stylemap', function() {
             var styleMap = $('[name="styleMap"] option:selected', element).data('stylemap');
-            widget._trigger('styleMapChange', null, {
-                styleMap: styleMap
+            widget.options.owner.openStyleMapManager(styleMap).then(function(styleMap) {
+                widget.options.styleMaps[styleMap.id] = styleMap;
+                widget.updateStyleMapList(widget.options.styleMaps);
             });
-            return false;
         });
         this.element.on('change', 'select[name="schemaId"]', function() {
             var taFields = $('.table.-js-fields-collection', element).dataTable().api();
