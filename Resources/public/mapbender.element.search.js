@@ -58,7 +58,6 @@
         _schemas:         null,
         _styleMaps:       null,
         _queries:         {},
-        _originalQueries: {},
         /**
          * Constructor.
          *
@@ -69,7 +68,6 @@
         _create: function() {
             var widget = this;
             var element = widget.element;
-            var rendered = jQuery.Deferred();
             this.templates_['query-manager'] = $('.-tpl-query-manager', this.element).remove().css({display: null}).html();
             this.templates_['style-map-manager'] = $('.-tpl-style-map-manager', this.element).remove().css({display: null}).html();
             this.templates_['query'] = $('.-tpl-query', this.element).remove().css({display: null}).html();
@@ -83,11 +81,9 @@
                 widget.mbMap = mbMap;
                 widget.map = mbMap.map.olMap;
                 widget._setup();
-                rendered.resolveWith(true);
             }, function() {
                 Mapbender.checkTarget("mbSearch");
             });
-            this.postSetup_(rendered);
         },
         _setup: function() {
             var widget = this;
@@ -124,17 +120,30 @@
                 element.on('click', '.new-style', function() {
                     widget.openStyleEditor();
                 });
-            },
-        postSetup_: function(rendered) {
-            var widget = this;
+
+            var mapChangeHandler = function(e) {
+                _.each(widget._queries, function(query) {
+                    if (!query.isActive || !query.extendOnly) {
+                        return
+                    }
+                    widget.fetchQuery(query);
+                });
+                return false;
+            };
+            this.map.events.register("moveend", null, mapChangeHandler);
+            this.map.events.register("zoomend", null, function(e){
+                mapChangeHandler(e);
+                widget.updateClusterStrategies();
+            });
+
 
             jQuery.when(
                 widget.refreshSchemas(),
                 widget.refreshStyles(),
-                widget.refreshStyleMaps(),
-                rendered
+                widget.refreshStyleMaps()
             ).done(function() {
                 widget.refreshQueries().done(function(r) {
+                    widget.updateClusterStrategies();
                     widget.renderSchemaFilterSelect();
                     widget._trigger('ready');
                 });
@@ -229,19 +238,19 @@
 
             queryManager
                 .bind('querymanagersubmit', function(event, context) {
+                    var isNew = !context.data.id;
                     widget.query('query/save', {query: context.data}).done(function(r) {
                         var queryManagerWidget = context.widget;
-                        $.extend(query, r.entity);
+                        query = $.extend(query || {}, r.entity);
                         queryManagerWidget.close();
                         $.notify("Erfolgreich gespeichert!", "info");
-
-                        widget.refreshQueries().done(function() {
-                            var updatedQuery = query && query.id && _.findWhere( widget._queries, {id: query.id});
-                            if (updatedQuery) {
-                                updatedQuery.titleView.addClass('updated');
-                            }
-                            widget.renderSchemaFilterSelect();
-                        })
+                        if (isNew) {
+                            widget.addQuery(query);
+                            $('.queries-accordion', widget.element).accordion('refresh');
+                        } else {
+                            widget.updateQuery(query);
+                        }
+                        widget.renderSchemaFilterSelect();
                     });
                 })
                 .bind('querymanagercheck', function(event, context) {
@@ -326,10 +335,6 @@
                 });
 
                 widget._queries = queries;
-                widget._originalQueries = {};
-                _.each(queries, function(query, id) {
-                    widget._originalQueries[id] = _.clone(query);
-                });
                 widget.renderQueries(queries);
             });
         },
@@ -406,39 +411,42 @@
          * Render queries
          */
         renderQueries: function(queries) {
-            var widget = this;
-            var element = widget.element;
-            var queriesContainer = element.find('> .html-element-container');
-            var queriesAccordionView = $('<div class="queries-accordion"/>');
-
             var queriesArray = _.toArray(queries);
 
-            // TODO: clean up, remove/refresh map layers, events, etc...
-            queriesContainer.empty();
             for (var i = 0; i < queriesArray.length; ++i) {
-                var query = queriesArray[i];
-                queriesAccordionView.append(this.renderQuery(query));
-                query.layer = this.createQueryLayer_(query);
+                this.addQuery(queriesArray[i]);
             }
-            this.initAccordion(queriesAccordionView, queries);
-            queriesContainer.append(queriesAccordionView);
+            this.initAccordion($('.queries-accordion', this.element), queries);
+        },
+        addQuery: function(query) {
+            this._queries[query.id] = query;
+            $('.queries-accordion', this.element).append(this.renderQuery(query));
+            query.layer = this.createQueryLayer_(query);
+        },
+        updateQuery: function(query) {
+            this._queries[query.id] = query;
+            this.updateQueryMarkup(query);
+            query.titleView.addClass('updated');
+            if (query.isActive) {
+                widget.fetchQuery(query);
+            }
+        },
+        updateQueryMarkup: function(query) {
+            $('.-fn-zoomtolayer, .-fn-visibility', query.titleView).toggle(!query.exportOnly);
+            $('.title-text', query.titleView).text(query.name);
+            $('input[name="extent-only"]', query.resultView).prop('checked', !!query.extendOnly);
+            $('input[type="search"]', query.resultView).attr('placeholder', _.pluck(query.fields, 'title').join(', '));
         },
         renderQuery: function(query) {
             var $query = $($.parseHTML(this.templates_['query']));
             var $titleView = $query.filter('.query-header');
             $titleView.data('query', query);
-            $('.-fn-zoomtolayer, .-fn-visibility', $titleView).toggle(!query.exportOnly);
-            $('.title-text', $titleView).text(query.name);
             query.titleView = $titleView;
             var $resultView = $query.filter('.query-content-panel');
-            $('input[name="extent-only"]', $resultView).prop('checked', !!query.extendOnly);
-            $('input[type="search"]', $resultView).attr('placeholder', _.pluck(query.fields, 'title').join(', '));
-
-            $resultView
-                .data('query', query)
-            ;
-            this.tableRenderer.initializeTable($('table:first', $resultView), query);
+            $resultView.data('query', query);
             query.resultView = $resultView;
+            this.updateQueryMarkup(query);
+            this.tableRenderer.initializeTable($('table:first', $resultView), query);
             this.initQueryViewEvents($resultView, query);
             this.initTitleEvents($titleView, query);
             return $query;
@@ -707,8 +715,7 @@
 
                         return false;
             }).on('click', '.-fn-edit', function() {
-                        var originalQuery = widget._originalQueries[query.id];
-                        widget.openQueryManager(originalQuery);
+                        widget.openQueryManager(query);
                         return false;
             }).on('click', '.-fn-zoomtolayer', function() {
                         var layer = query.layer;
@@ -727,9 +734,8 @@
                         return false;
             });
         },
-        initAccordion: function(queriesAccordionView, queries) {
+        initAccordion: function(queriesAccordionView) {
             var widget = this;
-            var map = this.map;
             queriesAccordionView.accordion({
                 // see https://api.jqueryui.com/accordion/
                 header: ".query-header",
@@ -762,23 +768,6 @@
                     }
                 }
             });
-
-            var mapChangeHandler = function(e) {
-                _.each(queries, function(query) {
-                    if (!query.isActive || !query.extendOnly) {
-                        return
-                    }
-                    widget.fetchQuery(query);
-                });
-                return false;
-            };
-            map.events.register("moveend", null, mapChangeHandler);
-            map.events.register("zoomend", null, function(e){
-                mapChangeHandler(e);
-                widget.updateClusterStrategies();
-            });
-
-            widget.updateClusterStrategies();
         },
 
         /**
@@ -1021,6 +1010,20 @@
                 }
             }
         },
+        removeQuery: function(query) {
+            if (query.resultView) {
+                query.resultView.remove();
+            }
+            if (query.titleView) {
+                query.titleView.remove();
+            }
+            if (query.layer && query.layer.map) {
+                query.layer.map.removeControl(query.selectControl);
+                query.layer.map.removeLayer(query.layer);
+            }
+            delete this._queries[query.id];
+            $('.queries-accordion', this.element).accordion('refresh');
+        },
         confirmDelete: function(query) {
             var self = this;
             var $content = $(document.createElement('div'))
@@ -1037,10 +1040,9 @@
                     click: function() {
                         self.query('query/remove', {id: query.id}).then(function(r) {
                             $.notify("Die Suche wurde gelöscht!", 'notice');
-                            self.refreshQueries();
+                            self.removeQuery(query);
                             $content.dialog('destroy');
                         });
-                        return false;
                     }
                 }, {
                     text: Mapbender.trans('mb.actions.cancel'),
