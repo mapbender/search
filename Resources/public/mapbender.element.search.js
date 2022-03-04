@@ -74,6 +74,8 @@
             this.templates_['style-map-manager'] = $('.-tpl-style-map-manager', this.element).remove().css({display: null}).html();
             this.templates_['query'] = $('.-tpl-query', this.element).remove().css({display: null}).html();
             this.templates_['style-editor'] = $('.-tpl-style-editor', this.element).remove().css({display: null}).html();
+            this.templates_['table-buttons'] = $('.-tpl-query-table-buttons', this.element).remove().css({display: null}).html();
+            this.tableRenderer = new Mapbender.Search.TableRenderer(this.templates_['table-buttons']);
 
             widget.elementUrl = Mapbender.configuration.application.urls.element + '/' + element.attr('id') + '/';
             Mapbender.elementRegistry.waitReady('.mb-element-map').then(function(mbMap) {
@@ -494,8 +496,8 @@
 
             $resultView
                 .data('query', query)
-                .queryResultView()
             ;
+            this.tableRenderer.initializeTable($('table:first', $resultView), query);
             query.resultView = $resultView;
             this.initQueryViewEvents($resultView, query);
             this.initTitleEvents($titleView, query);
@@ -889,11 +891,7 @@
                     var tr = features[i].tableRow;
                     $(tr).toggleClass('hover', !!highlight);
                     if (highlight) {
-                        var tableApi = $table.dataTable().api();
-                        var rowsPerPage = tableApi.page.len();
-                        var rowIndex = tableApi.rows({order: 'current'}).nodes().indexOf(tr);
-                        var pageWithRow = Math.floor(rowIndex / rowsPerPage);
-                        tableApi.page(pageWithRow).draw(false);
+                        this.tableRenderer.pageToRow($table, tr);
                     }
                     break;
                 }
@@ -1046,10 +1044,7 @@
             this.replaceTableRows(query, features);
         },
         replaceTableRows: function(query, features) {
-            var tableApi = $('table:first', query.resultView).dataTable().api();
-            tableApi.clear();
-            tableApi.rows.add(features);
-            tableApi.draw();
+            this.tableRenderer.replaceRows($('table:first', query.resultView), features);
         },
         /**
          * Update cluster strategies

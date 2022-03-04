@@ -75,7 +75,7 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
                 '@MapbenderSearchBundle/Resources/public/FormUtil.js',
                 '@MapbenderSearchBundle/Resources/public/feature-style-editor.js',
                 '@MapbenderSearchBundle/Resources/public/style-map-manager.js',
-                '@MapbenderSearchBundle/Resources/public/query-result-view.js',
+                '@MapbenderSearchBundle/Resources/public/TableRenderer.js',
                 '@MapbenderSearchBundle/Resources/public/query-manager.js',
                 '@MapbenderSearchBundle/Resources/public/mapbender.element.search.js',
             ),
