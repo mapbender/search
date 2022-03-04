@@ -33,7 +33,7 @@ window.Mapbender.Search.FormUtil = {
             var input = $inputs[i];
             if (typeof ((values || {})[input.name]) !== 'undefined') {
                 if (input.type === 'checkbox') {
-                    input.checkd = !!values[input.name];
+                    input.checked = !!values[input.name];
                 } else {
                     $inputs.eq(i).val(values[input.name]);
                 }
