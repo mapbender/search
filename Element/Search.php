@@ -8,6 +8,7 @@ use Doctrine\Persistence\ConnectionRegistry;
 use Mapbender\Component\Element\AbstractElementService;
 use Mapbender\Component\Element\ElementHttpHandlerInterface;
 use Mapbender\Component\Element\TemplateView;
+use Mapbender\CoreBundle\Component\ElementBase\ConfigMigrationInterface;
 use Mapbender\CoreBundle\Entity\Element;
 use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Component\RepositoryRegistry;
@@ -26,7 +27,8 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  * @package Mapbender\SearchBundle\Element
  * @author  Andriy Oblivantsev <eslider@gmail.com>
  */
-class Search extends AbstractElementService implements ElementHttpHandlerInterface
+class Search extends AbstractElementService implements ElementHttpHandlerInterface,
+    ConfigMigrationInterface
 {
     /** @var ConnectionRegistry */
     protected $connectionRegistry;
@@ -93,7 +95,7 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
     {
         return array(
             'schemas' => array(),
-            'clustering' => array(),
+            'cluster_threshold' => 15000,
         );
     }
 
@@ -133,6 +135,27 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
     public function getHttpHandler(Element $element)
     {
         return $this;
+    }
+
+    public static function updateEntityConfig(Element $entity)
+    {
+        // Fold legacy list-of-somethings clustering config to a single scalar
+        // threshold
+        $config = $entity->getConfiguration();
+        $defaultClusterThreshold = static::getDefaultConfiguration()['cluster_threshold'];
+        if (!empty($config['clustering']) && \is_array($config['clustering'])) {
+            $threshold = $defaultClusterThreshold;
+            foreach ($config['clustering'] as $clusterConfig) {
+                if (!empty($clusterConfig['disable']) && !empty($clusterConfig['scale'])) {
+                    $threshold = min($threshold, \intval($clusterConfig['scale']));
+                }
+            }
+            $config += array(
+                'cluster_threshold' => $threshold,
+            );
+        }
+        unset($config['clustering']);
+        $entity->setConfiguration($config);
     }
 
     public function handleRequest(Element $element, Request $request)

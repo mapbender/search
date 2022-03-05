@@ -14,18 +14,7 @@
      */
     $.widget("mapbender.mbSearch", {
         options: {
-            // Default option values
-            maxResults:        5001,
-            pageLength:        10,
-            searchType:        "currentExtent",
-            inlineSearch:      true,
-            clustering:        [{
-                scale:    25000,
-                distance: 30
-            }, {
-                scale:   24000,
-                disable: true
-            }]
+            cluster_threshold: 15000
         },
         mbMap: null,
         map:                    null,
@@ -440,7 +429,7 @@
                         });
                     }
 
-                    if ((widget.options.clustering || []).length) {
+                    if (this.options.cluster_threshold) {
                         var clusterStrategy = new OpenLayers.Strategy.Cluster({
                             threshold: 1,
                             distance: 30
@@ -901,33 +890,24 @@
          */
         updateClusterStrategies: function() {
             var scale = Mapbender.Model.getCurrentScale(false);
-            var enabled = false;
-            for (var i = 0; i < this.options.clustering.length; ++i) {
-                var clusterSetting = this.options.clustering[i];
-                if (scale >= clusterSetting.scale) {
-                    enabled = !clusterSetting.disable;
-                    break;
-                }
-            }
-
-            var widget = this;
-            _.each(this._queries, function(query) {
-                widget.toggleClustering(query, enabled);
+            var enabled = scale >= this.options.cluster_threshold;
+            var layers = Object.values(this._queries).map(function(query) {
+                return query.layer;
             });
-        },
-        toggleClustering: function(query, state) {
-            var layer = query.layer;
-            var styles = layer.options.styleMap.styles;
-            var clusterStrategy = layer.strategies[0];
-            if (state && clusterStrategy) {
-                styles['default'] = styles.clusterDefault;
-                styles['select'] = styles.clusterSelect;
-                clusterStrategy.activate();
-            } else {
-                styles['default'] = styles.featureDefault;
-                styles['select'] = styles.featureSelect;
-                if (clusterStrategy) {
-                    clusterStrategy.deactivate();
+            for (var i = 0; i < layers.length; ++i) {
+                var layer = layers[i];
+                var styles = layer.styleMap.styles;
+                var clusterStrategy = layer.strategies[0];
+                if (enabled && clusterStrategy) {
+                    styles['default'] = styles.clusterDefault;
+                    styles['select'] = styles.clusterSelect;
+                    clusterStrategy.activate();
+                } else {
+                    styles['default'] = styles.featureDefault;
+                    styles['select'] = styles.featureSelect;
+                    if (clusterStrategy) {
+                        clusterStrategy.deactivate();
+                    }
                 }
             }
         },
