@@ -216,7 +216,6 @@
             var widget = this;
             var schemas = widget._schemas;
             var queryManager = $("<div/>");
-            var map = widget.map;
 
             queryManager.queryManager({
                 owner: this,
@@ -225,39 +224,53 @@
                 styleMaps: this._styleMaps,
                 template: this.templates_['query-manager']
             });
-
-            queryManager
-                .bind('querymanagersubmit', function(event, context) {
-                    var isNew = !context.data.id;
-                    widget.query('query/save', context.data).done(function(response) {
-                        var queryManagerWidget = context.widget;
-                        query = $.extend(query || {}, response);
-                        queryManagerWidget.close();
-                        $.notify("Erfolgreich gespeichert!", "info");
-                        if (isNew) {
-                            widget.addQuery(query);
-                        } else {
-                            widget.updateQuery(query);
-                        }
-                        widget.renderSchemaFilterSelect();
-                    });
-                })
-                .bind('querymanagercheck', function(event, context) {
-                    widget.query('query/check', {
-                        query:             context.data,
-                        srid:              map.getProjectionObject().proj.srsProjNumber,
-                        intersect: map.getExtent().toGeometry().toString()
-                    }).done(function(r) {
-                        if(r.errorMessage) {
-                            $.notify("Fehler beim Ausführen:\n" + r.errorMessage, 'error');
-                            return;
-                        }
-
-                        $.notify("Anzahl der Ergebnisse : " + r.count + "\nAusführungsdauer: " + r.executionTime, 'info');
-                    });
-                });
         },
-
+        saveQuery: function(queryData) {
+            var self = this;
+            var isNew = !queryData.id;
+            var query = isNew && {} || this._queries[queryData.id] || {};
+            return this.query('query/save', queryData).then(function(response) {
+                Object.assign(query, response);
+                $.notify("Erfolgreich gespeichert!", "info");
+                if (isNew) {
+                    self.addQuery(query);
+                } else {
+                    self.updateQuery(query);
+                }
+                self.renderSchemaFilterSelect();
+                return query;
+            });
+        },
+        checkQuery: function(query) {
+            this.query('query/check', {
+                query: query,
+                srid: Mapbender.Model.getCurrentProjectionCode().replace(/^\w+:/, ''),
+                intersect: this.getIntersectWkt_()
+            }).done(function(r) {
+                if(r.errorMessage) {
+                    $.notify("Fehler beim Ausführen:\n" + r.errorMessage, 'error');
+                    return;
+                }
+                $.notify("Anzahl der Ergebnisse : " + r.count + "\nAusführungsdauer: " + r.executionTime, 'info');
+            });
+        },
+        getIntersectWkt_: function() {
+            var extent = this.mbMap.getModel().getCurrentExtentArray();
+            var coordinates = [
+                [extent[0], extent[1]],
+                [extent[2], extent[1]],
+                [extent[2], extent[3]],
+                [extent[0], extent[3]]
+            ];
+            coordinates.push(coordinates[0]);
+            return [
+                'POLYGON((',
+                coordinates.map(function(coord) {
+                    return coord.join(' ');
+                }).join(','),
+                '))'
+            ].join('');
+        },
         /**
          * Open style map manager
          */
@@ -287,16 +300,12 @@
          */
         fetchQuery: function(query) {
             var widget = this;
-            var map = widget.map;
 
             var request = {
-                srid:              map.getProjectionObject().proj.srsProjNumber,
+                srid: this.mbMap.getModel().getCurrentProjectionCode().replace(/^\w+:/, ''),
+                intersect: query.extendOnly && this.getIntersectWkt_() || null,
                 queryId: query.id
             };
-
-            if(query.extendOnly) {
-                request.intersect = map.getExtent().toGeometry().toString()
-            }
 
             if(query.fetchXhr) {
                 query.fetchXhr.abort();

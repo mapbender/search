@@ -183,18 +183,20 @@ $.widget("rw.queryManager", {
             buttons:     [{
                 text:  "Prüfen",
                 click: function() {
-                    return widget.submitData_($(this), true);
+                    widget.submitData_($(this), true);
                 }
             }, {
                 text:  "Abbrechen",
                 click: function() {
-                    widget.close();
-                    return false;
+                    $(this).dialog('destroy');
                 }
             }, {
                 text:  "Speichern",
                 click: function() {
-                    return widget.submitData_($(this), false);
+                    var $dialog = $(this);
+                    widget.submitData_($dialog, false).then(function() {
+                        $dialog.dialog('destroy');
+                    });
                 }
             }]
         });
@@ -208,18 +210,15 @@ $.widget("rw.queryManager", {
             $('input[name="name"]', form).closest('.form-group').addClass('has-error');
             return false;
         }
-                    var eventName = isCheck && 'check' || 'submit';
                     formData.conditions = $('table.-js-conditions-collection', form).dataTable().api().rows().data().toArray();
                     formData.fields = $('table.-js-fields-collection', form).dataTable().api().rows().data().toArray();
                     formData.id = this.options.data.id;
 
-                    this._trigger(eventName, null, {
-                        dialog: this.element,
-                        widget: this,
-                        data: formData
-                    });
-
-                    return false;
+        if (isCheck) {
+            this.options.owner.checkQuery(formData);
+        } else {
+            return this.options.owner.saveQuery(formData);
+        }
     },
 
     updateStyleMapList: function(styleMaps) {
@@ -233,11 +232,6 @@ $.widget("rw.queryManager", {
             return option;
         }));
         $select.val(currentValue || '');
-    },
-
-
-    close: function() {
-        this.element.dialog("close");
     },
     initCollection_: function($target, options) {
         var options_ = $.extend({}, options, {
