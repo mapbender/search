@@ -183,15 +183,12 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
                     'result' => $this->queryManager->remove($requestData['id']),
                 ));
             case 'query/save':
-                $saveDataKey = 'query';
                 $repository = $this->queryManager;
                 break;
             case 'style/save':
-                $saveDataKey = 'style';
                 $repository = $this->styleManager;
                 break;
             case 'stylemap/save':
-                $saveDataKey = 'styleMap';
                 $repository = $this->styleMapManager;
                 break;
             default:
@@ -202,15 +199,11 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
             case 'style/save':
             case 'stylemap/save':
                 $requestData = \json_decode($request->getContent(), true);
-                $saveData = $repository->filterFields($requestData[$saveDataKey]);
+                $saveData = $repository->filterFields($requestData);
                 $entity = $repository->create($saveData);
                 $entity->setUserId($repository->getUserId());
                 $repository->save($entity);
-                // @todo: fix this inconsistency
-                $responseDataKey = ($saveDataKey == 'query') ? 'entity' : $saveDataKey;
-                return new JsonResponse(array(
-                    $responseDataKey => $entity,
-                ));
+                return new JsonResponse($entity->toArray());
             default:
                 break;
         }

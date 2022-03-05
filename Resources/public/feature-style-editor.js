@@ -85,7 +85,8 @@
                 var styleId = $('select[name="' + $(this).attr('data-style-name') + '"]', $content).val();
                 var style = styles[styleId];
                 if (style) {
-                    self.owner.openStyleEditor(style).then(function(styles) {
+                    self.owner.openStyleEditor(style).then(function(style) {
+                        styles[style.id] = style;
                         self.updateStyleSelects_($content, styles);
                     });
                 } else {

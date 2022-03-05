@@ -201,10 +201,9 @@
         openStyleEditor: function(style) {
             var widget = this;
             return this.styleEditor.editStyle(style).then(function(style) {
-                return widget.query('style/save', {
-                    style: style
-                }).then(function(response) {
-                    widget._styles[response.style.id] = response.style;
+                return widget.query('style/save', style).then(function(response) {
+                    widget._styles[response.id] = response;
+                    return response;
                 });
             });
         },
@@ -230,9 +229,9 @@
             queryManager
                 .bind('querymanagersubmit', function(event, context) {
                     var isNew = !context.data.id;
-                    widget.query('query/save', {query: context.data}).done(function(r) {
+                    widget.query('query/save', context.data).done(function(response) {
                         var queryManagerWidget = context.widget;
-                        query = $.extend(query || {}, r.entity);
+                        query = $.extend(query || {}, response);
                         queryManagerWidget.close();
                         $.notify("Erfolgreich gespeichert!", "info");
                         if (isNew) {
@@ -265,12 +264,9 @@
         openStyleMapManager: function(data) {
             var widget = this;
             return this.styleEditor.editStyleMap(data, this._styles).then(function(styleMap) {
-                return widget.query('stylemap/save', {
-                    styleMap: styleMap
-                }).then(function(response) {
-                    var styleMap = response.styleMap;
-                    widget._styleMaps[styleMap.id] = styleMap;
-                    return styleMap;
+                return widget.query('stylemap/save', styleMap).then(function(response) {
+                    widget._styleMaps[response.id] = response;
+                    return response;
                 });
             });
         },
