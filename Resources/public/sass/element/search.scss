@@ -64,7 +64,7 @@
         }
       }
     }
-    table tbody tr {
+    table tbody tr[role="row"] {
       &:hover, &.hover {
         // Defeat super-specific upstream background rule on tr.even
         background-color: #ffffcc !important;

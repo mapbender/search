@@ -728,30 +728,12 @@
          * @private
          */
         _highlightSchemaFeature: function(feature, highlight, highlightTableRow) {
-            var feature = this._checkFeatureCluster(feature);
-            var isSketchFeature = !feature.cluster && feature._sketch && _.size(feature.data) == 0;
-            var layer = feature.layer;
+            var feature_ = this._checkFeatureCluster(feature);
+            feature_.layer.drawFeature(feature_, feature_.__hidden__ && 'invisible' || highlight && 'select' || 'default');
 
-            if (this._isFeatureInvisible(feature) || isSketchFeature) {
-                return;
+            if (highlightTableRow) {
+                this._highlightTableRow(feature, highlight && !feature_.__hidden__);
             }
-
-            layer.drawFeature(feature, highlight ? 'select' : 'default');
-
-            if(highlightTableRow) {
-                this._highlightTableRow(feature, highlight);
-            }
-        },
-
-        /**
-         * Highlight feature on the map
-         *
-         * @param {OpenLayers.Feature} feature
-         * @param {boolean} highlight
-         * @private
-         */
-        _highlightFeature: function(feature, highlight) {
-            return this._highlightSchemaFeature(feature, highlight);
         },
 
         /**
@@ -775,17 +757,6 @@
                     break;
                 }
             }
-        },
-
-        /**
-         * Is a feature invisible?
-         *
-         * @param {OpenLayers.Feature} feature
-         * @returns {boolean}
-         * @private
-         */
-        _isFeatureInvisible: function(feature) {
-            return (feature.renderIntent === 'invisible') ? true : false;
         },
 
         /**
