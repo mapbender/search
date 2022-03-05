@@ -808,23 +808,13 @@
                 // this happens on logout: error callback with status code 200 'ok'
                 if (xhr.status === 200 && xhr.getResponseHeader("Content-Type").toLowerCase().indexOf("text/html") >= 0) {
                     window.location.reload();
+                } else {
+                    if (xhr.statusText !== 'abort') {
+                        $.notify(Mapbender.trans('mb.search.api.query.error'), {
+                            autoHide: false
+                        });
+                    }
                 }
-            }).fail(function(xhr, message, e) {
-                if (xhr.statusText === 'abort') {
-                    return;
-                }
-                var errorMessage = Mapbender.trans('mb.search.api.query.error');
-                var errorDom = $(xhr.responseText);
-                // https://stackoverflow.com/a/298758
-                var exceptionTextNodes = $('.sf-reset .text-exception h1', errorDom).contents().filter(function() {
-                    return this.nodeType === (Node && Node.TEXT_NODE || 3) && ((this.nodeValue || '').trim());
-                });
-                if (exceptionTextNodes && exceptionTextNodes.length) {
-                    errorMessage = [errorMessage, exceptionTextNodes[0].nodeValue.trim()].join("\n");
-                }
-                $.notify(errorMessage, {
-                    autoHide: false
-                });
             });
         },
 
