@@ -296,7 +296,6 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
             $result[$schemaId] = array(
                 'title' => $declaration['title'],
                 'fields'      => $fields,
-                'print' => !empty($declaration['print']) ? $declaration['print'] : null,
                 'featureType' => $schemaConfig['featureType'],
             );
         }
