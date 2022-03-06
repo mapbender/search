@@ -372,7 +372,7 @@
             this.updateQueryMarkup(query);
             query.titleView.addClass('updated');
             if (query.isActive) {
-                widget.fetchQuery(query);
+                this.fetchQuery(query);
             }
         },
         updateQueryMarkup: function(query) {
