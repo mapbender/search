@@ -34,11 +34,12 @@
     };
 
     Mapbender.Search.TableRenderer.prototype.initializeTable = function(table, query) {
+        var self = this;
         var columns = query.fields.map(function(definition) {
             return {
                 title: definition.title,
-                data: function(row) {
-                    var data = row.data[definition.fieldName];
+                data: function(feature) {
+                    var data = self.dataFromFeature_(feature)[definition.fieldName];
                     if (typeof(data) == 'string') {
                         data = escapeHtml(data);
                     }
@@ -81,6 +82,42 @@
         var rowIndex = tableApi.rows({order: 'current'}).nodes().indexOf(tr);
         var pageWithRow = Math.floor(rowIndex / rowsPerPage);
         tableApi.page(pageWithRow).draw(false);
+    };
+    Mapbender.Search.TableRenderer.prototype.toggleDetails = function(tr, schema) {
+        var $tr = $(tr);
+        var tableApi = $tr.closest('table').dataTable().api();
+        var row = tableApi.row(tr);
+
+        if (row.child.isShown()) {
+            row.child.hide();
+        } else {
+            var markup = this.renderDetails_(schema, $(tr).data('feature'));
+            if (markup) {
+                row.child(markup);
+                row.child.show();
+            }
+        }
+    };
+    Mapbender.Search.TableRenderer.prototype.renderDetails_ = function(schema, feature) {
+        var rows = [];
+        var fieldDefs = schema.fields || [];
+        var data = this.dataFromFeature_(feature);
+        for (var i = 0; i < fieldDefs.length; ++i) {
+            var field = fieldDefs[i].name;
+            if (data[field]) {
+                rows.push($(document.createElement('tr'))
+                    .append($('<th>').text(fieldDefs[i].title + ": "))
+                    .append($('<td>').text(data[field])));
+            }
+        }
+        if (rows.length) {
+            return $(document.createElement('table')).append(rows);
+        } else {
+            return null;
+        }
+    };
+    Mapbender.Search.TableRenderer.prototype.dataFromFeature_ = function(feature) {
+        return feature.getProperties && feature.geProperties() || feature.attributes || {};
     };
 }());
 

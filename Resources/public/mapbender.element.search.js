@@ -290,9 +290,7 @@
 
         parseResponseFeatures_: function(data) {
             return data.map(function(featureData) {
-                var feature = new OpenLayers.Feature.Vector(OpenLayers.Geometry.fromWKT(featureData.geometry));
-                feature.attributes = feature.data = featureData.properties;
-                feature.fid = featureData.id;
+                return new OpenLayers.Feature.Vector(OpenLayers.Geometry.fromWKT(featureData.geometry), featureData.properties);
                 return feature;
             });
         },
@@ -573,38 +571,8 @@
                     widget._highlightSchemaFeature(feature, false);
                 })
                 .on('click', 'tbody > tr[role="row"]', function() {
-                        function format(feature) {
-                            var table = $('<table>');
-                            var schema = widget._schemas[query.schemaId];
-                            var fieldNames = _.object(_.pluck(schema.fields, 'name'), _.pluck(schema.fields, 'title'));
-
-                            _.each(fieldNames, function(title, key) {
-
-                                if(!feature.data.hasOwnProperty(key) || feature.data[key] == "") {
-                                    return;
-                                }
-
-                                table.append($("<tr/>")
-                                    .append($('<th>').text(title + ": "))
-                                    .append($('<td>').text(feature.data[key])));
-
-                            });
-                            return table;
-                        }
-
-                        var tr = $(this);
-                        var tableApi = tr.closest('table').dataTable().api();
-                        var row = tableApi.row(tr);
-                        var feature = tr.data('feature');
-
-                        if(row.child.isShown()) {
-                            row.child.hide();
-                        } else {
-                            if (feature && feature.data) {
-                                row.child(format(feature)).show();
-                            }
-                        }
-                    });
+                    widget.tableRenderer.toggleDetails(this, widget._schemas[query.schemaId]);
+                });
         },
         /**
          *
