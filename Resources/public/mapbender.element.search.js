@@ -36,6 +36,9 @@
             'flur': {
                 fillColor:   "#0c7e00",
                 pointRadius: 7
+            },
+            be: {
+                fillColor: '#adfcfc'
             }
         },
 
@@ -236,6 +239,7 @@
                     self.addQuery(query);
                 } else {
                     self.updateQuery(query);
+                    self.updateStyles_(query.layer, query);
                 }
                 self.renderSchemaFilterSelect();
                 return query;
@@ -396,103 +400,95 @@
             return $query;
         },
         createQueryLayer_: function(query) {
-            var widget = this;
-            var map = this.map;
-                var schema = widget._schemas[query.schemaId];
+            var strategies = [];
+            if (this.options.cluster_threshold) {
+                var clusterStrategy = new OpenLayers.Strategy.Cluster({
+                    threshold: 1,
+                    distance: 30
+                });
+                strategies.push(clusterStrategy);
+            }
 
-                var layerName = 'query-' + query.id;
+            var layer = new OpenLayers.Layer.Vector(null, {
+                visibility: false,
+                strategies: strategies
+            });
+            this.updateStyles_(layer, query);
+            this.map.addLayer(layer);
+            query.layer = layer;
+            this.initSelectControl_(query, layer);
 
-                    var styleDefinitions = widget._styles;
-                    var styleMapDefinition = _.extend({}, widget._styleMaps[query.styleMap] || _.first(_.toArray(widget._styleMaps)));
-                    var styleMapConfig = {};
-                    var strategies = [];
+            layer.query = query;
+            return layer;
+        },
+        updateStyles_: function(layer, query) {
+            var self = this;
+            var schema = this._schemas[query.schemaId];
 
-                    _.each(styleMapDefinition.styles, function(styleId, key) {
-                        if(styleDefinitions[styleId]) {
-                            var styleDefinition = _.extend({}, styleDefinitions[styleId]);
-                            styleMapConfig[key] = new OpenLayers.Style(styleDefinition);
-                        } else {
-                            delete styleMapDefinition.styles[key];
-                        }
-                    });
+            var customStyleIds = (this._styleMaps[query.styleMap] || {}).styles || {};
+            var customStyleMapStyles = {
+                default: customStyleIds.default && this._styles[customStyleIds.default] || {},
+                select: customStyleIds.select && this._styles[customStyleIds.select] || {}
+            };
 
-                    var hasDefaultStyle = !styleMapConfig['default'];
-
-                    if(hasDefaultStyle){
-                        styleMapConfig['default'] = new OpenLayers.Style(OpenLayers.Feature.Vector.style["default"], {
-                            extend: true
-                        });
+            var styleRules = {
+                invisible: {
+                    display: 'none'
+                },
+                default: Object.assign({}, OpenLayers.Feature.Vector.style["default"], customStyleMapStyles.default || {}, this.customStyles_[schema.featureType] || {}),
+                select: Object.assign({}, OpenLayers.Feature.Vector.style["select"], customStyleMapStyles.select || {}, this.customStyles_[schema.featureType] || {})
+            };
+            function getStyleContext(renderIntent) {
+                return {
+                    clusterLength: function(feature) {
+                        return feature.cluster && feature.cluster.length > 1 ? feature.cluster.length : "";
+                    },
+                    customBeColor: function(feature) {
+                        return self.getCustomBeColor_(feature) || styleRules[renderIntent].fillColor;
                     }
-                    if (!styleMapConfig['select']) {
-                        styleMapConfig['select'] = new OpenLayers.Style(OpenLayers.Feature.Vector.style["select"], {
-                            extend: true
-                        });
-                    }
-                    if (!styleMapConfig['invisible']) {
-                        styleMapConfig['invisible'] = new OpenLayers.Style({
-                            display: 'none'
-                        });
-                    }
+                };
+            }
 
-                    if (this.options.cluster_threshold) {
-                        var clusterStrategy = new OpenLayers.Strategy.Cluster({
-                            threshold: 1,
-                            distance: 30
-                        });
-                        strategies.push(clusterStrategy);
-                    }
-
-                    styleMapConfig.featureDefault = styleMapConfig['default'];
-                    styleMapConfig.featureSelect = styleMapConfig['select'];
-
-                    styleMapConfig.clusterDefault = new OpenLayers.Style(_.extend({}, styleMapConfig.featureDefault.defaultStyle, {
+                    var clusterRules = {
                         pointRadius:         '15',
-                        fillOpacity:         1,
                         strokeColor:         "#d10a10",
                         strokeWidth:         2,
-                        strokeOpacity:       1,
-                        labelOutlineColor:   '#ffffff',
-                        labelOutlineWidth:   3,
-                        labelOutlineOpacity: 1,
-                        fontSize:            '11',
-                        fontColor:           '#707070',
-                        label:               "${clusterLength}",
-                        fontWeight:          'bold'
-                    }), {
-                        context: {
-                            clusterLength: function(feature) {
-                                return feature.cluster && feature.cluster.length > 1 ? feature.cluster.length : "";
-                            }
-                        }
-                    });
-
-                    styleMapConfig.clusterSelect = new OpenLayers.Style(_.extend({}, styleMapConfig.featureSelect.defaultStyle,{
-                        pointRadius:         '15',
-                        fillOpacity:         0.7,
-                        strokeColor:         "#d10a10",
-                        strokeWidth:         3,
-                        strokeOpacity:       0.8,
                         labelOutlineColor:   '#ffffff',
                         labelOutlineWidth:   2,
                         labelOutlineOpacity: 1,
-                        labelColor:          '#707070',
+                        fontSize:            '11',
+                        fontColor:           '#707070',
                         label:               "${clusterLength}"
-                    }), {
-                        context: {
-                            clusterLength: function(feature) {
-                                return feature.cluster && feature.cluster.length > 1 ? feature.cluster.length : "";
-                            }
-                        }
-                    });
+                    };
 
-                    if (!hasDefaultStyle && schema.featureType && (typeof schema.featureType) === 'string' && widget.customStyles_[schema.featureType]) {
-                        var customFtStyle = widget.customStyles_[schema.featureType];
-                        _.each(['featureDefault', 'clusterDefault'], function(styleMapConfigName) {
-                            _.extend(styleMapConfig[styleMapConfigName].defaultStyle, customFtStyle);
-                        });
-                    }
-                    if (schema.featureType == "be") {
-                        var fillMap = [
+            if (schema.featureType === "be") {
+                styleRules['default'].fillColor = '${customBeColor}';
+                styleRules['default'].strokeColor = '${customBeColor}';
+                clusterRules.strokeColor = '${customBeColor}';
+            }
+            styleRules['clusterDefault'] = Object.assign({}, styleRules['default'], clusterRules);
+
+            var styles = {};
+            var rules = [];
+            if (this.options.cluster_threshold) {
+                rules.push(new OpenLayers.Rule()); // Pre-apply standard styling
+                rules.push(new OpenLayers.Rule({
+                    symbolizer: clusterRules,
+                    minScaleDenominator: this.options.cluster_threshold
+                }));
+            }
+            Object.keys(styleRules).forEach(function(renderIntent) {
+                styles[renderIntent] = new OpenLayers.Style(styleRules[renderIntent], {
+                    context: getStyleContext(renderIntent),
+                    rules: rules
+                });
+            });
+            layer.styleMap = new OpenLayers.StyleMap(styles);
+        },
+        getCustomBeColor_: function(feature) {
+            var colors = [
+                            // NOTE: unicode in Object keys are problematic
+                            // => use a list instead
                             {value: 'DB Netz AG (BK09)', fillColor: '#2ca9a9'},
                             {value: 'DB Netz AG (BK16)', fillColor: '#adfcfc'},
                             {value: 'DB Station & Service AG', fillColor: '#ffb0be'},
@@ -509,51 +505,31 @@
                             {value: 'Stinnes ID GmbH & Co. KG', fillColor: '#e73165'},
                             {value: '2. KG Stinnes Immobiliendienst', fillColor: '#e2007f'},
                             {value: 'Schenker AG', fillColor: '#793f96'}
-                        ];
-                        var styleOptions = _.extend({}, styleMapConfig['featureDefault'].defaultStyle, {
-                            'fillColor': '${customBeFillColor}'
-                        });
-                        var fallbackColor = styleMapConfig['featureDefault'].defaultStyle.fillColor;
-                        styleMapConfig['featureDefault'] = new OpenLayers.Style(styleOptions, {
-                            context: {
-                                customBeFillColor: function(feature) {
-                                    var match = _.findWhere(fillMap, {value: feature.attributes.eigentuemer});
-                                    return match && match.fillColor || fallbackColor;
-                                }
-                            }
-                        });
-                    }
-
-                    var layer = new OpenLayers.Layer.Vector(layerName, {
-                        styleMap:   new OpenLayers.StyleMap(styleMapConfig, {extendDefault: true}),
-                        visibility: false,
-                        strategies: strategies
-                    }, {extendDefault: true});
-
-                map.addLayer(layer);
-
-                var selectControl = query.selectControl = new OpenLayers.Control.SelectFeature(layer, {
+            ];
+            var feature_ = feature.cluster && feature.cluster[0] || feature;
+            var match = _.findWhere(colors, {value: feature_.attributes.eigentuemer});
+            return match && match.fillColor;
+        },
+        initSelectControl_: function(query, layer) {
+            var self = this;
+            var selectControl = new OpenLayers.Control.SelectFeature(layer, {
                     hover:        true,
+                    highlightOnly: true,
+                    active: false,
                     overFeature:  function(feature) {
-                        widget._highlightSchemaFeature(feature, true, true);
+                        self._highlightSchemaFeature(feature, true, true);
                     },
                     outFeature:   function(feature) {
-                        widget._highlightSchemaFeature(feature, false, true);
+                        self._highlightSchemaFeature(feature, false, true);
+                    },
+                    mousedown: function() {
+                        return true;    // Not handled / allow propagation
                     }
-                });
+            });
 
-                // Workaround to move map by touch vector features
-                if(typeof(selectControl.handlers) != "undefined") { // OL 2.7
-                    selectControl.handlers.feature.stopDown = false;
-                } else if(typeof(selectFeatureControl.handler) != "undefined") { // OL < 2.7
-                    selectControl.handler.stopDown = false;
-                    selectControl.handler.stopUp = false;
-                }
 
-                selectControl.deactivate();
-                map.addControl(selectControl);
-            layer.query = query;
-            return layer;
+            query.selectControl = selectControl;
+            this.map.addControl(selectControl);
         },
         initQueryViewEvents: function(queryView, query) {
             var widget = this;
@@ -599,8 +575,6 @@
                 .on('click', 'tbody > tr[role="row"]', function() {
                         function format(feature) {
                             var table = $('<table>');
-
-                            var query = feature.layer.query;
                             var schema = widget._schemas[query.schemaId];
                             var fieldNames = _.object(_.pluck(schema.fields, 'name'), _.pluck(schema.fields, 'title'));
 
@@ -891,15 +865,10 @@
             });
             for (var i = 0; i < layers.length; ++i) {
                 var layer = layers[i];
-                var styles = layer.styleMap.styles;
                 var clusterStrategy = layer.strategies[0];
                 if (enabled && clusterStrategy) {
-                    styles['default'] = styles.clusterDefault;
-                    styles['select'] = styles.clusterSelect;
                     clusterStrategy.activate();
                 } else {
-                    styles['default'] = styles.featureDefault;
-                    styles['select'] = styles.featureSelect;
                     if (clusterStrategy) {
                         clusterStrategy.deactivate();
                     }
@@ -947,7 +916,8 @@
                     }
                 }]
             });
-        }
+        },
+        __dummy__: null
     });
 
 })(jQuery);
