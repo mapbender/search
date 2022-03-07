@@ -24,12 +24,6 @@ class QueryManager extends BaseManager
         return new Query($data);
     }
 
-    public function filterFields(array $data)
-    {
-        unset($data['where']);
-        return $data;
-    }
-
     /**
      * @param array[] $queryConditions
      * @param FeatureType      $featureType

@@ -5,48 +5,13 @@ namespace Mapbender\SearchBundle\Entity;
 /**
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
-class StyleMap extends UniqueBase
+class StyleMap extends Base
 {
-    /** @var string Name * */
-    public $name;
-
-    /* @var Style[] Style list */
-    public $styles = array();
-
-    /** @var string userId * */
-    public $userId;
-
-    /**
-     * @return string
-     */
-    public function getUserId()
+    protected function getDefaults()
     {
-        return $this->userId;
-    }
-
-    /**
-     * @param string $userId
-     */
-    public function setUserId($userId)
-    {
-        $this->userId = $userId;
-    }
-
-    /**
-     * @return Style[]
-     */
-    public function getStyles()
-    {
-        return $this->styles;
-    }
-
-    /**
-     * @param Style[] $styles
-     * @return StyleMap
-     */
-    public function setStyles($styles)
-    {
-        $this->styles = $styles;
-        return $this;
+        return parent::getDefaults() + array(
+            'name' => null,
+            'styles' => array(),
+        );
     }
 }

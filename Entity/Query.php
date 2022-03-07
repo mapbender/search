@@ -3,75 +3,29 @@
 namespace Mapbender\SearchBundle\Entity;
 
 /**
- * Class SearchQuery
- *
- * @package Mapbender\SearchBundle\Entity
  * @author  Mohamed Tahrioui <mohamed.tahrioui@wheregroup.com>
  */
-class Query extends UniqueBase
+class Query extends Base
 {
-    /** @var string Name */
-    public $name;
-
-    /** @var array[]|null */
-    public $conditions;
-
-    /** @var array */
-    public $fields;
-
-    /** @var int $userId */
-    public $userId;
-
-    /** @var StyleMap StyleMap */
-    public $styleMap;
-
-    /** @var string Schema ID or name */
-    public $schemaId;
-
-    /** @var string SQL */
-    public $sql;
-
-    /** @var string Where */
-    public $where;
-
-    /** @var bool Look for extend only? */
-    public $extendOnly = true;
-
-    /** @var bool Only for Export? */
-    public $exportOnly = false;
+    protected function getDefaults()
+    {
+        return parent::getDefaults() + array(
+            'name' => null,
+            'schemaId' => null,
+            'conditions' => array(),
+            'fields' => array(),
+            'styleMap' => null,
+            'extendOnly' => true,
+            'exportOnly' => false,
+        );
+    }
 
     /**
      * @return string
      */
     public function getName()
     {
-        return $this->name;
-    }
-
-    /**
-     * @return int
-     */
-    public function getUserId()
-    {
-        return $this->userId;
-    }
-
-    /**
-     * @param int $userId
-     * @return Query
-     */
-    public function setUserId($userId)
-    {
-        $this->userId = $userId;
-        return $this;
-    }
-
-    /**
-     * @return StyleMap
-     */
-    public function getStyleMap()
-    {
-        return $this->styleMap;
+        return $this->values['name'];
     }
 
     /**
@@ -79,23 +33,7 @@ class Query extends UniqueBase
      */
     public function getSchemaId()
     {
-        return $this->schemaId;
-    }
-
-    /**
-     * @return string
-     */
-    public function getSql()
-    {
-        return $this->sql;
-    }
-
-    /**
-     * @return string
-     */
-    public function getWhere()
-    {
-        return $this->where;
+        return $this->values['schemaId'];
     }
 
     /**
@@ -103,16 +41,7 @@ class Query extends UniqueBase
      */
     public function getConditions()
     {
-        $queryConditions = $this->conditions;
-        return $queryConditions;
-    }
-
-    /**
-     * @return array
-     */
-    public function getFields()
-    {
-        return $this->fields;
+        return $this->values['conditions'];
     }
 
     /**
@@ -120,6 +49,6 @@ class Query extends UniqueBase
      */
     public function isExtendOnly()
     {
-        return $this->extendOnly;
+        return $this->values['extendOnly'];
     }
 }

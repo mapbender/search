@@ -3,35 +3,62 @@
 
 namespace Mapbender\SearchBundle\Entity;
 
-/**
- * Drop-in replacement for both Eslider\Entity\BaseEntity and Mapbender\DataSourceBundle\Entity\BaseConfiguration
- * * satisfies construct-with-array behavior
- * * offers compatible 'fill' and 'toArray' methods
- */
-class Base
+abstract class Base
 {
+    protected $values;
+    /* @var string|null */
+    protected $id;
+
     public function __construct($values)
     {
+        $this->values = $this->getDefaults();
         if ($values) {
-            $this->fill($values);
+            $this->values = array_intersect_key($values, $this->values) + $this->values;
         }
     }
 
-    public function fill($values)
+    public function toArray()
     {
-        $commonKeys = array_keys(array_intersect_key($this->toArray(), $values));
-        foreach ($commonKeys as $k) {
-            $this->{$k} = $values[$k];
-        }
+        return $this->values;
+    }
+
+    protected function getDefaults()
+    {
+        return array(
+            'id' => null,
+            'userId' => null,
+        );
     }
 
     /**
-     * Export data
-     *
-     * @return mixed
+     * @return string|null
      */
-    public function toArray()
+    public function getId()
     {
-        return get_object_vars($this);
+        return $this->values['id'];
+    }
+
+    /**
+     * @param string|null $id
+     */
+    public function setId($id)
+    {
+        $this->values['id'] = $id;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getUserId()
+    {
+        return $this->values['userId'];
+    }
+
+    /**
+     * @param string|null $userId
+     */
+    public function setUserId($userId)
+    {
+        $this->values['userId'] = $userId;
     }
 }

@@ -4,7 +4,7 @@ namespace Mapbender\SearchBundle\Component;
 
 use Doctrine\DBAL\Connection;
 use FOM\UserBundle\Entity\User;
-use Mapbender\SearchBundle\Entity\UniqueBase;
+use Mapbender\SearchBundle\Entity\Base;
 use Symfony\Component\Security\Core\Authentication\Token\AnonymousToken;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
@@ -42,14 +42,14 @@ abstract class BaseManager
 
     /**
      * @param mixed[] $data
-     * @return UniqueBase
+     * @return Base
      */
     abstract public function create(array $data);
 
     /**
      * List all records
      *
-     * @return UniqueBase[]
+     * @return array[]
      * @internal param int $id
      */
     public function getAll()
@@ -65,14 +65,14 @@ abstract class BaseManager
         $items = array();
         foreach ($connection->executeQuery($sql, $params)->fetchAll() as $row) {
             $item = $this->create(\json_decode($row['value'], true));
-            $items[$row['key']] = $item;
+            $items[$row['key']] = $item->toArray();
         }
         return $items;
     }
 
     /**
      * @param int $id
-     * @return UniqueBase|null
+     * @return Base|null
      */
     public function getById($id)
     {
@@ -88,7 +88,7 @@ abstract class BaseManager
     }
 
     /**
-     * @param UniqueBase $entity
+     * @param Base $entity
      */
     public function save($entity)
     {
@@ -137,19 +137,6 @@ abstract class BaseManager
         $rowsAffected = $connection->executeStatement($sql, $params);
         return !!$rowsAffected;
     }
-
-    /**
-     * Remove blacklisted fields
-     *
-     * @param mixed[] $data
-     * @return mixed[]
-     */
-    public function filterFields(array $data)
-    {
-        // return unchaged
-        return $data;
-    }
-
 
     /**
      * @return string

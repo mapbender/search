@@ -198,9 +198,7 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
             case 'query/save':
             case 'style/save':
             case 'stylemap/save':
-                $requestData = \json_decode($request->getContent(), true);
-                $saveData = $repository->filterFields($requestData);
-                $entity = $repository->create($saveData);
+                $entity = $repository->create(\json_decode($request->getContent(), true));
                 $entity->setUserId($repository->getUserId());
                 $repository->save($entity);
                 return new JsonResponse($entity->toArray());

@@ -23,11 +23,4 @@ class StyleManager extends BaseManager
     {
         return new Style($data);
     }
-
-    public function filterFields(array $data)
-    {
-        unset($data['styleMaps']);
-        unset($data['pointerEvents']);
-        return $data;
-    }
 }
