@@ -75,6 +75,7 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
             'js' => array(
                 '/components/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js',
                 '@MapbenderSearchBundle/Resources/public/FormUtil.js',
+                '@MapbenderSearchBundle/Resources/public/FeatureRenderer.js',
                 '@MapbenderSearchBundle/Resources/public/feature-style-editor.js',
                 '@MapbenderSearchBundle/Resources/public/TableRenderer.js',
                 '@MapbenderSearchBundle/Resources/public/query-manager.js',

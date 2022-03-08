@@ -22,26 +22,16 @@
 
         customStyles_: {
             'boris_ipe': {
-                strokeColor:     "#e8c02f",
-                strokeWidth:     5,
-                strokeOpacity:   1,
-                strokeDashstyle: "dashdot"
+                strokeColor:     "#e8c02f"
             },
             'segment': {
-                strokeColor:     "#e50c24",
-                strokeWidth:     5,
-                strokeOpacity:   1,
-                strokeDashstyle: "dashdot"
+                strokeColor:     "#e50c24"
             },
             'flur': {
                 fillColor:   "#0c7e00",
                 pointRadius: 7
-            },
-            be: {
-                fillColor: '#adfcfc'
             }
         },
-
 
         /**
          * Dynamic loaded styles
@@ -51,8 +41,6 @@
         _styleMaps:       null,
         _queries:         {},
         fetchXhr: null,
-        queryLayers: {},
-        hoverControls: {},
         queryFeatures: {},
         queryFeaturesUnbounded: {},
 
@@ -98,7 +86,7 @@
                         var show = schemaId == -1 || schemaId == query.schemaId;
                         widget.getQueryTab_(query).toggle(show);
                         widget.getQueryPanel_(query).toggle(show && query.isActive);
-                        widget.toggleQueryLayer(show && query.isActive);
+                        widget.featureRenderer.toggleQueryLayer(show && query.isActive);
                     });
                 });
 
@@ -119,9 +107,9 @@
                 for (var i = 0; i < affectedQueries.length; ++i) {
                     widget.fetchQuery(affectedQueries[i]);
                 }
-                widget.updateClusterStrategies(data.params.scale);
-
             });
+            var clusterRes = this.options.cluster_threshold && this.mbMap.getModel().scaleToResolution(this.options.cluster_threshold) || null;
+            this.featureRenderer = new Mapbender.Search.FeatureRenderer(this.olMap, this, clusterRes);
 
             this.initDataPromise_.then(function(data) {
                 widget._schemas = data.schemas;
@@ -161,15 +149,15 @@
 
         // Sidepane integration api
         hide: function() {
-            var self = this;
+            var featureRenderer = this.featureRenderer;
             _.each(this._queries, function(query) {
-                self.toggleQueryLayer(query, false);
+                featureRenderer.toggleQueryLayer(query, false);
             });
         },
         reveal: function() {
-            var self = this;
+            var featureRenderer = this.featureRenderer;
             _.each(this._queries, function(query) {
-                self.toggleQueryLayer(query, query.isActive);
+                featureRenderer.toggleQueryLayer(query, query.isActive);
             });
         },
 
@@ -257,12 +245,6 @@
                 });
             });
         },
-
-        parseResponseFeatures_: function(data) {
-            return data.map(function(featureData) {
-                return new OpenLayers.Feature.Vector(OpenLayers.Geometry.fromWKT(featureData.geometry), featureData.properties);
-            });
-        },
         /**
          * Execute and fetch query results
          *
@@ -271,9 +253,10 @@
          */
         fetchQuery: function(query) {
             var widget = this;
+            var srsName = this.mbMap.getModel().getCurrentProjectionCode();
 
             var request = {
-                srid: this.mbMap.getModel().getCurrentProjectionCode().replace(/^\w+:/, ''),
+                srid: srsName.replace(/^\w+:/, ''),
                 intersect: query.extendOnly && this.getIntersectWkt_() || null,
                 queryId: query.id
             };
@@ -287,6 +270,7 @@
             }
             var $accordionHeader = this.getQueryTab_(query);
             $accordionHeader.addClass('loading');
+            var model = this.mbMap.getModel();
 
             return this.query('query/fetch', request, 'GET').done(function(r) {
                 widget.fetchXhr = null;
@@ -297,8 +281,12 @@
                         className:     'info'
                     });
                 }
+                var features = r.features.map(function(featureData) {
+                    var feature = model.parseWktFeature(featureData.geometry, srsName);
+                    feature.setProperties(featureData.properties || {});
+                    return feature;
+                });
 
-                var features = widget.parseResponseFeatures_(r.features);
                 if (!query.extendOnly) {
                     widget.queryFeaturesUnbounded[query.id] = features;
                 }
@@ -317,10 +305,9 @@
                 var query = queries[i];
                 this._queries[query.id] = query;
                 $accordion.append(this.renderQuery(query));
-                this.initQueryRendering_(query);
+                this.featureRenderer.addQuery(query);
             }
             $accordion.accordion('refresh');
-            this.updateClusterStrategies(this.mbMap.getModel().getCurrentScale(false));
         },
         updateQuery: function(query) {
             this._queries[query.id] = query;
@@ -354,139 +341,24 @@
             this.initTitleEvents($titleView, query);
             return $query;
         },
-        // @todo engine
-        initQueryRendering_: function(query) {
-            var strategies = [];
-            if (this.options.cluster_threshold) {
-                var clusterStrategy = new OpenLayers.Strategy.Cluster({
-                    threshold: 1,
-                    distance: 30
-                });
-                strategies.push(clusterStrategy);
-            }
-            this.queryLayers[query.id] = new OpenLayers.Layer.Vector(null, {
-                visibility: false,
-                strategies: strategies
-            });
-            this.updateStyles_(query);
-            this.olMap.addLayer(this.queryLayers[query.id]);
-            this.hoverControls[query.id] = this.createSelectControl_(query);
-            this.map.addControl(this.hoverControls[query.id]);
-        },
-        // @todo engine
-        destroyQueryRendering_: function(query) {
-            this.olMap.removeControl(this.hoverControls[query.id]);
-            this.olMap.removeLayer(this.queryLayers[query.id]);
-        },
         updateStyles_: function(query) {
-            var self = this;
-            var layer = this.queryLayers[query.id];
-            var schema = this._schemas[query.schemaId];
-
+            var featureType = this._schemas[query.schemaId].featureType;
+            var rules = this.getStyleRules_(query, featureType);
+            this.featureRenderer.updateStyles(query, rules, featureType);
+        },
+        getStyleRules_: function(query, featureType) {
             var customStyleIds = (this._styleMaps[query.styleMap] || {}).styles || {};
-            var customStyleMapStyles = {
-                default: customStyleIds.default && this._styles[customStyleIds.default] || {},
-                select: customStyleIds.select && this._styles[customStyleIds.select] || {}
+            var defaultRules = Object.assign({},
+                customStyleIds.default && this._styles[customStyleIds.default] || {},
+                this.customStyles_[featureType] || {}
+            );
+            return {
+                default: defaultRules,
+                select: Object.assign({}, defaultRules,
+                    customStyleIds.select && this._styles[customStyleIds.select] || {},
+                    this.customStyles_[featureType] || {}
+                )
             };
-
-            var styleRules = {
-                invisible: {
-                    display: 'none'
-                },
-                default: Object.assign({}, OpenLayers.Feature.Vector.style["default"], customStyleMapStyles.default || {}, this.customStyles_[schema.featureType] || {}),
-                select: Object.assign({}, OpenLayers.Feature.Vector.style["select"], customStyleMapStyles.select || {}, this.customStyles_[schema.featureType] || {})
-            };
-            function getStyleContext(renderIntent) {
-                return {
-                    clusterLength: function(feature) {
-                        return feature.cluster && feature.cluster.length > 1 ? feature.cluster.length : "";
-                    },
-                    customBeColor: function(feature) {
-                        return self.getCustomBeColor_(feature) || styleRules[renderIntent].fillColor;
-                    }
-                };
-            }
-
-                    var clusterRules = {
-                        pointRadius:         '15',
-                        strokeColor:         "#d10a10",
-                        strokeWidth:         2,
-                        labelOutlineColor:   '#ffffff',
-                        labelOutlineWidth:   2,
-                        labelOutlineOpacity: 1,
-                        fontSize:            '11',
-                        fontColor:           '#707070',
-                        label:               "${clusterLength}"
-                    };
-
-            if (schema.featureType === "be") {
-                styleRules['default'].fillColor = '${customBeColor}';
-                styleRules['default'].strokeColor = '${customBeColor}';
-                clusterRules.strokeColor = '${customBeColor}';
-            }
-            styleRules['clusterDefault'] = Object.assign({}, styleRules['default'], clusterRules);
-
-            var styles = {};
-            var rules = [];
-            if (this.options.cluster_threshold) {
-                rules.push(new OpenLayers.Rule()); // Pre-apply standard styling
-                rules.push(new OpenLayers.Rule({
-                    symbolizer: clusterRules,
-                    minScaleDenominator: this.options.cluster_threshold
-                }));
-            }
-            Object.keys(styleRules).forEach(function(renderIntent) {
-                styles[renderIntent] = new OpenLayers.Style(styleRules[renderIntent], {
-                    context: getStyleContext(renderIntent),
-                    rules: rules
-                });
-            });
-            layer.styleMap = new OpenLayers.StyleMap(styles);
-        },
-        getCustomBeColor_: function(feature) {
-            var colors = [
-                            // NOTE: unicode in Object keys are problematic
-                            // => use a list instead
-                            {value: 'DB Netz AG (BK09)', fillColor: '#2ca9a9'},
-                            {value: 'DB Netz AG (BK16)', fillColor: '#adfcfc'},
-                            {value: 'DB Station & Service AG', fillColor: '#ffb0be'},
-                            {value: 'Usedomer Bäderbahn GmbH (UBB)', fillColor: '#ff80c0'},
-                            {value: 'DB Energie GmbH', fillColor: '#f2f2f2'},
-                            {value: 'DB Fernverkehr AG', fillColor: '#d5aaff'},
-                            {value: 'DB Regio AG', fillColor: '#ffb76f'},
-                            {value: 'DB Schenker Rail AG', fillColor: '#793f96'},
-                            {value: 'DB Fahrzeuginstandhaltung GmbH', fillColor: '#46c426'},
-                            {value: 'DB AG', fillColor: '#d8fcd8'},
-                            {value: 'DB Systel GmbH', fillColor: '#ad7b10'},
-                            {value: 'Stinnes Immobiliendienst (alt)', fillColor: '#c90070'},
-                            {value: 'DB Mobility Logistics AG', fillColor: '#e83096'},
-                            {value: 'Stinnes ID GmbH & Co. KG', fillColor: '#e73165'},
-                            {value: '2. KG Stinnes Immobiliendienst', fillColor: '#e2007f'},
-                            {value: 'Schenker AG', fillColor: '#793f96'}
-            ];
-            var feature_ = feature.cluster && feature.cluster[0] || feature;
-            var match = _.findWhere(colors, {value: feature_.attributes.eigentuemer});
-            return match && match.fillColor;
-        },
-        createSelectControl_: function(query) {
-            var self = this;
-            var layer = this.queryLayers[query.id];
-            return new OpenLayers.Control.SelectFeature(layer, {
-                    hover:        true,
-                    highlightOnly: true,
-                    active: false,
-                    overFeature:  function(feature) {
-                        self.redrawFeature(query, feature, true);
-                        self._highlightTableRows(query, feature, true);
-                    },
-                    outFeature:   function(feature) {
-                        self.redrawFeature(query, feature, false);
-                        self._highlightTableRows(query, feature, false);
-                    },
-                    mousedown: function() {
-                        return true;    // Not handled / allow propagation
-                    }
-            });
         },
         initQueryViewEvents: function(queryView, query) {
             var widget = this;
@@ -510,31 +382,39 @@
                 })
                 .on('click', '.-fn-toggle-visibility', function() {
                     var $btn = $(this);
-                    var $icon = $('> i', this);
                     var $row = $btn.closest('tr');
-                    var feature = $row.data('feature');
-                    var hidden = !feature.__hidden__;
-                    feature.__hidden__ = hidden;
-                    $icon.toggleClass('fa-eye-slash', hidden);
-                    $icon.toggleClass('fa-eye', !hidden);
-                    var cluster = widget.locateCluster(query, feature);
-                    widget.redrawFeature(query, cluster || feature, false);
+                    var rowFeature = $row.data('feature');
+                    var hidden = !rowFeature.__hidden__;
+                    var features = widget.featureRenderer.getClusterSiblings(query, rowFeature);
+                    for (var i = 0; i < features.length; ++i) {
+                        var feature = features[i];
+                        feature.__hidden__ = hidden;
+                        if (feature.tableRow) {
+                            var $icon = $('.-fn-toggle-visibility > i', feature.tableRow);
+                            $icon.toggleClass('fa-eye-slash', hidden);
+                            $icon.toggleClass('fa-eye', !hidden);
+                        }
+                        widget.redrawFeature(query, feature, false);
+                    }
+
                     return false;
                 })
                 .on('mouseover', 'tbody > tr[role="row"]', function() {
                     var feature = $(this).data('feature');
-                    widget.redrawFeature(query, widget.locateCluster(query, feature) || feature, true);
+                    var cluster = widget.featureRenderer.getCluster(query, feature);
+                    widget.redrawFeature(query, cluster || feature, true);
                 })
                 .on('mouseout', 'tbody > tr[role="row"]', function() {
                     var feature = $(this).data('feature');
-                    widget.redrawFeature(query, widget.locateCluster(query, feature) || feature, false);
+                    var cluster = widget.featureRenderer.getCluster(query, feature);
+                    widget.redrawFeature(query, cluster || feature, false);
                 })
                 .on('click', 'tbody > tr[role="row"]', function() {
                     widget.tableRenderer.toggleDetails(this, widget._schemas[query.schemaId]);
                 });
         },
         dataFromFeature_: function(feature) {
-            return feature.getProperties && feature.geProperties() || feature.attributes || {};
+            return feature.getProperties && feature.getProperties() || feature.attributes || {};
         },
         /**
          *
@@ -571,19 +451,11 @@
                         return false;
             });
         },
-        // @todo engine
-        toggleQueryLayer: function(query, state) {
-            if (state) {
-                this.hoverControls[query.id].activate();
-            } else {
-                this.hoverControls[query.id].deactivate();
-            }
-            this.queryLayers[query.id].setVisibility(state);
-        },
-        // @todo engine
         zoomToQueryDataExtent: function(query) {
-            var dataExtent = this.queryLayers[query.id].getDataExtent();
-            this.olMap.zoomToExtent(dataExtent);
+            var extent = this.featureRenderer.getDataExtent(query);
+            this.olMap.getView().fit(extent, {
+                padding: this.mbMap.getModel().getMapPadding_()
+            });
         },
         initAccordion: function(queriesAccordionView) {
             var widget = this;
@@ -599,7 +471,7 @@
                     var oldQuery = ui.oldHeader && ui.oldHeader.data('query');
                     if (oldQuery) {
                         oldQuery.isActive = false;
-                        widget.toggleQueryLayer(oldQuery, false);
+                        widget.featureRenderer.toggleQueryLayer(oldQuery, false);
                     }
                     if (query && query.exportOnly) {
                         return false;
@@ -612,20 +484,19 @@
                     var query = ui.newHeader && ui.newHeader.data('query');
                     if (query) {
                         query.isActive = true;
-                        widget.toggleQueryLayer(query, true);
+                        widget.featureRenderer.toggleQueryLayer(query, true);
                         widget.fetchQuery(query);
                     }
                 }
             });
         },
-
         redrawFeature: function(query, feature, highlight) {
-            var layer = this.queryLayers[query.id];
-            layer.drawFeature(feature, feature.__hidden__ && 'invisible' || highlight && 'select' || 'default');
+            feature.__highlight__ = !!highlight;
+            feature.changed();
         },
-        _highlightTableRows: function(query, feature, highlight) {
+        highlightTableRows: function(query, features, highlight) {
             var $table = this.getQueryTable_(query);
-            var features = feature.cluster ? feature.cluster : [feature];
+            // var features = feature.cluster ? feature.cluster : [feature];
 
             var firstHighlighted = null;
             for (var i = 0; i < features.length; ++i) {
@@ -641,25 +512,6 @@
             if (firstHighlighted) {
                 this.tableRenderer.pageToRow($table, firstHighlighted);
             }
-        },
-
-        /**
-         * @param {Object} query
-         * @param {OpenLayers.Feature} feature
-         * @returns {OpenLayers.Feature|null}
-         * @private
-         */
-        locateCluster: function(query, feature) {
-            var layer = this.queryLayers[query.id];
-            if (layer.features.indexOf(feature) === -1) {
-                for (var i = 0; i < layer.features.length; ++i) {
-                    var cluster = layer.features[i];
-                    if ((cluster.cluster || []).indexOf(feature) !== -1) {
-                        return cluster;
-                    }
-                }
-            }
-            return null;
         },
         /**
          *
@@ -724,34 +576,13 @@
                 form.remove();
             }, 200);
         },
-
         reloadFeatures: function(query, features) {
-            var layer = this.queryLayers[query.id];
-            layer.removeAllFeatures();
-            layer.addFeatures(features);
+            this.featureRenderer.setFeatures(query, features);
             this.tableRenderer.replaceRows(this.getQueryTable_(query), features);
-        },
-        /**
-         * Update cluster strategies
-         */
-        updateClusterStrategies: function(scale) {
-            var enabled = scale >= this.options.cluster_threshold;
-            var layers = Object.values(this.queryLayers);
-            for (var i = 0; i < layers.length; ++i) {
-                var layer = layers[i];
-                var clusterStrategy = layer.strategies[0];
-                if (enabled && clusterStrategy) {
-                    clusterStrategy.activate();
-                } else {
-                    if (clusterStrategy) {
-                        clusterStrategy.deactivate();
-                    }
-                }
-            }
         },
         removeQuery: function(query) {
             $('[data-query-id="' + query.id + '"]', this.element).remove();
-            this.destroyQueryRendering_(query);
+            this.featureRenderer.removeQuery(query);
             delete this._queries[query.id];
             $('.queries-accordion', this.element).accordion('refresh');
         },

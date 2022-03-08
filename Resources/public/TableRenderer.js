@@ -117,7 +117,7 @@
         }
     };
     Mapbender.Search.TableRenderer.prototype.dataFromFeature_ = function(feature) {
-        return feature.getProperties && feature.geProperties() || feature.attributes || {};
+        return feature.getProperties && feature.getProperties() || feature.attributes || {};
     };
 }());
 
