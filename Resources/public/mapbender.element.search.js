@@ -225,10 +225,6 @@
                 srid: Mapbender.Model.getCurrentProjectionCode().replace(/^\w+:/, ''),
                 intersect: this.getIntersectWkt_()
             }).done(function(r) {
-                if(r.errorMessage) {
-                    $.notify("Fehler beim Ausführen:\n" + r.errorMessage, 'error');
-                    return;
-                }
                 $.notify("Anzahl der Ergebnisse : " + r.count + "\nAusführungsdauer: " + r.executionTime, 'info');
             });
         },
@@ -294,11 +290,6 @@
 
             return this.query('query/fetch', request, 'GET').done(function(r) {
                 widget.fetchXhr = null;
-
-                if(r.errorMessage) {
-                    $.notify(r.errorMessage);
-                    return;
-                }
 
                 if(r.infoMessage) {
                     $.notify(r.infoMessage, {
@@ -692,7 +683,12 @@
                     window.location.reload();
                 } else {
                     if (xhr.statusText !== 'abort') {
-                        $.notify(Mapbender.trans('mb.search.api.query.error'), {
+                        var message = Mapbender.trans('mb.search.api.query.error');
+                        var messageDetail = xhr.getResponseHeader('X-Error-Message');
+                        if (messageDetail) {
+                            message = [message, messageDetail].join("\n");
+                        }
+                        $.notify(message, {
                             autoHide: false
                         });
                     }

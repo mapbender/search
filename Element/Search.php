@@ -3,7 +3,6 @@
 namespace Mapbender\SearchBundle\Element;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DBALException;
 use Doctrine\Persistence\ConnectionRegistry;
 use Mapbender\Component\Element\AbstractElementService;
 use Mapbender\Component\Element\ElementHttpHandlerInterface;
@@ -13,13 +12,14 @@ use Mapbender\CoreBundle\Entity\Element;
 use Mapbender\DataSourceBundle\Component\FeatureType;
 use Mapbender\DataSourceBundle\Component\RepositoryRegistry;
 use FOM\CoreBundle\Component\ExportResponse;
+use Mapbender\SearchBundle\Component\BaseManager;
 use Mapbender\SearchBundle\Component\QueryManager;
 use Mapbender\SearchBundle\Component\StyleManager;
 use Mapbender\SearchBundle\Component\StyleMapManager;
 use Mapbender\SearchBundle\Element\Type\SearchAdminType;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class Search
@@ -160,6 +160,22 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
 
     public function handleRequest(Element $element, Request $request)
     {
+        try {
+            return $this->dispatchRequest($element, $request);
+        } catch (\Exception $e) {
+            $message = $e->getMessage();
+            if (strpos($message, 'ERROR:')) {
+                preg_match("/\\s+ERROR:\\s+(.+)/", $message, $found);
+                $message = ucfirst($found[1]) . ".";
+            }
+            return new JsonResponse(null, Response::HTTP_INTERNAL_SERVER_ERROR, array(
+                'X-Error-Message' => $message,
+            ));
+        }
+    }
+
+    protected function dispatchRequest(Element $element, Request $request)
+    {
         $action = $request->attributes->get('action');
         // action seems to come in lower-case anyway, might be browser dependent
         $action = strtolower($action);
@@ -172,7 +188,7 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
                     'queries' => \array_reverse($this->queryManager->getAll(), true),
                 ));
             case 'query/fetch':
-                return new JsonResponse($this->fetchQueryAction($element, $request));
+                return $this->fetchQueryAction($element, $request);
             case 'query/check':
                 return $this->checkQueryAction($element, $request);
             case 'export':
@@ -183,29 +199,22 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
                     'result' => $this->queryManager->remove($requestData['id']),
                 ));
             case 'query/save':
-                $repository = $this->queryManager;
-                break;
+                return $this->dispatchSave($this->queryManager, $request);
             case 'style/save':
-                $repository = $this->styleManager;
-                break;
+                return $this->dispatchSave($this->styleManager, $request);
             case 'stylemap/save':
-                $repository = $this->styleMapManager;
-                break;
+                return $this->dispatchSave($this->styleMapManager, $request);
             default:
-                break;
+                return new JsonResponse(null, Response::HTTP_NOT_FOUND);
         }
-        switch ($action) {
-            case 'query/save':
-            case 'style/save':
-            case 'stylemap/save':
-                $entity = $repository->create(\json_decode($request->getContent(), true));
-                $entity->setUserId($repository->getUserId());
-                $repository->save($entity);
-                return new JsonResponse($entity->toArray());
-            default:
-                break;
-        }
-        throw new BadRequestHttpException("Invalid action " . var_export($action, true));
+    }
+
+    protected function dispatchSave(BaseManager $repository, Request $request)
+    {
+        $entity = $repository->create(\json_decode($request->getContent(), true));
+        $entity->setUserId($repository->getUserId());
+        $repository->save($entity);
+        return new JsonResponse($entity->toArray());
     }
 
     /**
@@ -313,32 +322,18 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
         $requestData = \json_decode($request->getContent(), true);
         $query = $this->queryManager->create($requestData['query']);
 
-        try {
-            $featureType = $this->getFeatureTypeForSchema($element, $query->getSchemaId());
-            $params = array_filter(array(
-                'srid' => $requestData['srid'],
-                'intersect' => $requestData['intersect'],
-            ));
-            $check = $this->queryManager->check($featureType, $query, $params);
-        } /** @noinspection PhpRedundantCatchClauseInspection */ catch (DBALException $e) {
-            $message = $e->getMessage();
-            if (strpos($message, 'ERROR:')) {
-                preg_match("/\\s+ERROR:\\s+(.+)/", $message, $found);
-                $message = ucfirst($found[1]) . ".";
-            }
-            $check = array(
-                'errorMessage' => $message,
-            );
-        }
-
-        return new JsonResponse($check);
+        $featureType = $this->getFeatureTypeForSchema($element, $query->getSchemaId());
+        $params = array_filter(array(
+            'srid' => $requestData['srid'],
+            'intersect' => $requestData['intersect'],
+        ));
+        return new JsonResponse($this->queryManager->check($featureType, $query, $params));
     }
-
 
     /**
      * @param Element $element
      * @param Request $request
-     * @return array
+     * @return JsonResponse
      */
     public function fetchQueryAction(Element $element, Request $request)
     {
@@ -347,35 +342,18 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
         $schemaConfig = $this->getSchemaConfigByName($element, $query->getSchemaId());
         $featureType = $this->getFeatureTypeForSchema($element, $query->getSchemaId());
 
+        $maxResults = $schemaConfig['maxResults'];
+        $params = array_filter(array(
+            'maxResults' => $maxResults,
+            'srid' => $request->query->get('srid'),
+            'intersect' => $request->query->get('intersect'),
+        ));
+        $results = $this->queryManager->fetchQuery($featureType, $query, $params);
 
-        try {
-            $maxResults = $schemaConfig['maxResults'];
-            $params = array_filter(array(
-                'maxResults' => $maxResults,
-                'srid' => $request->query->get('srid'),
-                'intersect' => $request->query->get('intersect'),
-            ));
-            $results = $this->queryManager->fetchQuery($featureType, $query, $params);
-            $count                 = count($results["features"]);
-
-
-            if ($count == $maxResults) {
-                $results["infoMessage"] = "Mehr als $maxResults Treffer gefunden, $maxResults Treffer angezeigt. \nGgf. an Kollegen mit FLIMAS-Desktop wenden.";
-            }
-
-            return $results;
-        } /** @noinspection PhpRedundantCatchClauseInspection */ catch (DBALException $e) {
-            $message = $e->getMessage();
-            if (strpos($message, 'ERROR:')) {
-                preg_match("/\\s+ERROR:\\s+(.+)/", $message, $found);
-                $message = ucfirst($found[1]) . ".";
-            }
-            $check = array(
-                'errorMessage' => $message,
-            );
+        if (count($results["features"]) >= $maxResults) {
+            $results["infoMessage"] = "Mehr als $maxResults Treffer gefunden, $maxResults Treffer angezeigt. \nGgf. an Kollegen mit FLIMAS-Desktop wenden.";
         }
-
-        return $check;
+        return new JsonResponse($results);
     }
 
     protected function getFeatureTypeConfigForSchema(Element $element, $schemaName)
