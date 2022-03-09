@@ -87,14 +87,14 @@
                     widget.openStyleEditor();
                 });
 
-            this.mbMap.element.on('mbmapviewchanged', function(e, data) {
+            this.mbMap.element.on('mbmapviewchanged', _.debounce(function() {
                 var affectedQueries = Object.values(widget._queries).filter(function(query) {
                     return query.isActive && query.extendOnly;
                 });
                 for (var i = 0; i < affectedQueries.length; ++i) {
                     widget.fetchQuery(affectedQueries[i]);
                 }
-            });
+            }, 150));
             var clusterRes = this.options.cluster_threshold && this.mbMap.getModel().scaleToResolution(this.options.cluster_threshold) || null;
             this.featureRenderer = new Mapbender.Search.FeatureRenderer(this.olMap, this, clusterRes);
 
@@ -247,12 +247,13 @@
             }
             if (this.fetchXhr) {
                 this.fetchXhr.abort();
+                this.fetchXhr = null;
             }
             var $accordionHeader = this.getQueryTab_(query);
             $accordionHeader.addClass('loading');
             var model = this.mbMap.getModel();
 
-            return this.query('query/fetch', request, 'GET').done(function(r) {
+            this.fetchXhr = this.query('query/fetch', request, 'GET').done(function(r) {
                 widget.fetchXhr = null;
 
                 if(r.infoMessage) {
