@@ -20,19 +20,6 @@
         map:                    null,
         templates_: {},
 
-        customStyles_: {
-            'boris_ipe': {
-                strokeColor:     "#e8c02f"
-            },
-            'segment': {
-                strokeColor:     "#e50c24"
-            },
-            'flur': {
-                fillColor:   "#0c7e00",
-                pointRadius: 7
-            }
-        },
-
         /**
          * Dynamic loaded styles
          */
@@ -299,6 +286,7 @@
                 this._queries[query.id] = query;
                 $accordion.append(this.renderQuery(query));
                 this.featureRenderer.addQuery(query);
+                this.featureRenderer.updateStyles(query, this._schemas[query.schemaId].featureType);
             }
             $accordion.accordion('refresh');
         },
@@ -309,7 +297,7 @@
             var $panel = this.getQueryPanel_(query);
             this.updateQueryMarkup($tab, $panel, query);
             $tab.addClass('updated');
-            this.updateStyles_(query);
+            this.featureRenderer.updateStyles(query, this._schemas[query.schemaId].featureType);
             if (query.isActive) {
                 this.fetchQuery(query);
             }
@@ -334,23 +322,11 @@
             this.initTitleEvents($titleView, query);
             return $query;
         },
-        updateStyles_: function(query) {
-            var featureType = this._schemas[query.schemaId].featureType;
-            var rules = this.getStyleRules_(query, featureType);
-            this.featureRenderer.updateStyles(query, rules, featureType);
-        },
-        getStyleRules_: function(query, featureType) {
+        getCustomStyleRules: function(query) {
             var customStyleIds = (this._styleMaps[query.styleMap] || {}).styles || {};
-            var defaultRules = Object.assign({},
-                customStyleIds.default && this._styles[customStyleIds.default] || {},
-                this.customStyles_[featureType] || {}
-            );
             return {
-                default: defaultRules,
-                select: Object.assign({}, defaultRules,
-                    customStyleIds.select && this._styles[customStyleIds.select] || {},
-                    this.customStyles_[featureType] || {}
-                )
+                default: customStyleIds.default && this._styles[customStyleIds.default] || {},
+                select: customStyleIds.select && this._styles[customStyleIds.select] || {}
             };
         },
         initQueryViewEvents: function(queryView, query) {

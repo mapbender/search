@@ -1,6 +1,28 @@
 ;!(function() {
     "use strict";
 
+    var intentDefaultRules = {
+        default: {
+            fillOpacity: 0.5
+        },
+        select: {
+            fillOpacity: 0.8
+        }
+    };
+
+    var customFtStyleRules = {
+        boris_ipe: {
+            strokeColor: '#e8c02f'
+        },
+        segment: {
+            strokeColor: '#e50c24'
+        },
+        flur: {
+            fillColor: '#0c7e00',
+            pointRadius: 7
+        }
+    };
+
     var customFtColors = {
         be: {
             prop: 'eigentuemer',
@@ -87,7 +109,6 @@
                     })
                 ]
             });
-            this.owner.updateStyles_(query);
             this.rootGroup.getLayers().push(this.queryLayers[query.id]);
             this.initHighlights(query, this.queryLayers[query.id]);
         },
@@ -132,7 +153,8 @@
             }
             return null;
         },
-        updateStyles: function(query, rules, featureType) {
+        updateStyles: function(query, featureType) {
+            var rules = this.getStyleRules_(query, featureType);
             var layerGroup = this.queryLayers[query.id];
             var mainLayer = layerGroup.getLayers().item(0);
             var clusterLayer = layerGroup.getLayers().item(1);
@@ -140,6 +162,17 @@
             var styleFunction = this.getMainStyleFunction_(rules, featureType);
             mainLayer.setStyle(styleFunction);
             clusterLayer.setStyle(this.getClusterStyleFunction(styleFunction));
+        },
+        getStyleRules_: function(query, featureType) {
+            var rules = {
+                default: Object.assign({}, intentDefaultRules.default),
+                select: Object.assign({}, intentDefaultRules.select)
+            };
+            var ftDefaults = customFtStyleRules[featureType] || {};
+            var customized = this.owner.getCustomStyleRules(query);
+            Object.assign(rules.default, ftDefaults, customized.default || {});
+            Object.assign(rules.select, ftDefaults, customized.select || {});
+            return rules;
         },
         getMainStyleFunction_: function(styleRules, featureType) {
             var baseStyles = {};
