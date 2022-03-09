@@ -211,7 +211,7 @@
             this.query('query/check', {
                 query: query,
                 srid: Mapbender.Model.getCurrentProjectionCode().replace(/^\w+:/, ''),
-                intersect: this.getIntersectWkt_()
+                intersect: query.extendOnly && this.getIntersectWkt_() || ''
             }).done(function(r) {
                 $.notify("Anzahl der Ergebnisse : " + r.count + "\nAusführungsdauer: " + r.executionTime, 'info');
             });

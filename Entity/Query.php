@@ -43,12 +43,4 @@ class Query extends Base
     {
         return $this->values['conditions'];
     }
-
-    /**
-     * @return boolean
-     */
-    public function isExtendOnly()
-    {
-        return $this->values['extendOnly'];
-    }
 }

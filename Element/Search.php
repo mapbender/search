@@ -2,24 +2,11 @@
 
 namespace Mapbender\SearchBundle\Element;
 
-use Doctrine\DBAL\Connection;
-use Doctrine\Persistence\ConnectionRegistry;
 use Mapbender\Component\Element\AbstractElementService;
-use Mapbender\Component\Element\ElementHttpHandlerInterface;
 use Mapbender\Component\Element\TemplateView;
 use Mapbender\CoreBundle\Component\ElementBase\ConfigMigrationInterface;
 use Mapbender\CoreBundle\Entity\Element;
-use Mapbender\DataSourceBundle\Component\FeatureType;
-use Mapbender\DataSourceBundle\Component\RepositoryRegistry;
-use FOM\CoreBundle\Component\ExportResponse;
-use Mapbender\SearchBundle\Component\BaseManager;
-use Mapbender\SearchBundle\Component\QueryManager;
-use Mapbender\SearchBundle\Component\StyleManager;
-use Mapbender\SearchBundle\Component\StyleMapManager;
 use Mapbender\SearchBundle\Element\Type\SearchAdminType;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class Search
@@ -27,37 +14,15 @@ use Symfony\Component\HttpFoundation\Response;
  * @package Mapbender\SearchBundle\Element
  * @author  Andriy Oblivantsev <eslider@gmail.com>
  */
-class Search extends AbstractElementService implements ElementHttpHandlerInterface,
-    ConfigMigrationInterface
+class Search extends AbstractElementService implements ConfigMigrationInterface
 {
-    /** @var ConnectionRegistry */
-    protected $connectionRegistry;
-    /** @var RepositoryRegistry */
-    protected $repositoryRegistry;
-    /** @var QueryManager */
-    protected $queryManager;
-    /** @var StyleManager */
-    protected $styleManager;
-    /** @var StyleMapManager */
-    protected $styleMapManager;
-    /** @var array[] */
-    protected $featureTypes;
+    /** @var SearchHttpHandler */
+    protected $httpHandler;
 
-    public function __construct(ConnectionRegistry $connectionRegistry,
-                                RepositoryRegistry $repositoryRegistry,
-                                QueryManager $queryManager,
-                                StyleManager $styleManager,
-                                StyleMapManager $styleMapManager,
-                                $featureTypes)
+    public function __construct(SearchHttpHandler $httpHandler)
     {
-        $this->connectionRegistry = $connectionRegistry;
-        $this->repositoryRegistry = $repositoryRegistry;
-        $this->queryManager = $queryManager;
-        $this->styleManager = $styleManager;
-        $this->styleMapManager = $styleMapManager;
-        $this->featureTypes = $featureTypes;
+        $this->httpHandler = $httpHandler;
     }
-
 
     public static function getClassTitle()
     {
@@ -135,7 +100,7 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
 
     public function getHttpHandler(Element $element)
     {
-        return $this;
+        return $this->httpHandler;
     }
 
     public static function updateEntityConfig(Element $entity)
@@ -157,256 +122,5 @@ class Search extends AbstractElementService implements ElementHttpHandlerInterfa
         }
         unset($config['clustering']);
         $entity->setConfiguration($config);
-    }
-
-    public function handleRequest(Element $element, Request $request)
-    {
-        try {
-            return $this->dispatchRequest($element, $request);
-        } catch (\Exception $e) {
-            $message = $e->getMessage();
-            if (strpos($message, 'ERROR:')) {
-                preg_match("/\\s+ERROR:\\s+(.+)/", $message, $found);
-                $message = ucfirst($found[1]) . ".";
-            }
-            return new JsonResponse(null, Response::HTTP_INTERNAL_SERVER_ERROR, array(
-                'X-Error-Message' => $message,
-            ));
-        }
-    }
-
-    protected function dispatchRequest(Element $element, Request $request)
-    {
-        $action = $request->attributes->get('action');
-        // action seems to come in lower-case anyway, might be browser dependent
-        $action = strtolower($action);
-        switch ($action) {
-            case 'init':
-                return new JsonResponse(array(
-                    'schemas' => $this->getSchemaData($element),
-                    'styles' => $this->styleManager->getAll(),
-                    'styleMaps' => $this->styleMapManager->getAll(),
-                    'queries' => \array_reverse($this->queryManager->getAll(), true),
-                ));
-            case 'query/fetch':
-                return $this->fetchQueryAction($element, $request);
-            case 'query/check':
-                return $this->checkQueryAction($element, $request);
-            case 'export':
-                return $this->exportAction($element, $request);
-            case 'query/remove':
-                $requestData = \json_decode($request->getContent(), true);
-                return new JsonResponse(array(
-                    'result' => $this->queryManager->remove($requestData['id']),
-                ));
-            case 'query/save':
-                return $this->dispatchSave($this->queryManager, $request);
-            case 'style/save':
-                return $this->dispatchSave($this->styleManager, $request);
-            case 'stylemap/save':
-                return $this->dispatchSave($this->styleMapManager, $request);
-            default:
-                return new JsonResponse(null, Response::HTTP_NOT_FOUND);
-        }
-    }
-
-    protected function dispatchSave(BaseManager $repository, Request $request)
-    {
-        $entity = $repository->create(\json_decode($request->getContent(), true));
-        $entity->setUserId($repository->getUserId());
-        $repository->save($entity);
-        return new JsonResponse($entity->toArray());
-    }
-
-    /**
-     * Export results
-     *
-     * @param Element $element
-     * @param Request $request
-     * @return ExportResponse
-     */
-    public function exportAction(Element $element, Request $request)
-    {
-        $ids = $request->request->get('ids', array());
-
-        $query = $this->queryManager->getById($request->request->get('queryId'));
-        $ftConfig = $this->getFeatureTypeConfigForSchema($element, $query->getSchemaId());
-        $featureType = $this->getFeatureTypeFromConfig($ftConfig);
-        $config = $ftConfig['export'];
-        $connection      = $featureType->getConnection();
-        $maxResults = isset($config["maxResults"]) ? $config["maxResults"] : 10000; // TODO: Set max results in export
-        $fileName        = $query->getName() . " " . date('Y:m:d H:i:s');
-
-        $sql = $this->queryManager->buildSql($featureType, $query);
-        if ($ids) {
-            $sql .= ' AND ' . $connection->quoteIdentifier($featureType->getUniqueId()) . ' IN (' . implode(', ', array_map('intval', $ids)) . ')';
-        } else {
-            $sql .= ' LIMIT ' . $maxResults;
-        }
-        $dbRows = $connection->fetchAll($sql);
-        $rows = array();
-        foreach ($dbRows as $dbRow) {
-            if (!empty($config['fields'])) {
-                $exportRow = array();
-                foreach ($config['fields'] as $cellTitle => $cellExpression) {
-                    $exportRow[$cellTitle] = $this->formatExportCell($dbRow, $cellExpression);
-                }
-                $rows[] = $exportRow;
-            } else {
-                $rows[] = $dbRow;
-            }
-        }
-        return new ExportResponse($rows, $fileName, $request->request->get('type'));
-    }
-
-    protected static function formatExportCell($row, $code)
-    {
-        // @todo: stop using eval already
-        $result = null;
-        extract($row);
-        eval('$result = ' . $code . ';');
-        /** @noinspection PhpExpressionAlwaysNullInspection */
-        return $result;
-    }
-
-    /**
-     * @param Element $element
-     * @return array
-     */
-    public function getSchemaData(Element $element)
-    {
-        $result                  = array();
-        $config = $element->getConfiguration();
-        $schemaNames = \array_keys($config['schemas']);
-
-        foreach ($schemaNames as $schemaId) {
-            $schemaConfig = $this->getSchemaConfigByName($element, $schemaId);
-            $declaration = $this->getFeatureTypeConfigForSchema($element, $schemaId);
-            $fields = $schemaConfig['fields'];
-
-            foreach ($fields as &$fieldDescription) {
-                if (isset($fieldDescription["sql"])) {
-                    /** @var Connection $dbalConnection */
-                    $connectionName = isset($fieldDescription["connection"]) ? $fieldDescription["connection"] : "default";
-                    $dbalConnection = $this->connectionRegistry->getConnection($connectionName);
-                    $options        = array();
-
-                    foreach ($dbalConnection->fetchAll($fieldDescription["sql"]) as $row) {
-                        $options[ current($row) ] = current($row);
-                    }
-
-                    $fieldDescription["options"] = $options;
-                    unset($fieldDescription["connection"]);
-                    unset($fieldDescription["sql"]);
-                }
-            }
-
-            $result[$schemaId] = array(
-                'title' => $declaration['title'],
-                'fields'      => $fields,
-                'featureType' => $schemaConfig['featureType'],
-            );
-        }
-
-        ksort($result);
-        return $result;
-
-    }
-
-    /**
-     * @param Element $element
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function checkQueryAction(Element $element, Request $request)
-    {
-        $requestData = \json_decode($request->getContent(), true);
-        $query = $this->queryManager->create($requestData['query']);
-
-        $featureType = $this->getFeatureTypeForSchema($element, $query->getSchemaId());
-        $params = array_filter(array(
-            'srid' => $requestData['srid'],
-            'intersect' => $requestData['intersect'],
-        ));
-        return new JsonResponse($this->queryManager->check($featureType, $query, $params));
-    }
-
-    /**
-     * @param Element $element
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function fetchQueryAction(Element $element, Request $request)
-    {
-        $query = $this->queryManager->getById($request->query->get('queryId'));
-
-        $schemaConfig = $this->getSchemaConfigByName($element, $query->getSchemaId());
-        $featureType = $this->getFeatureTypeForSchema($element, $query->getSchemaId());
-
-        $maxResults = $schemaConfig['maxResults'];
-        $params = array_filter(array(
-            'maxResults' => $maxResults,
-            'srid' => $request->query->get('srid'),
-            'intersect' => $request->query->get('intersect'),
-        ));
-        $results = $this->queryManager->fetchQuery($featureType, $query, $params);
-
-        if (count($results["features"]) >= $maxResults) {
-            $results["infoMessage"] = "Mehr als $maxResults Treffer gefunden, $maxResults Treffer angezeigt. \nGgf. an Kollegen mit FLIMAS-Desktop wenden.";
-        }
-        return new JsonResponse($results);
-    }
-
-    protected function getFeatureTypeConfigForSchema(Element $element, $schemaName)
-    {
-        $schemaConfig = $this->getSchemaConfigByName($element, $schemaName);
-        if (\is_string($schemaConfig['featureType'])) {
-            $ftConfig = $this->featureTypes[$schemaConfig['featureType']];
-            if (empty($ftConfig['title'])) {
-                $ftConfig['title'] = ucfirst($schemaConfig['featureType']);
-            }
-        } else {
-            $ftConfig = $schemaConfig['featureType'];
-            if (empty($ftConfig['title'])) {
-                $ftConfig['title'] = \is_numeric($schemaName) ? "#{$schemaName}" : ucfirst($schemaName);
-            }
-        }
-        return $ftConfig;
-    }
-
-    protected function getSchemaConfigByName(Element $element, $schemaName)
-    {
-        $config = $element->getConfiguration() + array('schemas' => array());
-        if (\is_numeric($schemaName)) {
-            // Uh-oh. Schema "id" passed in.
-            $names = \array_keys($config['schemas']);
-            $schemaName = $names[$schemaName];
-        }
-        $defaults = array(
-            'maxResults' => 500,
-            'fields' => array(),
-        );
-        return $config['schemas'][$schemaName] + $defaults;
-    }
-
-    /**
-     * @param Element $element
-     * @param string $schemaName
-     * @return FeatureType
-     */
-    protected function getFeatureTypeForSchema(Element $element, $schemaName)
-    {
-        return $this->getFeatureTypeFromConfig($this->getFeatureTypeConfigForSchema($element, $schemaName));
-    }
-
-    /**
-     * @param array $config
-     * @return FeatureType
-     */
-    protected function getFeatureTypeFromConfig(array $config)
-    {
-        /** @var FeatureType $ft */
-        $ft = $this->repositoryRegistry->dataStoreFactory($config);
-        return $ft;
     }
 }
