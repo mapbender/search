@@ -59,13 +59,14 @@ class SearchHttpHandler implements ElementHttpHandlerInterface
         try {
             return $this->dispatchRequest($element, $request) ?: new JsonResponse(null, Response::HTTP_NOT_FOUND);
         } catch (\Exception $e) {
-            $message = $e->getMessage();
-            if (strpos($message, 'ERROR:')) {
-                preg_match("/\\s+ERROR:\\s+(.+)/", $message, $found);
-                $message = ucfirst($found[1]) . ".";
+            while ($e->getPrevious()) {
+                $e = $e->getPrevious();
             }
+            $message = explode("\n", $e->getMessage())[0];
+            $message = \preg_replace('#^SQLSTATE[^:]*:#', '', $message);
+            $message = \preg_replace('#^.*?ERROR:\s*#', '', $message);
             return new JsonResponse(null, Response::HTTP_INTERNAL_SERVER_ERROR, array(
-                'X-Error-Message' => $message,
+                'X-Error-Message' => ucfirst(preg_replace('#\s+#', ' ', $message)),
             ));
         }
     }
