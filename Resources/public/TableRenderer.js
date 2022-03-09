@@ -33,7 +33,14 @@
         this.buttonTemplate = buttonTemplate;
     };
 
-    Mapbender.Search.TableRenderer.prototype.initializeTable = function(table, query) {
+    Mapbender.Search.TableRenderer.prototype.updateTable = function($table, query) {
+        var tableApi = $table.dataTable().api();
+        tableApi.destroy();
+        $table.empty();
+        this.initializeTable($table, query);
+    };
+
+    Mapbender.Search.TableRenderer.prototype.initializeTable = function($table, query) {
         var self = this;
         var columns = query.fields.map(function(definition) {
             return {
@@ -68,7 +75,7 @@
             data: null,
             title: ''
         });
-        $(table).dataTable(tableOptions);
+        $table.dataTable(tableOptions);
     };
     Mapbender.Search.TableRenderer.prototype.replaceRows = function(table, data) {
         var tableApi = $(table).dataTable().api();

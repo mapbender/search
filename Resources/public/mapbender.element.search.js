@@ -296,6 +296,7 @@
             this.queryFeaturesUnbounded[query.id] = null;
             var $tab = this.getQueryTab_(query);
             var $panel = this.getQueryPanel_(query);
+            this.tableRenderer.updateTable($('table:first', $panel), query);
             this.updateQueryMarkup($tab, $panel, query);
             $tab.addClass('updated');
             this.featureRenderer.updateStyles(query, this._schemas[query.schemaId].featureType);
