@@ -46,9 +46,14 @@
         this.clusterResolution = clusterResolution;
         this.hoverInteractions = {};
         this.queryLayers = {};
+        this.rootGroup = new ol.layer.Group();
+        this.olMap.addLayer(this.rootGroup);
     };
     Object.assign(window.Mapbender.Search.FeatureRenderer.prototype, {
         constructor: window.Mapbender.Search.FeatureRenderer,
+        toggle: function(state) {
+            this.rootGroup.setVisible(state);
+        },
         addQuery: function(query) {
             var source = new ol.source.Vector();
             var clusterSource = new ol.source.Cluster({
@@ -83,7 +88,7 @@
                 ]
             });
             this.owner.updateStyles_(query);
-            this.olMap.addLayer(this.queryLayers[query.id]);
+            this.rootGroup.getLayers().push(this.queryLayers[query.id]);
             this.initHighlights(query, this.queryLayers[query.id]);
         },
         setFeatures: function(query, features) {
@@ -96,7 +101,7 @@
             this.olMap.removeInteraction(this.hoverInteractions[query.id]);
             this.hoverInteractions[query.id].dispose();
             delete this.hoverInteractions[query.id];
-            this.olMap.removeLayer(this.queryLayers[query.id]);
+            this.rootGroup.getLayers().remove(this.queryLayers[query.id]);
             this.queryLayers[query.id].dispose();
         },
         getDataExtent: function(query) {

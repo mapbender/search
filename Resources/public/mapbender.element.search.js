@@ -149,18 +149,11 @@
 
         // Sidepane integration api
         hide: function() {
-            var featureRenderer = this.featureRenderer;
-            _.each(this._queries, function(query) {
-                featureRenderer.toggleQueryLayer(query, false);
-            });
+            this.featureRenderer.toggle(false);
         },
         reveal: function() {
-            var featureRenderer = this.featureRenderer;
-            _.each(this._queries, function(query) {
-                featureRenderer.toggleQueryLayer(query, query.isActive);
-            });
+            this.featureRenderer.toggle(true);
         },
-
         /**
          * @param {Object} [style]
          */
