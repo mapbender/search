@@ -564,6 +564,7 @@
             ;
             $content.dialog({
                 title: 'Suche löschen?',
+                closeText: '',
                 classes: {
                     'ui-dialog': 'ui-dialog mb-search-dialog'
                 },
