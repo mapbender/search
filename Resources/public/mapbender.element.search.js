@@ -102,7 +102,15 @@
                 widget._schemas = data.schemas;
                 widget._styles = !Array.isArray(data.styles) && data.styles || {};
                 widget._styleMaps = !Array.isArray(data.styleMaps) && data.styleMaps || {};
-                widget._queries = !Array.isArray(data.queries) && data.queries || {};
+                var queries = !Array.isArray(data.queries) && data.queries || {};
+                var queryIds = Object.keys(queries);
+                // Filter out queries referencing invalid schemas
+                for (var i = 0; i < queryIds.length; ++i) {
+                    if (!widget._schemas[queries[queryIds[i]].schemaId]) {
+                        delete(queries[queryIds[i]]);
+                    }
+                }
+                widget._queries = queries;
                 widget.renderSchemaFilterSelect();
                 widget.initAccordion($('.queries-accordion', element));
                 widget.addQueries(Object.values(widget._queries));
