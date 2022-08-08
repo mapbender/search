@@ -166,7 +166,7 @@ class SearchHttpHandler implements ElementHttpHandlerInterface
         /** @var FeatureType $featureType */
         $featureType = $this->repositoryRegistry->dataStoreFactory($ftConfig);
 
-        $maxResults = 500;
+        $maxResults = 10000000;//500;
         $features = $featureType->search(array_filter(array(
             'maxResults' => $maxResults,
             'srid' => $request->query->get('srid'),
