@@ -60,10 +60,11 @@ abstract class BaseManager
         $distinctIdSql = "SELECT MAX(id) FROM {$tnq} WHERE userId LIKE :userId AND value IS NOT NULL GROUP BY key";
         $sql = "SELECT key, value FROM {$tnq} WHERE id IN ({$distinctIdSql})";
         $params = array(
-            ':userId' => $this->getUserId(),
+            'userId' => $this->getUserId(),
         );
         $items = array();
-        foreach ($connection->executeQuery($sql, $params)->fetchAll() as $row) {
+        $result = $connection->executeQuery($sql, $params);
+        foreach ($result->fetchAllAssociative() as $row) {
             $item = $this->create(\json_decode($row['value'], true));
             $items[$row['key']] = $item->toArray();
         }
