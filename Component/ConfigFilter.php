@@ -47,7 +47,9 @@ class ConfigFilter
         $configsOut = array();
         foreach ($fieldConfigs as $fieldConfig) {
             if (!empty($fieldConfig['sql'])) {
-                $values = $connection->executeQuery($fieldConfig['sql'])->fetchAll(FetchMode::COLUMN);
+                $stmt = $connection->prepare($fieldConfig['sql']);
+                $result = $stmt->execute();
+                $values = $result->fetch(FetchMode::COLUMN);
                 $fieldConfig['options'] = \array_combine($values, $values);
             }
             unset($fieldConfig["connection"]);
