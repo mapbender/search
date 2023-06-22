@@ -50,7 +50,7 @@ class ConfigFilter
                 $stmt = $connection->prepare($fieldConfig['sql']);
                 $result = $stmt->execute();
                 $values = $result->fetch(FetchMode::COLUMN);
-                $fieldConfig['options'] = \array_combine($values, $values);
+                $fieldConfig['options'] = is_array($values) ? \array_combine($values, $values) : [$values => $values];
             }
             unset($fieldConfig["connection"]);
             unset($fieldConfig["sql"]);
