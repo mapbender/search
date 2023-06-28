@@ -83,7 +83,13 @@ abstract class BaseManager
         $params = array(
             ':key' => $id,
         );
-        $rows = $connection->fetchAll($sql, $params);
+        $stmt = $connection->prepare($sql);
+        $stmt = $connection->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        $result = $stmt->executeQuery();
+        $rows = $result->fetchAllAssociative();
         $item = $rows ? $this->create(\json_decode($rows[0]['value'], true)) : null;
         return $item;
     }
