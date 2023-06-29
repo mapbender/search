@@ -222,8 +222,9 @@ class SearchHttpHandler implements ElementHttpHandlerInterface
         }
 
         $rows = array();
-        $result = $connection->prepare($sql)->execute();
-        foreach ($result->fetchAll($sql) as $dbRow) {
+        $statement = $connection->prepare($sql);
+        $result = $statement->executeQuery();
+        foreach ($result->fetchAllAssociative() as $dbRow) {
             if (!empty($exportConfig['fields'])) {
                 $exportRow = array();
                 foreach ($exportConfig['fields'] as $cellTitle => $cellExpression) {
