@@ -81,9 +81,8 @@ abstract class BaseManager
         $sql = 'SELECT value FROM ' . $connection->quoteIdentifier($this->tableName)
              . ' WHERE key = :key ORDER BY id DESC, creationDate DESC LIMIT 1';
         $params = array(
-            ':key' => $id,
+            'key' => $id,
         );
-        $stmt = $connection->prepare($sql);
         $stmt = $connection->prepare($sql);
         foreach ($params as $key => $value) {
             $stmt->bindValue($key, $value);
@@ -124,8 +123,8 @@ abstract class BaseManager
             $connection->update($tnq, $updateValues, $updateCriteria);
             $connection->executeStatement($cleanSql, array(
                 // Supply param twice to avoid issues with native prepared statements
-                ':key0' => $values['id'],
-                ':key1' => $values['id'],
+                'key0' => $values['id'],
+                'key1' => $values['id'],
             ));
         }
     }
@@ -139,7 +138,7 @@ abstract class BaseManager
         $connection = $this->getConnection();
         $sql = 'DELETE FROM ' . $connection->quoteIdentifier($this->tableName) . ' WHERE key = :key';
         $params = array(
-            ':key' => $id,
+            'key' => $id,
         );
         $rowsAffected = $connection->executeStatement($sql, $params);
         return !!$rowsAffected;
